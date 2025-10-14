@@ -293,3 +293,81 @@ def get_order_by_id(order_id):
         return False, None, 'Impossibile connettersi al server API'
     except Exception as e:
         return False, None, f'Errore imprevisto: {str(e)}'
+
+
+def get_today_orders():
+    """
+    Recupera tutti gli ordini di oggi dall'API.
+    
+    Returns:
+        tuple: (success: bool, orders: list or None, error_message: str or None)
+    """
+    try:
+        headers = get_auth_headers()
+        url = f"{config.API_BASE_URL}/v1/orders/day/today"
+        
+        response = requests.get(
+            url,
+            headers=headers,
+            timeout=API_TIMEOUT
+        )
+        
+        if response.status_code == 200:
+            orders = response.json()
+            return True, orders, None
+        elif response.status_code == 404:
+            return False, None, 'Nessun ordine trovato per oggi'
+        elif response.status_code == 401:
+            return False, None, 'Non autenticato. Effettua il login.'
+        elif response.status_code == 403:
+            return False, None, 'Accesso negato.'
+        else:
+            return False, None, f'Errore API: {response.status_code}'
+            
+    except requests.exceptions.Timeout:
+        return False, None, 'Timeout della richiesta'
+    except requests.exceptions.ConnectionError:
+        return False, None, 'Impossibile connettersi al server API'
+    except Exception as e:
+        return False, None, f'Errore imprevisto: {str(e)}'
+
+
+def search_daily_orders(search_value):
+    """
+    Cerca ordini giornalieri dall'API.
+    
+    Args:
+        search_value: Valore da cercare (codice, tavolo, cliente, ecc.)
+        
+    Returns:
+        tuple: (success: bool, orders: list or None, error_message: str or None)
+    """
+    try:
+        headers = get_auth_headers()
+        url = f"{config.API_BASE_URL}/v1/orders/search/daily/{search_value}"
+        
+        response = requests.get(
+            url,
+            headers=headers,
+            timeout=API_TIMEOUT
+        )
+        
+        if response.status_code == 200:
+            orders = response.json()
+            return True, orders, None
+        elif response.status_code == 404:
+            return False, None, 'Nessun ordine trovato'
+        elif response.status_code == 401:
+            return False, None, 'Non autenticato. Effettua il login.'
+        elif response.status_code == 403:
+            return False, None, 'Accesso negato.'
+        else:
+            return False, None, f'Errore API: {response.status_code}'
+            
+    except requests.exceptions.Timeout:
+        return False, None, 'Timeout della richiesta'
+    except requests.exceptions.ConnectionError:
+        return False, None, 'Impossibile connettersi al server API'
+    except Exception as e:
+        return False, None, f'Errore imprevisto: {str(e)}'
+

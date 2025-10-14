@@ -330,7 +330,22 @@ def logout():
 def home():
     """Pagina principale - ora protetta con autenticazione"""
     cfg = carica_impostazioni(os.path.join(APP_DIR, 'settings.json'))
-    return render_template('index_new.html', cfg=cfg)
+    return render_template('index.html', cfg=cfg)
+
+@app.route('/static/manifest.json')
+def manifest():
+    """Serve il manifest.json per PWA"""
+    from flask import send_from_directory
+    return send_from_directory('static', 'manifest.json', mimetype='application/manifest+json')
+
+@app.route('/static/sw.js')
+def service_worker():
+    """Serve il service worker per PWA"""
+    from flask import send_from_directory
+    response = send_from_directory('static', 'sw.js', mimetype='application/javascript')
+    # Aggiungi header per permettere al service worker di funzionare
+    response.headers['Service-Worker-Allowed'] = '/'
+    return response
 
 @app.route('/api/categories')
 @login_required
@@ -365,6 +380,37 @@ def api_get_order(order_code):
         return jsonify({'success': True, 'order': order})
     else:
         return jsonify({'success': False, 'error': error}), 404
+
+
+@app.route('/api/orders/day/today')
+@login_required
+def api_get_today_orders():
+    """API endpoint per ottenere tutti gli ordini di oggi"""
+    from api_client import get_today_orders
+    print(f"[DEBUG] Richiesta ordini di oggi")
+    success, orders, error = get_today_orders()
+    print(f"[DEBUG] Risultato: success={success}, numero ordini={len(orders) if orders else 0}, error={error}")
+    if success:
+        # Restituisce direttamente l'array di ordini come fa l'API originale
+        return jsonify(orders if orders else [])
+    else:
+        status_code = 404 if error == 'Nessun ordine trovato per oggi' else 500
+        return jsonify({'success': False, 'error': error}), status_code
+
+
+@app.route('/api/orders/search/daily/<string:value>')
+@login_required
+def api_search_daily_orders(value):
+    """API endpoint per cercare ordini giornalieri"""
+    from api_client import search_daily_orders
+    print(f"[DEBUG] Ricerca ordini giornalieri con valore: {value}")
+    success, orders, error = search_daily_orders(value)
+    print(f"[DEBUG] Risultato: success={success}, numero ordini={len(orders) if orders else 0}, error={error}")
+    if success:
+        return jsonify(orders if orders else [])
+    else:
+        status_code = 404 if 'non trovato' in error.lower() else 500
+        return jsonify({'success': False, 'error': error}), status_code
 
 @app.post('/genera')
 @login_required
