@@ -1,0 +1,9 @@
+{
+  "printer_ip": "192.168.1.100",
+  "printer_port": 9100,
+  "receipt_width_chars": 42,
+  "currency": "€",
+  "escpos_encoding": "cp858",
+  "escpos_select_codepage": 19,
+  "extra_feeds_after_code": 10
+}

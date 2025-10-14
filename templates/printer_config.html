@@ -1,0 +1,667 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Configurazione Stampanti - Insieme in Festa</title>
+  <style>
+    :root {
+      --radius: 0.65rem;
+      --background: oklch(1 0 0);
+      --foreground: oklch(0.141 0.005 285.823);
+      --card: oklch(1 0 0);
+      --card-foreground: oklch(0.141 0.005 285.823);
+      --popover: oklch(1 0 0);
+      --popover-foreground: oklch(0.141 0.005 285.823);
+      --primary: oklch(0.795 0.184 86.047);
+      --primary-foreground: oklch(0.421 0.095 57.708);
+      --secondary: oklch(0.967 0.001 286.375);
+      --secondary-foreground: oklch(0.21 0.006 285.885);
+      --muted: oklch(0.967 0.001 286.375);
+      --muted-foreground: oklch(0.552 0.016 285.938);
+      --accent: oklch(0.967 0.001 286.375);
+      --accent-foreground: oklch(0.21 0.006 285.885);
+      --destructive: oklch(0.577 0.245 27.325);
+      --border: oklch(0.92 0.004 286.32);
+      --input: oklch(0.92 0.004 286.32);
+      --ring: oklch(0.795 0.184 86.047);
+      --sidebar: oklch(0.985 0 0);
+      --sidebar-foreground: oklch(0.141 0.005 285.823);
+    }
+    
+    [data-theme="dark"] {
+      --background: oklch(0.141 0.005 285.823);
+      --foreground: oklch(0.98 0 0);
+      --card: oklch(0.18 0.007 285.823);
+      --card-foreground: oklch(0.98 0 0);
+      --popover: oklch(0.18 0.007 285.823);
+      --popover-foreground: oklch(0.98 0 0);
+      --primary: oklch(0.795 0.184 86.047);
+      --primary-foreground: oklch(0.421 0.095 57.708);
+      --secondary: oklch(0.22 0.01 285.823);
+      --secondary-foreground: oklch(0.98 0 0);
+      --muted: oklch(0.22 0.01 285.823);
+      --muted-foreground: oklch(0.65 0.015 285.938);
+      --accent: oklch(0.22 0.01 285.823);
+      --accent-foreground: oklch(0.98 0 0);
+      --destructive: oklch(0.577 0.245 27.325);
+      --border: oklch(0.25 0.012 285.82);
+      --input: oklch(0.25 0.012 285.82);
+      --ring: oklch(0.795 0.184 86.047);
+      --sidebar: oklch(0.18 0.007 285.823);
+      --sidebar-foreground: oklch(0.98 0 0);
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: var(--background);
+      color: var(--foreground);
+      line-height: 1.5;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .header {
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      padding: 0.5rem 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    
+    .header h1 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--foreground);
+    }
+    
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .btn {
+      padding: 0.4rem 0.75rem;
+      border-radius: var(--radius);
+      border: none;
+      font-size: 0.8rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+    
+    .btn-icon {
+      padding: 0.4rem;
+      width: 2rem;
+      height: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+    }
+    
+    .btn-primary {
+      background: var(--primary);
+      color: var(--primary-foreground);
+    }
+    
+    .btn-primary:hover {
+      opacity: 0.9;
+    }
+    
+    .btn-secondary {
+      background: var(--secondary);
+      color: var(--secondary-foreground);
+    }
+    
+    .btn-destructive {
+      background: var(--destructive);
+      color: white;
+    }
+    
+    .container {
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 1.5rem;
+      flex: 1;
+      overflow-y: auto;
+    }
+    
+    .section-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      color: var(--foreground);
+    }
+    
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+    }
+    
+    .printer-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 2px solid var(--primary);
+    }
+    
+    .printer-name {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: var(--foreground);
+    }
+    
+    .form-group {
+      margin-bottom: 1rem;
+    }
+    
+    .form-label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 500;
+      margin-bottom: 0.35rem;
+      color: var(--foreground);
+    }
+    
+    .form-input {
+      width: 100%;
+      padding: 0.5rem 0.75rem;
+      border: 1px solid var(--input);
+      border-radius: var(--radius);
+      font-size: 0.875rem;
+      background: var(--background);
+      color: var(--foreground);
+    }
+    
+    .form-input:focus {
+      outline: none;
+      border-color: var(--ring);
+      box-shadow: 0 0 0 2px rgba(205, 180, 100, 0.1);
+    }
+    
+    .categories-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+    
+    .category-checkbox {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.6rem 0.75rem;
+      background: var(--muted);
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .category-checkbox:hover {
+      border-color: var(--primary);
+    }
+    
+    .category-checkbox input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+      accent-color: var(--primary);
+    }
+    
+    .category-checkbox.active {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: var(--primary-foreground);
+    }
+    
+    .category-checkbox span {
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+    
+    .btn-add-printer {
+      width: 100%;
+      padding: 0.75rem;
+      background: var(--primary);
+      color: var(--primary-foreground);
+      border: none;
+      border-radius: var(--radius);
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-top: 1rem;
+    }
+    
+    .btn-add-printer:hover {
+      opacity: 0.9;
+    }
+    
+    .alert {
+      padding: 0.75rem 1rem;
+      border-radius: var(--radius);
+      margin-bottom: 1rem;
+      font-size: 0.875rem;
+    }
+    
+    .alert-success {
+      background: var(--primary);
+      color: var(--primary-foreground);
+    }
+    
+    .alert-error {
+      background: var(--destructive);
+      color: white;
+    }
+    
+    .empty-state {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: var(--muted-foreground);
+    }
+    
+    .empty-state-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+    }
+    
+    .btn-group {
+      display: flex;
+      gap: 0.5rem;
+    }
+    
+    .status-indicator {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-right: 0.5rem;
+    }
+    
+    .status-active {
+      background: #22c55e;
+    }
+    
+    .status-inactive {
+      background: #ef4444;
+    }
+    
+    .printer-card.collapsed .printer-body {
+      display: none;
+    }
+    
+    .printer-card.collapsed .printer-header {
+      border-bottom: none;
+      margin-bottom: 0;
+      padding-bottom: 0;
+    }
+    
+    .btn-collapse {
+      background: transparent;
+      border: none;
+      color: var(--foreground);
+      cursor: pointer;
+      font-size: 1.25rem;
+      padding: 0;
+      width: 2rem;
+      height: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.2s;
+    }
+    
+    .printer-card.collapsed .btn-collapse {
+      transform: rotate(-90deg);
+    }
+  </style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <h1>🖨️ Configurazione Stampanti</h1>
+  <div class="header-actions">
+    <button id="themeToggle" class="btn btn-secondary btn-icon" title="Toggle Dark Mode">
+      <span id="themeIcon">🌙</span>
+    </button>
+    <a href="{{ url_for('home') }}" class="btn btn-secondary">← Torna alla Cassa</a>
+  </div>
+</div>
+
+<div class="container">
+  <div id="alertContainer"></div>
+  
+  <div class="section-title">Stampanti Configurate</div>
+  
+  <div id="printersContainer">
+    <div class="empty-state">
+      <div class="empty-state-icon">📭</div>
+      <p>Nessuna stampante configurata</p>
+    </div>
+  </div>
+  
+  <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+    <button class="btn-add-printer" onclick="addPrinter()" style="flex: 1;">+ Aggiungi Stampante</button>
+    <button class="btn-add-printer" onclick="savePrinters()" style="flex: 1; background: var(--card); color: var(--primary); border: 2px solid var(--primary);">💾 Salva Configurazione</button>
+  </div>
+</div>
+
+<script>
+let printers = [];
+let categories = [];
+
+// Load categories from API
+async function loadCategories() {
+  try {
+    const resp = await fetch('/api/categories');
+    const data = await resp.json();
+    
+    if (data.success) {
+      categories = data.categories;
+    } else {
+      showAlert('Errore caricamento categorie: ' + (data.error || 'Sconosciuto'), 'error');
+    }
+  } catch (err) {
+    console.error('Error loading categories:', err);
+    showAlert('Errore di connessione: ' + err.message, 'error');
+  }
+}
+
+// Load printer configuration
+async function loadPrinters() {
+  try {
+    const resp = await fetch('/api/printers/config');
+    const data = await resp.json();
+    
+    if (data.success) {
+      printers = data.printers || [];
+      renderPrinters();
+    } else {
+      showAlert('Errore caricamento configurazione: ' + (data.error || 'Sconosciuto'), 'error');
+    }
+  } catch (err) {
+    console.error('Error loading printers:', err);
+    showAlert('Errore di connessione: ' + err.message, 'error');
+  }
+}
+
+// Save printer configuration
+async function savePrinters() {
+  // Validate printers before saving
+  for (let i = 0; i < printers.length; i++) {
+    const p = printers[i];
+    if (!p.name || !p.ip) {
+      showAlert(`⚠️ Stampante ${i + 1}: inserisci nome e indirizzo IP`, 'error');
+      return;
+    }
+  }
+  
+  // Check for duplicate IPs
+  const ipSet = new Set();
+  for (let i = 0; i < printers.length; i++) {
+    const ip = printers[i].ip.trim();
+    if (ipSet.has(ip)) {
+      showAlert(`⚠️ Errore: L'indirizzo IP "${ip}" è già usato da un'altra stampante`, 'error');
+      return;
+    }
+    ipSet.add(ip);
+  }
+  
+  showAlert('💾 Salvataggio in corso...', 'success');
+  
+  try {
+    const resp = await fetch('/api/printers/config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ printers: printers })
+    });
+    
+    const data = await resp.json();
+    
+    if (data.success) {
+      showAlert('✅ Configurazione salvata con successo!', 'success');
+    } else {
+      showAlert('❌ Errore salvataggio: ' + (data.error || 'Sconosciuto'), 'error');
+    }
+  } catch (err) {
+    console.error('Error saving printers:', err);
+    showAlert('❌ Errore di connessione: ' + err.message, 'error');
+  }
+}
+
+// Render printers list
+function renderPrinters() {
+  const container = document.getElementById('printersContainer');
+  
+  if (printers.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state-icon">📭</div>
+        <p>Nessuna stampante configurata</p>
+      </div>
+    `;
+    return;
+  }
+  
+  container.innerHTML = printers.map((printer, idx) => `
+    <div class="card printer-card ${printer.collapsed ? 'collapsed' : ''}" id="printer-${idx}">
+      <div class="printer-header">
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <button class="btn-collapse" onclick="toggleCollapse(${idx})" title="Comprimi/Espandi">
+            🔽
+          </button>
+          <div class="printer-name">
+            <span class="status-indicator ${printer.enabled ? 'status-active' : 'status-inactive'}"></span>
+            ${printer.name || `Stampante ${idx + 1}`}
+          </div>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-secondary" onclick="togglePrinter(${idx})" title="${printer.enabled ? 'Disattiva' : 'Attiva'}">
+            ${printer.enabled ? '🔴' : '🟢'}
+          </button>
+          <button class="btn btn-secondary" onclick="testPrinter(${idx})" title="Test Stampa">
+            🧪 Test
+          </button>
+          <button class="btn btn-destructive" onclick="removePrinter(${idx})" title="Rimuovi">
+            🗑️
+          </button>
+        </div>
+      </div>
+      
+      <div class="printer-body">
+        <div class="form-group">
+          <label class="form-label">Nome Stampante</label>
+          <input type="text" class="form-input" value="${printer.name || ''}" 
+                 onchange="updatePrinter(${idx}, 'name', this.value)" 
+                 placeholder="Es. Stampante Bar">
+        </div>
+      
+      <div class="form-group">
+        <label class="form-label">Indirizzo IP</label>
+        <input type="text" class="form-input" value="${printer.ip || ''}" 
+               onchange="updatePrinter(${idx}, 'ip', this.value)" 
+               placeholder="Es. 192.168.1.100">
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label">Porta</label>
+        <input type="number" class="form-input" value="${printer.port || 9100}" 
+               onchange="updatePrinter(${idx}, 'port', parseInt(this.value))" 
+               placeholder="9100">
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label">Categorie da Stampare</label>
+        <div class="categories-grid">
+          ${categories.map(cat => {
+            const isChecked = printer.categories && printer.categories.includes(cat.id);
+            return `
+              <label class="category-checkbox ${isChecked ? 'active' : ''}">
+                <input type="checkbox" 
+                       ${isChecked ? 'checked' : ''} 
+                       onchange="toggleCategory(${idx}, ${cat.id}, this.checked)">
+                <span>${cat.name}</span>
+              </label>
+            `;
+          }).join('')}
+        </div>
+      </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// Add new printer
+function addPrinter() {
+  printers.push({
+    name: '',
+    ip: '',
+    port: 9100,
+    categories: [],
+    enabled: true
+  });
+  renderPrinters();
+  showAlert('➕ Stampante aggiunta. Ricorda di salvare!', 'success');
+}
+
+// Remove printer
+function removePrinter(idx) {
+  if (confirm('Sei sicuro di voler rimuovere questa stampante?')) {
+    printers.splice(idx, 1);
+    renderPrinters();
+    showAlert('🗑️ Stampante rimossa. Ricorda di salvare!', 'success');
+  }
+}
+
+// Update printer field
+function updatePrinter(idx, field, value) {
+  printers[idx][field] = value;
+  // Non salva automaticamente, l'utente deve cliccare "Salva"
+}
+
+// Toggle printer enabled/disabled
+function togglePrinter(idx) {
+  printers[idx].enabled = !printers[idx].enabled;
+  renderPrinters();
+  showAlert(printers[idx].enabled ? '🟢 Stampante attivata' : '🔴 Stampante disattivata', 'success');
+}
+
+// Toggle category for printer
+function toggleCategory(idx, categoryId, checked) {
+  if (!printers[idx].categories) {
+    printers[idx].categories = [];
+  }
+  
+  if (checked) {
+    if (!printers[idx].categories.includes(categoryId)) {
+      printers[idx].categories.push(categoryId);
+    }
+  } else {
+    printers[idx].categories = printers[idx].categories.filter(id => id !== categoryId);
+  }
+  
+  renderPrinters();
+  // Non salva automaticamente, l'utente deve cliccare "Salva"
+}
+
+// Toggle collapse/expand printer card
+function toggleCollapse(idx) {
+  printers[idx].collapsed = !printers[idx].collapsed;
+  renderPrinters();
+}
+
+// Test printer connection
+async function testPrinter(idx) {
+  const printer = printers[idx];
+  
+  if (!printer.ip) {
+    showAlert('Inserisci l\'indirizzo IP della stampante', 'error');
+    return;
+  }
+  
+  showAlert('🔄 Invio test di stampa...', 'success');
+  
+  try {
+    const resp = await fetch('/api/printers/test', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ip: printer.ip,
+        port: printer.port || 9100
+      })
+    });
+    
+    const data = await resp.json();
+    
+    if (data.success) {
+      showAlert('✅ Test di stampa inviato con successo!', 'success');
+    } else {
+      showAlert('❌ Errore test stampa: ' + (data.error || 'Sconosciuto'), 'error');
+    }
+  } catch (err) {
+    console.error('Error testing printer:', err);
+    showAlert('❌ Errore di connessione: ' + err.message, 'error');
+  }
+}
+
+// Show alert message
+function showAlert(message, type) {
+  const container = document.getElementById('alertContainer');
+  const alertClass = type === 'error' ? 'alert-error' : 'alert-success';
+  
+  container.innerHTML = `<div class="alert ${alertClass}">${message}</div>`;
+  
+  setTimeout(() => {
+    container.innerHTML = '';
+  }, 5000);
+}
+
+// Dark mode toggle
+const themeToggle = document.getElementById('themeToggle');
+const themeIcon = document.getElementById('themeIcon');
+const html = document.documentElement;
+
+const currentTheme = localStorage.getItem('theme') || 'light';
+html.setAttribute('data-theme', currentTheme);
+themeIcon.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+themeToggle.addEventListener('click', () => {
+  const theme = html.getAttribute('data-theme');
+  const newTheme = theme === 'light' ? 'dark' : 'light';
+  
+  html.setAttribute('data-theme', newTheme);
+  localStorage.setItem('theme', newTheme);
+  themeIcon.textContent = newTheme === 'dark' ? '☀️' : '🌙';
+});
+
+// Initialize
+loadCategories().then(() => {
+  loadPrinters();
+});
+</script>
+</body>
+</html>

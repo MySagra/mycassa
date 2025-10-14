@@ -1,0 +1,567 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Scontrini POS</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <style>
+    body {
+      background: #f5f5f5;
+    }
+    .header-bar {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 15px 0;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .product-btn {
+      width: 100%;
+      height: 140px;
+      font-size: 20px;
+      font-weight: 700;
+      border: none;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border-radius: 15px;
+      transition: all 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      position: relative;
+      box-shadow: 0 4px 15px rgba(102,126,234,0.3);
+    }
+    .product-btn:hover {
+      transform: translateY(-5px) scale(1.02);
+      box-shadow: 0 8px 25px rgba(102,126,234,0.5);
+    }
+    .product-btn:active {
+      transform: translateY(-2px) scale(0.98);
+    }
+    .product-price {
+      font-size: 26px;
+      color: #fff;
+      font-weight: 800;
+      margin-top: 10px;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    .product-name {
+      text-align: center;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    .category-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: #333;
+      margin: 25px 0 15px 0;
+      padding-bottom: 10px;
+      border-bottom: 3px solid #667eea;
+    }
+    .cart-panel {
+      position: sticky;
+      top: 20px;
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      padding: 20px;
+    }
+    .cart-header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 15px;
+      border-radius: 10px;
+      margin: -20px -20px 20px -20px;
+      font-size: 20px;
+      font-weight: 700;
+    }
+    .cart-counter {
+      position: fixed;
+      top: 80px;
+      right: 30px;
+      background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+      color: white;
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      font-weight: 700;
+      box-shadow: 0 6px 20px rgba(255,107,107,0.5);
+      z-index: 1000;
+      animation: pulse 2s infinite;
+      border: 4px solid white;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); box-shadow: 0 6px 20px rgba(255,107,107,0.5); }
+      50% { transform: scale(1.08); box-shadow: 0 8px 25px rgba(255,107,107,0.7); }
+    }
+    .cart-item {
+      padding: 12px;
+      border-bottom: 1px solid #eee;
+      background: #f8f9fa;
+      border-radius: 8px;
+      margin-bottom: 10px;
+    }
+    .cart-item:last-child {
+      border-bottom: none;
+    }
+    .btn-cart-action {
+      width: 32px;
+      height: 32px;
+      padding: 0;
+      font-size: 18px;
+      line-height: 1;
+    }
+    .form-control, .form-select {
+      border-radius: 8px;
+      border: 2px solid #e0e0e0;
+    }
+    .form-control:focus, .form-select:focus {
+      border-color: #667eea;
+      box-shadow: 0 0 0 0.2rem rgba(102,126,234,0.25);
+    }
+    .btn-generate {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border: none;
+      padding: 15px;
+      font-size: 18px;
+      font-weight: 700;
+      border-radius: 10px;
+      transition: all 0.2s;
+    }
+    .btn-generate:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(102,126,234,0.4);
+    }
+  </style>
+</head>
+<body>
+
+<!-- Contatore carrello fisso -->
+<div class="cart-counter" id="cartCounter">0</div>
+
+<!-- Header -->
+<div class="header-bar">
+  <div class="container">
+    <div class="d-flex align-items-center justify-content-between">
+      <div>
+        <h1 class="h3 mb-0">🍕 Scontrini POS</h1>
+        <small>Oratorio di Petosino - SeptemberFest</small>
+      </div>
+      <a href="{{ url_for('logout') }}" class="btn btn-outline-light">
+        Logout
+      </a>
+    </div>
+  </div>
+</div>
+
+<div class="container-fluid py-3">
+  <div class="row g-3">
+    <!-- Prodotti -->
+    <div class="col-lg-8">
+      <div class="bg-white p-4 rounded shadow-sm">
+        {% for cat, items in categories.items() %}
+          <div class="category-title">{{ cat }}</div>
+          <div class="row g-3 mb-4">
+          {% for it in items %}
+            <div class="col-sm-6 col-md-4 col-lg-3">
+              <button class="product-btn" 
+                      data-cat="{{ cat }}"
+                      data-name="{{ it.name }}"
+                      data-price="{{ it.price }}"
+                      data-id="{{ it.id }}"
+                      onclick="addProduct(this)">
+                <div class="product-name">{{ it.name }}</div>
+                <div class="product-price">{{ '%.2f'|format(it.price) }} {{ cfg.currency }}</div>
+              </button>
+            </div>
+          {% endfor %}
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Carrello e info ordine -->
+    <div class="col-lg-4">
+      <div class="cart-panel">
+        <div class="cart-header">
+          🛒 Carrello
+        </div>
+
+        <!-- Info ordine -->
+        <div class="mb-3">
+          <label class="form-label fw-bold">Tavolo <span class="text-danger">*</span></label>
+          <input type="text" id="tavolo" class="form-control" placeholder="Es. 12">
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-bold">Cliente <span class="text-danger">*</span></label>
+          <input type="text" id="cliente" class="form-control" placeholder="Es. Mario Rossi">
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-bold">Pagamento <span class="text-danger">*</span></label>
+          <select id="metodoPagamento" class="form-select">
+            <option value="">Seleziona...</option>
+            <option value="CONTANTI">Contanti</option>
+            <option value="POS">POS</option>
+          </select>
+        </div>
+
+        <hr>
+
+        <!-- Lista carrello -->
+        <div id="cartList" class="mb-3" style="max-height: 400px; overflow-y: auto;">
+          <div class="text-center text-muted py-4">Carrello vuoto</div>
+        </div>
+
+        <!-- Totale -->
+        <div class="mb-3">
+          <div class="d-flex justify-content-between align-items-center p-3 bg-light rounded">
+            <span class="fw-bold fs-5">TOTALE:</span>
+            <span class="fw-bold fs-4 text-primary" id="totalAmount">0,00 {{ cfg.currency }}</span>
+          </div>
+        </div>
+
+        <!-- Calcolatore resto -->
+        <div class="mb-3">
+          <label class="form-label">Pagato dal cliente</label>
+          <div class="input-group">
+            <input type="number" id="pagatoCliente" class="form-control" step="0.01" min="0" placeholder="0.00">
+            <span class="input-group-text">{{ cfg.currency }}</span>
+          </div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Resto</label>
+          <input type="text" id="restoCalcolato" class="form-control" value="0,00 {{ cfg.currency }}" readonly>
+        </div>
+
+        <hr>
+
+        <!-- Opzioni stampa -->
+        <div class="form-check mb-3">
+          <input class="form-check-input" type="checkbox" id="autoPrint" checked>
+          <label class="form-check-label" for="autoPrint">
+            Stampa automatica (ESC/POS)
+          </label>
+        </div>
+
+        <!-- Pulsante genera -->
+        <button id="btnGenerate" class="btn btn-primary btn-generate w-100">
+          Genera Ordine e Scontrini
+        </button>
+        
+        <div id="result" class="mt-3"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODALE OPZIONI PIZZA -->
+<div class="modal fade" id="optsModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Opzioni pizza</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-2">
+          <label class="form-label">Pizza</label>
+          <input type="text" id="optName" class="form-control" readonly>
+        </div>
+        <div class="mb-2">
+          <label class="form-label">Aggiunte</label>
+          <div class="input-group">
+            <input type="text" id="addInput" class="form-control" placeholder="es. bufala">
+            <button class="btn btn-outline-primary" id="addAddBtn">Aggiungi</button>
+          </div>
+          <div class="form-text">+€0,50 per ogni aggiunta</div>
+          <div id="addsList" class="mt-2 d-flex flex-wrap gap-1"></div>
+        </div>
+        <div class="mb-2">
+          <label class="form-label">Rimozioni</label>
+          <div class="input-group">
+            <input type="text" id="remInput" class="form-control" placeholder="es. mozzarella">
+            <button class="btn btn-outline-secondary" id="addRemBtn">Aggiungi</button>
+          </div>
+          <div id="remsList" class="mt-2 d-flex flex-wrap gap-1"></div>
+        </div>
+        <div class="mb-2">
+          <label class="form-label">Quantità</label>
+          <input type="number" id="optQty" class="form-control" min="1" step="1" value="1">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="optAddBtn" class="btn btn-primary">Aggiungi al carrello</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const currency = '{{ cfg.currency }}';
+const cart = [];
+
+function prezzoUnitario(item) {
+  const addsCount = (item.adds || []).filter(Boolean).length;
+  return parseFloat(item.price) + 0.50 * addsCount;
+}
+
+function totaleCarrello() {
+  return cart.reduce((sum, it) => sum + prezzoUnitario(it) * it.qty, 0);
+}
+
+function aggiornaUI() {
+  // Aggiorna contatore
+  const totalItems = cart.reduce((sum, it) => sum + it.qty, 0);
+  document.getElementById('cartCounter').textContent = totalItems;
+  
+  // Aggiorna totale
+  const tot = totaleCarrello();
+  document.getElementById('totalAmount').textContent = tot.toFixed(2) + ' ' + currency;
+  
+  // Aggiorna resto
+  const pagato = parseFloat(document.getElementById('pagatoCliente').value || '0');
+  const resto = Math.max(0, pagato - tot);
+  document.getElementById('restoCalcolato').value = resto.toFixed(2) + ' ' + currency;
+  
+  // Aggiorna lista carrello
+  const div = document.getElementById('cartList');
+  if (cart.length === 0) {
+    div.innerHTML = '<div class="text-center text-muted py-4">Carrello vuoto</div>';
+    return;
+  }
+  
+  div.innerHTML = cart.map((it, idx) => {
+    const addsList = it.adds && it.adds.length ? `<li>aggiunte: ${it.adds.join(', ')}</li>` : '';
+    const remsList = it.removes && it.removes.length ? `<li>rimozioni: ${it.removes.join(', ')}</li>` : '';
+    const modsList = (addsList || remsList) ? `<ul class="mb-0 small">${addsList}${remsList}</ul>` : '';
+    const extra = it.adds && it.adds.length ? ` (+${(0.5 * it.adds.length).toFixed(2)} ${currency}/pz)` : '';
+    const unit = prezzoUnitario(it);
+    const subtotal = unit * it.qty;
+    
+    return `
+    <div class="cart-item">
+      <div class="d-flex justify-content-between align-items-start mb-2">
+        <div class="flex-grow-1">
+          <div class="fw-bold">${it.name}</div>
+          <small class="text-muted">${it.category}</small>
+          ${modsList}
+        </div>
+        <div class="btn-group btn-group-sm">
+          <button class="btn btn-outline-danger btn-cart-action" onclick="removeItem(${idx})">×</button>
+        </div>
+      </div>
+      <div class="d-flex justify-content-between align-items-center">
+        <div class="btn-group btn-group-sm">
+          <button class="btn btn-outline-secondary btn-cart-action" onclick="decreaseQty(${idx})">-</button>
+          <button class="btn btn-outline-secondary" style="min-width: 50px;">${it.qty}</button>
+          <button class="btn btn-outline-secondary btn-cart-action" onclick="increaseQty(${idx})">+</button>
+        </div>
+        <div>
+          <small class="text-muted">${unit.toFixed(2)} ${currency}${extra}</small><br>
+          <span class="fw-bold">${subtotal.toFixed(2)} ${currency}</span>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function addProduct(btn) {
+  const cat = btn.dataset.cat;
+  const name = btn.dataset.name;
+  const price = parseFloat(btn.dataset.price);
+  const id = parseInt(btn.dataset.id);
+  
+  // Se è Pizzeria, mostra il modale opzioni
+  if (cat === 'Pizzeria') {
+    showPizzaOptions(cat, name, price, id);
+    return;
+  }
+  
+  // Altrimenti aggiungi direttamente
+  addToCart(cat, name, price, id, 1, [], []);
+}
+
+function addToCart(cat, name, price, id, qty, adds, rems) {
+  const idx = cart.findIndex(x => 
+    x.category === cat && 
+    x.name === name &&
+    x.id === id &&
+    JSON.stringify(x.adds) === JSON.stringify(adds) &&
+    JSON.stringify(x.removes) === JSON.stringify(rems)
+  );
+  
+  if (idx >= 0) {
+    cart[idx].qty += qty;
+  } else {
+    cart.push({
+      id: id,
+      category: cat,
+      name: name,
+      price: price,
+      qty: qty,
+      adds: adds.filter(Boolean),
+      removes: rems.filter(Boolean)
+    });
+  }
+  
+  aggiornaUI();
+}
+
+function removeItem(idx) {
+  cart.splice(idx, 1);
+  aggiornaUI();
+}
+
+function increaseQty(idx) {
+  cart[idx].qty++;
+  aggiornaUI();
+}
+
+function decreaseQty(idx) {
+  if (cart[idx].qty > 1) {
+    cart[idx].qty--;
+  } else {
+    cart.splice(idx, 1);
+  }
+  aggiornaUI();
+}
+
+// Modale pizza
+let modalData = null;
+let modalAdds = [];
+let modalRems = [];
+const optsModal = new bootstrap.Modal(document.getElementById('optsModal'));
+
+function showPizzaOptions(cat, name, price, id) {
+  modalData = {cat, name, price, id};
+  document.getElementById('optName').value = name;
+  document.getElementById('addInput').value = '';
+  document.getElementById('remInput').value = '';
+  document.getElementById('optQty').value = 1;
+  modalAdds = [];
+  modalRems = [];
+  renderPills();
+  optsModal.show();
+}
+
+function renderPills() {
+  document.getElementById('addsList').innerHTML = modalAdds.map((v, i) =>
+    `<span class="badge bg-primary">${v} <button type="button" class="btn-close btn-close-white ms-1" style="font-size: 0.6rem;" onclick="removeAdd(${i})"></button></span>`
+  ).join('');
+  document.getElementById('remsList').innerHTML = modalRems.map((v, i) =>
+    `<span class="badge bg-secondary">${v} <button type="button" class="btn-close btn-close-white ms-1" style="font-size: 0.6rem;" onclick="removeRem(${i})"></button></span>`
+  ).join('');
+}
+
+function removeAdd(idx) {
+  modalAdds.splice(idx, 1);
+  renderPills();
+}
+
+function removeRem(idx) {
+  modalRems.splice(idx, 1);
+  renderPills();
+}
+
+document.getElementById('addAddBtn').addEventListener('click', () => {
+  const v = document.getElementById('addInput').value.trim();
+  if (!v) return;
+  modalAdds.push(v);
+  document.getElementById('addInput').value = '';
+  renderPills();
+});
+
+document.getElementById('addRemBtn').addEventListener('click', () => {
+  const v = document.getElementById('remInput').value.trim();
+  if (!v) return;
+  modalRems.push(v);
+  document.getElementById('remInput').value = '';
+  renderPills();
+});
+
+document.getElementById('optAddBtn').addEventListener('click', () => {
+  const qty = parseInt(document.getElementById('optQty').value || '1', 10);
+  addToCart(modalData.cat, modalData.name, modalData.price, modalData.id, qty, modalAdds, modalRems);
+  optsModal.hide();
+});
+
+// Aggiorna resto quando cambia il pagato
+document.getElementById('pagatoCliente').addEventListener('input', aggiornaUI);
+
+// Genera ordine
+document.getElementById('btnGenerate').addEventListener('click', async () => {
+  const resEl = document.getElementById('result');
+  const tav = document.getElementById('tavolo').value.trim();
+  const cli = document.getElementById('cliente').value.trim();
+  const pay = document.getElementById('metodoPagamento').value.trim();
+  
+  if (!tav || !cli) {
+    resEl.innerHTML = '<div class="alert alert-danger">Inserisci numero tavolo e nome cliente.</div>';
+    return;
+  }
+  if (!pay) {
+    resEl.innerHTML = '<div class="alert alert-danger">Seleziona il metodo di pagamento.</div>';
+    return;
+  }
+  if (cart.length === 0) {
+    resEl.innerHTML = '<div class="alert alert-warning">Carrello vuoto.</div>';
+    return;
+  }
+  
+  resEl.innerHTML = '<div class="alert alert-info">Creazione ordine in corso...</div>';
+  const autoP = document.getElementById('autoPrint').checked;
+  
+  try {
+    const resp = await fetch('/genera', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        cart: cart, 
+        currency: currency, 
+        auto_print: autoP, 
+        tavolo: tav, 
+        cliente: cli, 
+        pagamento: pay 
+      })
+    });
+    
+    const js = await resp.json();
+    if (!resp.ok || !js.ok) {
+      resEl.innerHTML = '<div class="alert alert-danger">' + (js.error || 'Errore generazione.') + '</div>';
+      return;
+    }
+    
+    const hex = js.zip_base64;
+    const bytes = new Uint8Array(hex.length / 2);
+    for (let i = 0; i < bytes.length; i++) bytes[i] = parseInt(hex.substr(i * 2, 2), 16);
+    const blob = new Blob([bytes], { type: 'application/zip' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'scontrini_html.zip';
+    a.className = 'btn btn-outline-primary w-100 mt-2';
+    a.textContent = 'Scarica scontrini (HTML)';
+    
+    resEl.innerHTML = `<div class='alert alert-success'><strong>✅ Ordine ${js.codice_ordine} creato!</strong><br>Totale: ${js.totale_generale.toFixed(2)} ${currency}</div>`;
+    resEl.appendChild(a);
+    
+    // Svuota carrello
+    cart.length = 0;
+    aggiornaUI();
+  } catch (err) {
+    resEl.innerHTML = '<div class="alert alert-danger">Errore: ' + err + '</div>';
+  }
+});
+
+// Inizializza
+aggiornaUI();
+</script>
+</body>
+</html>

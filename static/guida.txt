@@ -1,0 +1,4 @@
+GUIDA RAPIDA
+- Modifica data/products.xlsx (foglio "products")
+- Colonne: category, name, price, active (1=visibile, 0=nascosto)
+- Gli ordini vengono registrati in data/ordini.xlsx con Tavolo e Cliente
