@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os, json, uuid, io, datetime
+import requests
 from flask import Flask, render_template, request, jsonify, redirect, url_for, flash
 from escpos_send import stampa_escpos_righe, carica_impostazioni
 from auth import login_user, save_token_to_session, clear_session, login_required, is_authenticated
@@ -298,12 +299,17 @@ def login_page():
     if is_authenticated():
         return redirect(url_for('home'))
     
+    # Crea dizionario config per template
+    cfg = {
+        'api_base_url': config.API_BASE_URL
+    }
+    
     if request.method == 'POST':
         username = request.form.get('username', '').strip()
         password = request.form.get('password', '').strip()
         
         if not username or not password:
-            return render_template('login.html', error='Username e password sono obbligatori')
+            return render_template('login.html', error='Username e password sono obbligatori', cfg=cfg)
         
         # Effettua il login tramite API
         success, token, error = login_user(username, password)
@@ -313,10 +319,42 @@ def login_page():
             save_token_to_session(token)
             return redirect(url_for('home'))
         else:
-            return render_template('login.html', error=error)
+            return render_template('login.html', error=error, cfg=cfg)
     
-    return render_template('login.html')
+    return render_template('login.html', cfg=cfg)
 
+@app.route('/api/save-api-url', methods=['POST'])
+def save_api_url_public():
+    """Salva l'URL dell'API senza richiedere autenticazione (usato dalla pagina login)"""
+    try:
+        data = request.get_json()
+        api_base_url = data.get('api_base_url', '').strip()
+        
+        if not api_base_url:
+            return jsonify({
+                'success': False,
+                'error': 'URL API richiesto'
+            }), 400
+        
+        # Rimuovi trailing slash se presente
+        api_base_url = api_base_url.rstrip('/')
+        
+        # Salva nel file .env
+        config.save_to_env_file('API_BASE_URL', api_base_url)
+        
+        # Ricarica la configurazione usando la funzione del modulo config
+        new_url = config.reload_api_config()
+        
+        return jsonify({
+            'success': True,
+            'message': f'Configurazione API salvata: {new_url}'
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
 
 @app.route('/logout')
 def logout():
@@ -525,6 +563,13 @@ def printer_config():
     """Pagina di configurazione stampanti"""
     return render_template('printer_config.html', cfg=config)
 
+@app.route('/settings')
+@login_required
+def settings():
+    """Pagina impostazioni"""
+    return render_template('settings.html', 
+                          cfg={'api_base_url': config.API_BASE_URL})
+
 @app.route('/api/printers/config', methods=['GET'])
 @login_required
 def api_get_printers():
@@ -643,6 +688,105 @@ def api_test_printer():
         return jsonify({
             'success': False,
             'error': str(e)
+        }), 500
+
+# ================== SETTINGS API ROUTES ==================
+
+@app.route('/api/settings/api', methods=['POST'])
+@login_required
+def api_save_api_settings():
+    """Salva la configurazione dell'URL dell'API"""
+    try:
+        data = request.get_json()
+        api_base_url = data.get('api_base_url', '').strip()
+        
+        if not api_base_url:
+            return jsonify({
+                'success': False,
+                'error': 'URL API richiesto'
+            }), 400
+        
+        # Rimuovi trailing slash se presente
+        api_base_url = api_base_url.rstrip('/')
+        
+        # Salva nel file .env
+        config.save_to_env_file('API_BASE_URL', api_base_url)
+        
+        # Ricarica la configurazione usando la funzione del modulo config
+        new_url = config.reload_api_config()
+        
+        # IMPORTANTE: Cancella la sessione quando cambi l'API URL dalle impostazioni
+        # Questo forza un nuovo login con la nuova configurazione
+        clear_session()
+        
+        return jsonify({
+            'success': True,
+            'message': f'Configurazione API salvata. Effettua nuovamente il login.',
+            'reload': True  # Segnala al frontend di ricaricare/reindirizzare al login
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@app.route('/api/settings/test', methods=['POST'])
+@login_required
+def api_test_connection():
+    """Testa la connessione all'API usando un endpoint reale"""
+    try:
+        data = request.get_json()
+        api_base_url = data.get('api_base_url', '').strip()
+        
+        if not api_base_url:
+            return jsonify({
+                'success': False,
+                'error': 'URL API richiesto'
+            }), 400
+        
+        # Rimuovi trailing slash se presente
+        api_base_url = api_base_url.rstrip('/')
+        
+        # Prova a connettersi usando l'endpoint delle categorie disponibili
+        # (pubblico, non richiede autenticazione)
+        test_url = f"{api_base_url}/v1/categories/available"
+        
+        response = requests.get(test_url, timeout=5)
+        
+        if response.status_code == 200:
+            try:
+                data = response.json()
+                return jsonify({
+                    'success': True,
+                    'message': f'✅ Connessione riuscita! Server API risponde correttamente.',
+                    'details': f'Trovate {len(data)} categorie'
+                })
+            except:
+                return jsonify({
+                    'success': True,
+                    'message': '✅ Connessione riuscita! Server API risponde correttamente.'
+                })
+        else:
+            return jsonify({
+                'success': False,
+                'error': f'Server raggiunto ma risposta non valida (status: {response.status_code})'
+            }), 400
+            
+    except requests.exceptions.Timeout:
+        return jsonify({
+            'success': False,
+            'error': 'Timeout: Il server non risponde entro 5 secondi'
+        }), 408
+    except requests.exceptions.ConnectionError:
+        return jsonify({
+            'success': False,
+            'error': 'Impossibile connettersi al server. Verifica l\'indirizzo IP e la porta.'
+        }), 503
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': f'Errore imprevisto: {str(e)}'
         }), 500
 
 # ========================================================

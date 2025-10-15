@@ -5,6 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f59e0b">
   <meta name="description" content="Sistema POS per ristoranti e eventi - MyCassa">
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" sizes="32x32" href="/static/assets/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/static/assets/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/static/assets/apple-touch-icon.png">
+  <link rel="manifest" href="/static/assets/site.webmanifest">
+  
   <title>Login - MyCassa</title>
   <script src="https://unpkg.com/lucide@latest"></script>
   <style>
@@ -293,12 +300,245 @@
       cursor: pointer;
       transition: all 0.2s;
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      color: var(--foreground);
+    }
+    
+    [data-theme="dark"] .theme-toggle {
+      background: var(--muted);
+      border-color: var(--primary);
+      box-shadow: 0 2px 8px rgba(245, 158, 11, 0.2);
     }
     
     .theme-toggle:hover {
       background: var(--accent);
       transform: scale(1.05);
+      border-color: var(--primary);
     }
+    
+    [data-theme="dark"] .theme-toggle:hover {
+      background: var(--primary);
+      color: var(--primary-foreground);
+      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+    }
+    
+    /* API Config Button - Same style as theme toggle */
+    .api-config-toggle {
+      position: fixed;
+      top: 1rem;
+      right: 4rem;
+      width: 2.5rem;
+      height: 2.5rem;
+      border-radius: 50%;
+      background: var(--card);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      color: var(--foreground);
+      z-index: 1000;
+    }
+    
+    [data-theme="dark"] .api-config-toggle {
+      background: var(--muted);
+      border-color: var(--primary);
+      box-shadow: 0 2px 8px rgba(245, 158, 11, 0.2);
+    }
+    
+    .api-config-toggle:hover {
+      background: var(--accent);
+      transform: scale(1.05);
+      border-color: var(--primary);
+    }
+    
+    [data-theme="dark"] .api-config-toggle:hover {
+      background: var(--primary);
+      color: var(--primary-foreground);
+      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+    }
+    
+    .api-config-toggle.active {
+      background: var(--primary);
+      color: var(--primary-foreground);
+      border-color: var(--primary);
+      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+    }
+    
+    /* API Config Card */
+    .api-config-card {
+      position: fixed;
+      top: 4.5rem;
+      right: 1rem;
+      width: 380px;
+      max-width: calc(100vw - 2rem);
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+      padding: 1.25rem;
+      display: none;
+      z-index: 999;
+      animation: slideDown 0.2s ease;
+    }
+    
+    [data-theme="dark"] .api-config-card {
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+    }
+    
+    .api-config-card.show {
+      display: block;
+    }
+    
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .api-card-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .api-card-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--foreground);
+    }
+    
+    .form-group-api {
+      margin-bottom: 1rem;
+    }
+    
+    .form-label-api {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+      color: var(--foreground);
+    }
+    
+    .form-input-api {
+      width: 100%;
+      padding: 0.625rem;
+      border: 1px solid var(--border);
+      border-radius: calc(var(--radius) - 2px);
+      background: var(--background);
+      color: var(--foreground);
+      font-size: 0.875rem;
+      transition: all 0.2s;
+    }
+    
+    .form-input-api:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+    }
+    
+    .form-help-api {
+      font-size: 0.75rem;
+      color: var(--muted-foreground);
+      margin-top: 0.25rem;
+    }
+    
+    .api-buttons {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: flex-end;
+    }
+    
+    .btn-api {
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: calc(var(--radius) - 2px);
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+    
+    .btn-api-test {
+      background: var(--secondary);
+      color: var(--secondary-foreground);
+      border: 1px solid var(--border);
+    }
+    
+    .btn-api-test:hover {
+      background: var(--accent);
+    }
+    
+    .btn-api-save {
+      background: var(--primary);
+      color: var(--primary-foreground);
+    }
+    
+    .btn-api-save:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(245, 158, 11, 0.3);
+    }
+    
+    .alert-api {
+      padding: 0.65rem;
+      border-radius: var(--radius);
+      margin-bottom: 0.75rem;
+      font-size: 0.8rem;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      line-height: 1.4;
+    }
+    
+    .alert-api-success {
+      background: rgba(34, 197, 94, 0.1);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      color: #16a34a;
+    }
+    
+    [data-theme="dark"] .alert-api-success {
+      background: rgba(34, 197, 94, 0.15);
+      border-color: rgba(34, 197, 94, 0.4);
+      color: #4ade80;
+    }
+    
+    .alert-api-error {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #dc2626;
+    }
+    
+    [data-theme="dark"] .alert-api-error {
+      background: rgba(239, 68, 68, 0.15);
+      border-color: rgba(239, 68, 68, 0.4);
+      color: #f87171;
+    }
+    
+    .alert-api-info {
+      background: rgba(59, 130, 246, 0.1);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      color: #2563eb;
+    }
+    
+    [data-theme="dark"] .alert-api-info {
+      background: rgba(59, 130, 246, 0.15);
+      border-color: rgba(59, 130, 246, 0.4);
+      color: #60a5fa;
+    }
+    
     
     @media (max-width: 480px) {
       body {
@@ -316,10 +556,32 @@
       .login-header h1 {
         font-size: 1.25rem;
       }
+      
+      .api-config-card {
+        top: 4.5rem;
+        right: 0.5rem;
+        left: 0.5rem;
+        width: auto;
+        max-width: none;
+      }
+      
+      .api-config-toggle {
+        right: 0.5rem;
+      }
+      
+      .theme-toggle {
+        right: 0.5rem;
+      }
     }
   </style>
 </head>
 <body>
+  <!-- API Config Button -->
+  <button class="api-config-toggle" onclick="toggleApiConfig()" aria-label="Configura API" title="Configura Server API">
+    <i data-lucide="server" style="width: 18px; height: 18px;"></i>
+  </button>
+  
+  <!-- Theme Toggle Button -->
   <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
     <i data-lucide="sun" style="width: 18px; height: 18px;"></i>
   </button>
@@ -402,6 +664,35 @@
     </div>
   </div>
   
+  <!-- API Configuration Card -->
+  <div class="api-config-card" id="apiConfigCard">
+    <div class="api-card-header">
+      <i data-lucide="server" style="width: 18px; height: 18px;"></i>
+      <h3 class="api-card-title">Configurazione API</h3>
+    </div>
+    
+    <div id="apiAlertContainer"></div>
+    
+    <div class="form-group-api">
+      <label class="form-label-api">URL Server API</label>
+      <input 
+        type="url" 
+        id="apiUrlInput" 
+        class="form-input-api" 
+        value="{{ cfg.api_base_url }}"
+        placeholder="http://192.168.1.100:4300"
+      >
+      <p class="form-help-api">Inserisci l'indirizzo completo del server API</p>
+    </div>
+    
+    <div class="api-buttons">
+      <button class="btn-api btn-api-save" onclick="saveApiConfig()" style="width: 100%;">
+        <i data-lucide="save" style="width: 14px; height: 14px;"></i>
+        Salva Configurazione
+      </button>
+    </div>
+  </div>
+  
   <script>
     // Wait for DOM to be ready
     document.addEventListener('DOMContentLoaded', function() {
@@ -416,16 +707,24 @@
       // Update theme toggle icon
       const themeToggle = document.querySelector('.theme-toggle');
       if (themeToggle) {
-        const icon = themeToggle.querySelector('i');
-        if (icon) {
-          icon.setAttribute('data-lucide', savedTheme === 'dark' ? 'moon' : 'sun');
-          lucide.createIcons();
-        }
+        updateThemeIcon(savedTheme);
       }
       
       // Load custom login icon
       loadCustomIcon();
     });
+    
+    // Funzione per aggiornare l'icona del tema
+    function updateThemeIcon(theme) {
+      const themeToggle = document.querySelector('.theme-toggle');
+      if (!themeToggle) return;
+      
+      const iconName = theme === 'dark' ? 'sun' : 'moon';
+      // Sostituisci completamente l'HTML dell'icona
+      themeToggle.innerHTML = `<i data-lucide="${iconName}" style="width: 18px; height: 18px;"></i>`;
+      // Ricrea le icone
+      lucide.createIcons();
+    }
     
     // Theme toggle functionality
     function toggleTheme() {
@@ -437,10 +736,7 @@
       localStorage.setItem('theme', newTheme);
       
       // Update icon
-      const themeToggle = document.querySelector('.theme-toggle');
-      const icon = themeToggle.querySelector('i');
-      icon.setAttribute('data-lucide', newTheme === 'dark' ? 'moon' : 'sun');
-      lucide.createIcons();
+      updateThemeIcon(newTheme);
     }
     
     // Load custom login icon
@@ -483,6 +779,82 @@
       };
       img.src = `/static/assets/images/login-icon.png?v=${timestamp}`;
     }
+    
+    // API Configuration Functions
+    function toggleApiConfig() {
+      console.log('toggleApiConfig called!');
+      const card = document.getElementById('apiConfigCard');
+      const btn = document.querySelector('.api-config-toggle');
+      
+      console.log('card:', card);
+      console.log('btn:', btn);
+      
+      if (!card || !btn) {
+        console.error('Card or button not found!');
+        return;
+      }
+      
+      if (card.classList.contains('show')) {
+        card.classList.remove('show');
+        btn.classList.remove('active');
+      } else {
+        card.classList.add('show');
+        btn.classList.add('active');
+        // Reinitialize icons when showing card
+        setTimeout(() => lucide.createIcons(), 10);
+      }
+    }
+    
+    async function saveApiConfig() {
+      const alertContainer = document.getElementById('apiAlertContainer');
+      const apiUrl = document.getElementById('apiUrlInput').value.trim();
+      
+      if (!apiUrl) {
+        alertContainer.innerHTML = '<div class="alert-api alert-api-error"><i data-lucide="x-circle" style="width: 14px; height: 14px;"></i> Inserisci l\'URL dell\'API</div>';
+        lucide.createIcons();
+        return;
+      }
+      
+      // Salvataggio diretto (senza test, perché richiede autenticazione)
+      alertContainer.innerHTML = '<div class="alert-api alert-api-info"><i data-lucide="loader-2" style="width: 14px; height: 14px;"></i> Salvataggio in corso...</div>';
+      lucide.createIcons();
+      
+      try {
+        const response = await fetch('/api/save-api-url', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ api_base_url: apiUrl })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          alertContainer.innerHTML = '<div class="alert-api alert-api-success"><i data-lucide="check-circle" style="width: 14px; height: 14px;"></i> ✅ Configurazione salvata! Ora puoi fare login.</div>';
+          setTimeout(() => {
+            alertContainer.innerHTML = '';
+            toggleApiConfig();
+          }, 2500);
+        } else {
+          alertContainer.innerHTML = `<div class="alert-api alert-api-error"><i data-lucide="x-circle" style="width: 14px; height: 14px;"></i> ${data.error || 'Errore nel salvataggio'}</div>`;
+        }
+        lucide.createIcons();
+      } catch (err) {
+        alertContainer.innerHTML = `<div class="alert-api alert-api-error"><i data-lucide="x-circle" style="width: 14px; height: 14px;"></i> Errore: ${err.message}</div>`;
+        lucide.createIcons();
+      }
+    }
+    
+    // Close API config card when clicking outside
+    document.addEventListener('click', function(event) {
+      const card = document.getElementById('apiConfigCard');
+      const btn = document.querySelector('.api-config-toggle');
+      
+      if (!card || !btn) return;
+      
+      if (!card.contains(event.target) && !btn.contains(event.target) && card.classList.contains('show')) {
+        toggleApiConfig();
+      }
+    });
   </script>
 </body>
 </html>

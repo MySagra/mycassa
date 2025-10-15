@@ -8,8 +8,13 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="MyCassa">
-  <link rel="manifest" href="/static/manifest.json">
-  <link rel="apple-touch-icon" href="/static/icon-192.png">
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" sizes="32x32" href="/static/assets/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/static/assets/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/static/assets/apple-touch-icon.png">
+  <link rel="manifest" href="/static/assets/site.webmanifest">
+  
   <title>MyCassa</title>
   <script src="https://unpkg.com/lucide@latest"></script>
   <style>
@@ -214,6 +219,10 @@
       font-weight: 500;
       cursor: pointer;
       transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
     }
     
     .btn-icon {
@@ -320,15 +329,15 @@
     }
     
     .product-name {
-      font-size: 0.8rem;
+      font-size: 1rem;
       font-weight: 500;
       color: var(--foreground);
-      margin-bottom: 0.2rem;
+      margin-bottom: 0.3rem;
       line-height: 1.2;
     }
     
     .product-price {
-      font-size: 0.95rem;
+      font-size: 1.15rem;
       font-weight: 700;
       color: var(--primary);
     }
@@ -641,11 +650,11 @@
       }
       
       .product-name {
-        font-size: 0.75rem;
+        font-size: 0.9rem;
       }
       
       .product-price {
-        font-size: 0.875rem;
+        font-size: 1.05rem;
       }
     }
     
@@ -954,8 +963,8 @@
     <div class="header">
       <h1><i data-lucide="pizza" style="width: 24px; height: 24px; vertical-align: middle;"></i> MyCassa</h1>
       <div class="header-actions">
-        <a href="{{ url_for('printer_config') }}" class="btn btn-secondary" title="Configurazione Stampanti">
-          <i data-lucide="printer" style="width: 18px; height: 18px;"></i>
+        <a href="{{ url_for('settings') }}" class="btn btn-secondary" title="Impostazioni">
+          <i data-lucide="settings" style="width: 18px; height: 18px;"></i>
         </a>
         <button id="themeToggle" class="btn btn-secondary btn-icon" title="Toggle Dark Mode">
           <i data-lucide="moon" id="themeIcon" style="width: 18px; height: 18px;"></i>
@@ -1679,14 +1688,21 @@ document.getElementById('pagatoCliente').addEventListener('input', updateChange)
 
 // Dark mode toggle
 const themeToggle = document.getElementById('themeToggle');
-const themeIcon = document.getElementById('themeIcon');
 const html = document.documentElement;
+
+// Funzione per aggiornare l'icona del tema
+function updateThemeIcon(theme) {
+  const iconName = theme === 'dark' ? 'sun' : 'moon';
+  // Sostituisci completamente l'HTML dell'icona
+  themeToggle.innerHTML = `<i data-lucide="${iconName}" style="width: 18px; height: 18px;"></i>`;
+  // Ricrea le icone
+  lucide.createIcons();
+}
 
 // Check for saved theme preference or default to light mode
 const currentTheme = localStorage.getItem('theme') || 'light';
 html.setAttribute('data-theme', currentTheme);
-themeIcon.setAttribute('data-lucide', currentTheme === 'dark' ? 'sun' : 'moon');
-lucide.createIcons();
+updateThemeIcon(currentTheme);
 
 themeToggle.addEventListener('click', () => {
   const theme = html.getAttribute('data-theme');
@@ -1694,8 +1710,7 @@ themeToggle.addEventListener('click', () => {
   
   html.setAttribute('data-theme', newTheme);
   localStorage.setItem('theme', newTheme);
-  themeIcon.setAttribute('data-lucide', newTheme === 'dark' ? 'sun' : 'moon');
-  lucide.createIcons();
+  updateThemeIcon(newTheme);
 });
 
 // Initialize
