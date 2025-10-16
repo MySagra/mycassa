@@ -12,66 +12,11 @@
   <link rel="manifest" href="/static/assets/site.webmanifest">
   
   <title>Impostazioni - MyCassa</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
   <script src="https://unpkg.com/lucide@latest"></script>
   <style>
-    :root {
-      --radius: 0.65rem;
-      --background: oklch(1 0 0);
-      --foreground: oklch(0.141 0.005 285.823);
-      --card: oklch(1 0 0);
-      --card-foreground: oklch(0.141 0.005 285.823);
-      --popover: oklch(1 0 0);
-      --popover-foreground: oklch(0.141 0.005 285.823);
-      --primary: oklch(0.795 0.184 86.047);
-      --primary-foreground: oklch(0.421 0.095 57.708);
-      --secondary: oklch(0.967 0.001 286.375);
-      --secondary-foreground: oklch(0.21 0.006 285.885);
-      --muted: oklch(0.967 0.001 286.375);
-      --muted-foreground: oklch(0.552 0.016 285.938);
-      --accent: oklch(0.967 0.001 286.375);
-      --accent-foreground: oklch(0.21 0.006 285.885);
-      --destructive: oklch(0.577 0.245 27.325);
-      --border: oklch(0.92 0.004 286.32);
-      --input: oklch(0.92 0.004 286.32);
-      --ring: oklch(0.795 0.184 86.047);
-      --sidebar: oklch(0.985 0 0);
-      --sidebar-foreground: oklch(0.141 0.005 285.823);
-    }
-    
-    [data-theme="dark"] {
-      --background: oklch(0.141 0.005 285.823);
-      --foreground: oklch(0.98 0 0);
-      --card: oklch(0.18 0.007 285.823);
-      --card-foreground: oklch(0.98 0 0);
-      --popover: oklch(0.18 0.007 285.823);
-      --popover-foreground: oklch(0.98 0 0);
-      --primary: oklch(0.795 0.184 86.047);
-      --primary-foreground: oklch(0.421 0.095 57.708);
-      --secondary: oklch(0.22 0.01 285.823);
-      --secondary-foreground: oklch(0.98 0 0);
-      --muted: oklch(0.22 0.01 285.823);
-      --muted-foreground: oklch(0.65 0.015 285.938);
-      --accent: oklch(0.22 0.01 285.823);
-      --accent-foreground: oklch(0.98 0 0);
-      --destructive: oklch(0.577 0.245 27.325);
-      --border: oklch(0.25 0.012 285.82);
-      --input: oklch(0.25 0.012 285.82);
-      --ring: oklch(0.795 0.184 86.047);
-      --sidebar: oklch(0.18 0.007 285.823);
-      --sidebar-foreground: oklch(0.98 0 0);
-    }
-    
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    
+    /* Stili specifici per la pagina impostazioni */
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-      background: var(--background);
-      color: var(--foreground);
-      line-height: 1.5;
       height: 100vh;
       overflow: hidden;
       display: flex;
@@ -79,13 +24,10 @@
     }
     
     .header {
-      background: var(--card);
       border-bottom: 1px solid var(--border);
       padding: 0.5rem 1rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
       box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      margin: 0;
     }
     
     .header h1 {
@@ -105,44 +47,6 @@
       display: flex;
       align-items: center;
       gap: 0.5rem;
-    }
-    
-    .btn {
-      padding: 0.4rem 0.75rem;
-      border-radius: var(--radius);
-      border: none;
-      font-size: 0.8rem;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.2s;
-      text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.25rem;
-    }
-    
-    .btn-icon {
-      padding: 0.4rem;
-      width: 2rem;
-      height: 2rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1rem;
-    }
-    
-    .btn-primary {
-      background: var(--primary);
-      color: var(--primary-foreground);
-    }
-    
-    .btn-primary:hover {
-      opacity: 0.9;
-    }
-    
-    .btn-secondary {
-      background: var(--secondary);
-      color: var(--secondary-foreground);
     }
     
     .btn-destructive {
@@ -287,34 +191,6 @@
       color: var(--foreground);
     }
     
-    .form-group {
-      margin-bottom: 1rem;
-    }
-    
-    .form-label {
-      display: block;
-      font-size: 0.875rem;
-      font-weight: 500;
-      margin-bottom: 0.35rem;
-      color: var(--foreground);
-    }
-    
-    .form-input {
-      width: 100%;
-      padding: 0.5rem 0.75rem;
-      border: 1px solid var(--input);
-      border-radius: var(--radius);
-      font-size: 0.875rem;
-      background: var(--background);
-      color: var(--foreground);
-    }
-    
-    .form-input:focus {
-      outline: none;
-      border-color: var(--ring);
-      box-shadow: 0 0 0 2px rgba(205, 180, 100, 0.1);
-    }
-    
     .form-help {
       font-size: 0.75rem;
       color: var(--muted-foreground);
@@ -378,34 +254,6 @@
     
     .btn-add-printer:hover {
       opacity: 0.9;
-    }
-    
-    .alert {
-      padding: 0.875rem 1rem;
-      border-radius: var(--radius);
-      margin-bottom: 1rem;
-      font-size: 0.875rem;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-    
-    .alert-success {
-      background: rgba(34, 197, 94, 0.1);
-      border: 1px solid rgba(34, 197, 94, 0.3);
-      color: #16a34a;
-    }
-    
-    .alert-error {
-      background: rgba(239, 68, 68, 0.1);
-      border: 1px solid rgba(239, 68, 68, 0.3);
-      color: #dc2626;
-    }
-    
-    .alert-info {
-      background: rgba(59, 130, 246, 0.1);
-      border: 1px solid rgba(59, 130, 246, 0.3);
-      color: #2563eb;
     }
     
     /* Printer specific styles */
@@ -558,14 +406,6 @@
       background: #ef4444;
     }
     
-    .status-active {
-      background: #22c55e;
-    }
-    
-    .status-inactive {
-      background: #ef4444;
-    }
-    
     .printer-card.collapsed .printer-body {
       display: none;
     }
@@ -574,25 +414,6 @@
       border-bottom: none;
       margin-bottom: 0;
       padding-bottom: 0;
-    }
-    
-    .btn-collapse {
-      background: transparent;
-      border: none;
-      color: var(--foreground);
-      cursor: pointer;
-      font-size: 1.25rem;
-      padding: 0;
-      width: 2rem;
-      height: 2rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: transform 0.2s;
-    }
-    
-    .printer-card.collapsed .btn-collapse {
-      transform: rotate(-90deg);
     }
     
     @media (max-width: 768px) {

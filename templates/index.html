@@ -16,97 +16,15 @@
   <link rel="manifest" href="/static/assets/site.webmanifest">
   
   <title>MyCassa</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
   <script src="https://unpkg.com/lucide@latest"></script>
   <style>
-    :root {
-      --radius: 0.65rem;
-      --background: oklch(1 0 0);
-      --foreground: oklch(0.141 0.005 285.823);
-      --card: oklch(1 0 0);
-      --card-foreground: oklch(0.141 0.005 285.823);
-      --popover: oklch(1 0 0);
-      --popover-foreground: oklch(0.141 0.005 285.823);
-      --primary: oklch(0.795 0.184 86.047);
-      --primary-foreground: oklch(0.421 0.095 57.708);
-      --secondary: oklch(0.967 0.001 286.375);
-      --secondary-foreground: oklch(0.21 0.006 285.885);
-      --muted: oklch(0.967 0.001 286.375);
-      --muted-foreground: oklch(0.552 0.016 285.938);
-      --accent: oklch(0.967 0.001 286.375);
-      --accent-foreground: oklch(0.21 0.006 285.885);
-      --destructive: oklch(0.577 0.245 27.325);
-      --border: oklch(0.92 0.004 286.32);
-      --input: oklch(0.92 0.004 286.32);
-      --ring: oklch(0.795 0.184 86.047);
-      --sidebar: oklch(0.985 0 0);
-      --sidebar-foreground: oklch(0.141 0.005 285.823);
-    }
-    
-    [data-theme="dark"] {
-      --background: oklch(0.141 0.005 285.823);
-      --foreground: oklch(0.98 0 0);
-      --card: oklch(0.18 0.007 285.823);
-      --card-foreground: oklch(0.98 0 0);
-      --popover: oklch(0.18 0.007 285.823);
-      --popover-foreground: oklch(0.98 0 0);
-      --primary: oklch(0.795 0.184 86.047);
-      --primary-foreground: oklch(0.421 0.095 57.708);
-      --secondary: oklch(0.22 0.01 285.823);
-      --secondary-foreground: oklch(0.98 0 0);
-      --muted: oklch(0.22 0.01 285.823);
-      --muted-foreground: oklch(0.65 0.015 285.938);
-      --accent: oklch(0.22 0.01 285.823);
-      --accent-foreground: oklch(0.98 0 0);
-      --destructive: oklch(0.577 0.245 27.325);
-      --border: oklch(0.25 0.012 285.82);
-      --input: oklch(0.25 0.012 285.82);
-      --ring: oklch(0.795 0.184 86.047);
-      --sidebar: oklch(0.18 0.007 285.823);
-      --sidebar-foreground: oklch(0.98 0 0);
-    }
-    
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    
+    /* Stili specifici per la pagina principale */
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-      background: var(--background);
-      color: var(--foreground);
-      line-height: 1.5;
       height: 100vh;
       overflow: hidden;
       display: flex;
       flex-direction: column;
-    }
-    
-    /* Custom Scrollbar Styles */
-    ::-webkit-scrollbar {
-      width: 8px;
-      height: 8px;
-    }
-    
-    ::-webkit-scrollbar-track {
-      background: var(--muted);
-      border-radius: 4px;
-    }
-    
-    ::-webkit-scrollbar-thumb {
-      background: var(--border);
-      border-radius: 4px;
-      transition: background 0.2s;
-    }
-    
-    ::-webkit-scrollbar-thumb:hover {
-      background: var(--primary);
-    }
-    
-    /* Firefox */
-    * {
-      scrollbar-width: thin;
-      scrollbar-color: var(--border) var(--muted);
     }
     
     .main-wrapper {
@@ -188,71 +106,7 @@
     }
     
     .header {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 0.5rem 1rem;
       margin: 1rem 1rem 1rem 1rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    }
-    
-    .header h1 {
-      font-size: 1rem;
-      font-weight: 600;
-      color: var(--foreground);
-    }
-    
-    .header-actions {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-    
-    .btn {
-      padding: 0.4rem 0.75rem;
-      border-radius: var(--radius);
-      border: none;
-      font-size: 0.8rem;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.2s;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
-    }
-    
-    .btn-icon {
-      padding: 0.4rem;
-      width: 2rem;
-      height: 2rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1rem;
-    }
-    
-    .btn-primary {
-      background: var(--primary);
-      color: var(--primary-foreground);
-    }
-    
-    .btn-primary:hover {
-      opacity: 0.9;
-    }
-    
-    .btn-secondary {
-      background: var(--secondary);
-      color: var(--secondary-foreground);
-    }
-    
-    .btn-secondary.active {
-      background: var(--primary);
-      color: var(--primary-foreground);
-      font-weight: 600;
     }
     
     .container {
@@ -540,6 +394,117 @@
     .btn-generate:disabled {
       opacity: 0.5;
       cursor: not-allowed;
+    }
+    
+    /* Validation Tooltip */
+    .validation-tooltip {
+      position: fixed;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+      z-index: 10000;
+      min-width: 280px;
+      max-width: 350px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s, transform 0.2s;
+    }
+    
+    .validation-tooltip.show {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateX(0) !important;
+    }
+    
+    /* Arrow pointing right from bottom-right corner (when tooltip is on left) */
+    .validation-tooltip[data-position="left"]::after {
+      content: '';
+      position: absolute;
+      bottom: 1rem;
+      left: 100%;
+      border: 8px solid transparent;
+      border-left-color: var(--card);
+    }
+    
+    .validation-tooltip[data-position="left"]::before {
+      content: '';
+      position: absolute;
+      bottom: 1rem;
+      left: 100%;
+      border: 9px solid transparent;
+      border-left-color: var(--border);
+      margin-left: 1px;
+      z-index: -1;
+    }
+    
+    /* Arrow pointing left from bottom-left corner (when tooltip is on right) */
+    .validation-tooltip[data-position="right"]::after {
+      content: '';
+      position: absolute;
+      bottom: 1rem;
+      right: 100%;
+      border: 8px solid transparent;
+      border-right-color: var(--card);
+    }
+    
+    .validation-tooltip[data-position="right"]::before {
+      content: '';
+      position: absolute;
+      bottom: 1rem;
+      right: 100%;
+      border: 9px solid transparent;
+      border-right-color: var(--border);
+      margin-right: 1px;
+      z-index: -1;
+    }
+    
+    .validation-tooltip-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: #dc2626;
+      font-weight: 600;
+      font-size: 0.875rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    [data-theme="dark"] .validation-tooltip-header {
+      color: #f87171;
+    }
+    
+    .validation-tooltip-header i {
+      flex-shrink: 0;
+    }
+    
+    .validation-tooltip-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    
+    .validation-tooltip-item {
+      font-size: 0.8rem;
+      color: var(--muted-foreground);
+      padding: 0.25rem 0;
+      padding-left: 1.25rem;
+      position: relative;
+    }
+    
+    .validation-tooltip-item::before {
+      content: '•';
+      position: absolute;
+      left: 0.5rem;
+      color: #dc2626;
+    }
+    
+    [data-theme="dark"] .validation-tooltip-item::before {
+      color: #f87171;
+    }
+    
+    .btn-generate-wrapper {
+      position: relative;
     }
     
     .btn-download {
@@ -1603,25 +1568,85 @@ function decreaseQty(idx) {
   updateUI();
 }
 
+// Validate and show tooltip
+function validateOrder() {
+  const errors = [];
+  const tavolo = document.getElementById('tavolo').value.trim();
+  const cliente = document.getElementById('cliente').value.trim();
+  
+  if (!cliente) errors.push('Inserisci il nome del cliente');
+  if (!tavolo) errors.push('Inserisci il numero tavolo');
+  if (cart.length === 0) errors.push('Aggiungi almeno un prodotto al carrello');
+  if (!selectedPayment) errors.push('Seleziona un metodo di pagamento');
+  
+  return errors;
+}
+
+function showValidationTooltip(errors) {
+  const tooltip = document.getElementById('validationTooltip');
+  const list = document.getElementById('validationList');
+  const button = document.getElementById('btnGenerate');
+  
+  list.innerHTML = errors.map(err => `<li class="validation-tooltip-item">${err}</li>`).join('');
+  
+  // Calculate button position
+  const buttonRect = button.getBoundingClientRect();
+  const tooltipWidth = 320; // approximate width
+  const gap = 16;
+  
+  // Calculate left position
+  let leftPos = buttonRect.left - tooltipWidth - gap;
+  
+  // Check if tooltip goes off screen on the left
+  if (leftPos < gap) {
+    // Position to the right of the button instead
+    leftPos = buttonRect.right + gap;
+    tooltip.setAttribute('data-position', 'right');
+  } else {
+    tooltip.setAttribute('data-position', 'left');
+  }
+  
+  // Position tooltip - align bottom with button, with the arrow at bottom right
+  tooltip.style.bottom = `${window.innerHeight - buttonRect.bottom}px`;
+  tooltip.style.top = 'auto';
+  tooltip.style.left = `${leftPos}px`;
+  
+  // Add show class (animation will handle the rest)
+  tooltip.classList.add('show');
+  // Don't show overlay - removed: overlay.classList.add('show');
+  
+  // Reinitialize icons
+  lucide.createIcons();
+  
+  // Hide after 3 seconds
+  setTimeout(() => {
+    hideValidationTooltip();
+  }, 3000);
+}
+
+function hideValidationTooltip() {
+  const tooltip = document.getElementById('validationTooltip');
+  tooltip.classList.remove('show');
+}
+
+// Add event listeners to hide tooltip when user starts fixing errors
+document.getElementById('cliente').addEventListener('input', hideValidationTooltip);
+document.getElementById('tavolo').addEventListener('input', hideValidationTooltip);
+
 // Generate order
 document.getElementById('btnGenerate').addEventListener('click', async () => {
   const resEl = document.getElementById('result');
   const tavolo = document.getElementById('tavolo').value.trim();
   const cliente = document.getElementById('cliente').value.trim();
 
-  if (!tavolo || !cliente) {
-    resEl.innerHTML = '<div class="alert alert-error">Inserisci tavolo e cliente</div>';
+  // Validate
+  const errors = validateOrder();
+  if (errors.length > 0) {
+    showValidationTooltip(errors);
     return;
   }
-  if (!selectedPayment) {
-    resEl.innerHTML = '<div class="alert alert-error">Seleziona metodo di pagamento</div>';
-    return;
-  }
-  if (cart.length === 0) {
-    resEl.innerHTML = '<div class="alert alert-error">Carrello vuoto</div>';
-    return;
-  }
-
+  
+  hideValidationTooltip();
   resEl.innerHTML = '<div class="alert">Creazione ordine...</div>';
   const autoPrint = document.getElementById('autoPrint').checked;
 
@@ -2026,5 +2051,15 @@ window.addEventListener('beforeinstallprompt', (e) => {
 });
 
 </script>
+
+<!-- Validation Tooltip -->
+<div id="validationTooltip" class="validation-tooltip">
+  <div class="validation-tooltip-header">
+    <i data-lucide="alert-circle" style="width: 16px; height: 16px;"></i>
+    <span>Compila i campi mancanti</span>
+  </div>
+  <ul class="validation-tooltip-list" id="validationList"></ul>
+</div>
+
 </body>
 </html>

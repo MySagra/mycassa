@@ -734,7 +734,7 @@ def api_save_api_settings():
 @app.route('/api/settings/test', methods=['POST'])
 @login_required
 def api_test_connection():
-    """Testa la connessione all'API usando un endpoint reale"""
+    """Testa la connessione all'API usando l'endpoint /health"""
     try:
         data = request.get_json()
         api_base_url = data.get('api_base_url', '').strip()
@@ -748,40 +748,49 @@ def api_test_connection():
         # Rimuovi trailing slash se presente
         api_base_url = api_base_url.rstrip('/')
         
-        # Prova a connettersi usando l'endpoint delle categorie disponibili
-        # (pubblico, non richiede autenticazione)
-        test_url = f"{api_base_url}/v1/categories/available"
+        # Usa l'endpoint /health per verificare lo stato del server
+        health_url = f"{api_base_url}/health"
         
-        response = requests.get(test_url, timeout=5)
+        response = requests.get(health_url, timeout=5)
         
         if response.status_code == 200:
             try:
-                data = response.json()
+                health_data = response.json()
+                status = health_data.get('status', 'unknown')
+                
+                if status == 'ok':
+                    uptime = health_data.get('uptime', 0)
+                    uptime_str = f"{uptime:.1f}s" if uptime < 60 else f"{uptime/60:.1f}m"
+                    return jsonify({
+                        'success': True,
+                        'message': f'✅ Connessione riuscita! Server API operativo.',
+                        'details': f'Status: {status} | Uptime: {uptime_str}'
+                    })
+                else:
+                    return jsonify({
+                        'success': False,
+                        'error': f'⚠️ Server raggiunto ma status non valido: {status}'
+                    }), 400
+            except Exception as parse_error:
                 return jsonify({
-                    'success': True,
-                    'message': f'✅ Connessione riuscita! Server API risponde correttamente.',
-                    'details': f'Trovate {len(data)} categorie'
-                })
-            except:
-                return jsonify({
-                    'success': True,
-                    'message': '✅ Connessione riuscita! Server API risponde correttamente.'
-                })
+                    'success': False,
+                    'error': f'Server raggiunto ma risposta non valida: {str(parse_error)}'
+                }), 400
         else:
             return jsonify({
                 'success': False,
-                'error': f'Server raggiunto ma risposta non valida (status: {response.status_code})'
+                'error': f'Server raggiunto ma risposta non valida (HTTP {response.status_code})'
             }), 400
             
     except requests.exceptions.Timeout:
         return jsonify({
             'success': False,
-            'error': 'Timeout: Il server non risponde entro 5 secondi'
+            'error': '⏱️ Timeout: Il server non risponde entro 5 secondi'
         }), 408
     except requests.exceptions.ConnectionError:
         return jsonify({
             'success': False,
-            'error': 'Impossibile connettersi al server. Verifica l\'indirizzo IP e la porta.'
+            'error': '🔌 Server non raggiungibile. Verifica l\'indirizzo IP e la porta.'
         }), 503
     except Exception as e:
         return jsonify({
