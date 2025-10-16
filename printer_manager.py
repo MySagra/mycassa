@@ -1,12 +1,12 @@
 """
-Printer Manager - Gestisce la configurazione delle stampanti ESC/POS
+Printer Manager - Gestisce la configurazione delle stampanti ESC/POS.
 """
-
 import json
 import os
-from typing import List, Dict, Optional
+from typing import Dict, List, Optional
 
 CONFIG_FILE = 'data/printer_config.json'
+
 
 def ensure_data_dir():
     """Assicura che la directory data esista"""
@@ -14,10 +14,10 @@ def ensure_data_dir():
 
 def load_printer_config() -> List[Dict]:
     """
-    Carica la configurazione delle stampanti dal file JSON
+    Carica la configurazione delle stampanti dal file JSON.
     
     Returns:
-        Lista di dizionari con configurazione stampanti
+        List[Dict]: Lista di dizionari con configurazione stampanti
     """
     ensure_data_dir()
     
@@ -34,13 +34,13 @@ def load_printer_config() -> List[Dict]:
 
 def save_printer_config(printers: List[Dict]) -> bool:
     """
-    Salva la configurazione delle stampanti nel file JSON
+    Salva la configurazione delle stampanti nel file JSON.
     
     Args:
         printers: Lista di dizionari con configurazione stampanti
     
     Returns:
-        True se il salvataggio è riuscito, False altrimenti
+        bool: True se il salvataggio è riuscito, False altrimenti
     """
     ensure_data_dir()
     
@@ -54,13 +54,13 @@ def save_printer_config(printers: List[Dict]) -> bool:
 
 def get_printers_for_category(category_id: int) -> List[Dict]:
     """
-    Ottiene tutte le stampanti che devono stampare una specifica categoria
+    Ottiene tutte le stampanti che devono stampare una specifica categoria.
     
     Args:
         category_id: ID della categoria
     
     Returns:
-        Lista di stampanti configurate per quella categoria
+        List[Dict]: Lista di stampanti configurate per quella categoria
     """
     printers = load_printer_config()
     

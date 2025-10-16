@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 """
-Modulo per la gestione dell'autenticazione con JWT
+Modulo per la gestione dell'autenticazione con JWT.
 """
-import requests
-from flask import session, redirect, url_for
 from functools import wraps
+
+import requests
+from flask import redirect, session, url_for
+
 from config import API_LOGIN, API_TIMEOUT
 
 

@@ -507,6 +507,133 @@
       position: relative;
     }
     
+    /* Success Tooltip (same structure as validation tooltip but green) */
+    .success-tooltip {
+      position: fixed;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+      z-index: 10000;
+      min-width: 280px;
+      max-width: 350px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s, transform 0.2s;
+    }
+    
+    .success-tooltip.show {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateX(0) !important;
+    }
+    
+    /* Arrow pointing right from bottom-right corner (when tooltip is on left) */
+    .success-tooltip[data-position="left"]::after {
+      content: '';
+      position: absolute;
+      bottom: 1rem;
+      left: 100%;
+      border: 8px solid transparent;
+      border-left-color: var(--card);
+    }
+    
+    .success-tooltip[data-position="left"]::before {
+      content: '';
+      position: absolute;
+      bottom: 1rem;
+      left: 100%;
+      border: 9px solid transparent;
+      border-left-color: var(--border);
+      margin-left: 1px;
+      z-index: -1;
+    }
+    
+    /* Arrow pointing left from bottom-left corner (when tooltip is on right) */
+    .success-tooltip[data-position="right"]::after {
+      content: '';
+      position: absolute;
+      bottom: 1rem;
+      right: 100%;
+      border: 8px solid transparent;
+      border-right-color: var(--card);
+    }
+    
+    .success-tooltip[data-position="right"]::before {
+      content: '';
+      position: absolute;
+      bottom: 1rem;
+      right: 100%;
+      border: 9px solid transparent;
+      border-right-color: var(--border);
+      margin-right: 1px;
+      z-index: -1;
+    }
+    
+    .success-tooltip-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: #16a34a;
+      font-weight: 600;
+      font-size: 0.875rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    [data-theme="dark"] .success-tooltip-header {
+      color: #4ade80;
+    }
+    
+    .success-tooltip-header i {
+      flex-shrink: 0;
+    }
+    
+    .success-tooltip-content {
+      font-size: 0.8rem;
+      color: var(--muted-foreground);
+      margin-bottom: 0.75rem;
+    }
+    
+    .success-tooltip-content:empty {
+      margin-bottom: 0;
+    }
+    
+    [data-theme="dark"] .success-tooltip-header.error-state {
+      color: #f87171;
+    }
+    
+    .success-tooltip .btn-download {
+      width: 100%;
+      padding: 0.75rem;
+      background: var(--primary);
+      color: var(--primary-foreground);
+      border: none;
+      border-radius: var(--radius);
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+    
+    .success-tooltip .btn-download:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+    }
+    
+    @keyframes spin {
+      from {
+        transform: rotate(0deg);
+      }
+      to {
+        transform: rotate(360deg);
+      }
+    }
+    
     .btn-download {
       width: 100%;
       padding: 0.75rem;
@@ -1629,6 +1756,147 @@ function hideValidationTooltip() {
   tooltip.classList.remove('show');
 }
 
+function showLoadingTooltip() {
+  const tooltip = document.getElementById('successTooltip');
+  const content = document.getElementById('successContent');
+  const downloadBtnContainer = document.getElementById('successDownloadBtn');
+  const button = document.getElementById('btnGenerate');
+  const header = tooltip.querySelector('.success-tooltip-header');
+  
+  // Change header to loading state
+  header.innerHTML = '<i data-lucide="loader" style="width: 16px; height: 16px; animation: spin 1s linear infinite;"></i><span>Creazione ordine in corso...</span>';
+  
+  // Clear content and download button
+  content.innerHTML = '';
+  downloadBtnContainer.innerHTML = '';
+  
+  // Calculate button position
+  const buttonRect = button.getBoundingClientRect();
+  const tooltipWidth = 320; // approximate width
+  const gap = 16;
+  
+  // Calculate left position
+  let leftPos = buttonRect.left - tooltipWidth - gap;
+  
+  // Check if tooltip goes off screen on the left
+  if (leftPos < gap) {
+    // Position to the right of the button instead
+    leftPos = buttonRect.right + gap;
+    tooltip.setAttribute('data-position', 'right');
+  } else {
+    tooltip.setAttribute('data-position', 'left');
+  }
+  
+  // Position tooltip - align bottom with button, with the arrow at bottom right
+  tooltip.style.bottom = `${window.innerHeight - buttonRect.bottom}px`;
+  tooltip.style.top = 'auto';
+  tooltip.style.left = `${leftPos}px`;
+  
+  // Add show class (animation will handle the rest)
+  tooltip.classList.add('show');
+  
+  // Reinitialize icons
+  lucide.createIcons();
+}
+
+function showErrorTooltip(errorMessage) {
+  const tooltip = document.getElementById('successTooltip');
+  const content = document.getElementById('successContent');
+  const downloadBtnContainer = document.getElementById('successDownloadBtn');
+  const button = document.getElementById('btnGenerate');
+  const header = tooltip.querySelector('.success-tooltip-header');
+  
+  // Change header to error state
+  header.innerHTML = '<i data-lucide="alert-circle" style="width: 16px; height: 16px;"></i><span>Errore nella creazione</span>';
+  header.style.color = '#dc2626';
+  header.classList.add('error-state');
+  
+  // Set error content
+  content.innerHTML = errorMessage;
+  content.style.color = 'var(--foreground)';
+  
+  // Clear download button
+  downloadBtnContainer.innerHTML = '';
+  
+  // Recalculate position (important for proper display)
+  const buttonRect = button.getBoundingClientRect();
+  const tooltipWidth = 320;
+  const gap = 16;
+  
+  let leftPos = buttonRect.left - tooltipWidth - gap;
+  
+  if (leftPos < gap) {
+    leftPos = buttonRect.right + gap;
+    tooltip.setAttribute('data-position', 'right');
+  } else {
+    tooltip.setAttribute('data-position', 'left');
+  }
+  
+  tooltip.style.bottom = `${window.innerHeight - buttonRect.bottom}px`;
+  tooltip.style.top = 'auto';
+  tooltip.style.left = `${leftPos}px`;
+  
+  // Ensure tooltip is visible
+  tooltip.classList.add('show');
+  
+  // Reinitialize icons
+  lucide.createIcons();
+  
+  // Auto hide after 3 seconds
+  setTimeout(() => {
+    hideSuccessTooltip();
+  }, 3000);
+}
+
+function showSuccessTooltip(codiceOrdine, totale, zipBase64) {
+  const tooltip = document.getElementById('successTooltip');
+  const content = document.getElementById('successContent');
+  const downloadBtnContainer = document.getElementById('successDownloadBtn');
+  const header = tooltip.querySelector('.success-tooltip-header');
+  
+  // Restore header to success state
+  header.innerHTML = '<i data-lucide="check-circle" style="width: 16px; height: 16px;"></i><span>Ordine creato con successo!</span>';
+  header.style.color = ''; // Reset to default (green from CSS)
+  header.classList.remove('error-state');
+  
+  // Set content
+  content.innerHTML = `Ordine <strong>${codiceOrdine}</strong><br>Totale: <strong>${totale.toFixed(2)} ${currency}</strong>`;
+  content.style.color = ''; // Reset to default
+  
+  // Create download button
+  const hex = zipBase64;
+  const bytes = new Uint8Array(hex.length / 2);
+  for (let i = 0; i < bytes.length; i++) bytes[i] = parseInt(hex.substr(i * 2, 2), 16);
+  const blob = new Blob([bytes], { type: 'application/zip' });
+  const url = URL.createObjectURL(blob);
+  
+  const btnDownload = document.createElement('button');
+  btnDownload.className = 'btn-download';
+  btnDownload.innerHTML = '<i data-lucide="download" style="width: 16px; height: 16px;"></i> Scarica scontrini (HTML)';
+  btnDownload.onclick = () => {
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'scontrini_html.zip';
+    a.click();
+  };
+  
+  downloadBtnContainer.innerHTML = '';
+  downloadBtnContainer.appendChild(btnDownload);
+  
+  // Reinitialize icons
+  lucide.createIcons();
+  
+  // Auto hide after 3 seconds
+  setTimeout(() => {
+    hideSuccessTooltip();
+  }, 3000);
+}
+
+function hideSuccessTooltip() {
+  const tooltip = document.getElementById('successTooltip');
+  tooltip.classList.remove('show');
+}
+
 // Add event listeners to hide tooltip when user starts fixing errors
 document.getElementById('cliente').addEventListener('input', hideValidationTooltip);
 document.getElementById('tavolo').addEventListener('input', hideValidationTooltip);
@@ -1647,7 +1915,12 @@ document.getElementById('btnGenerate').addEventListener('click', async () => {
   }
   
   hideValidationTooltip();
-  resEl.innerHTML = '<div class="alert">Creazione ordine...</div>';
+  hideSuccessTooltip();
+  
+  // Show loading tooltip instead of alert below button
+  showLoadingTooltip();
+  resEl.innerHTML = ''; // Clear any previous messages
+  
   const autoPrint = document.getElementById('autoPrint').checked;
 
   try {
@@ -1666,29 +1939,12 @@ document.getElementById('btnGenerate').addEventListener('click', async () => {
 
     const js = await resp.json();
     if (!resp.ok || !js.ok) {
-      resEl.innerHTML = `<div class="alert alert-error">${js.error || 'Errore generazione'}</div>`;
+      showErrorTooltip(js.error || 'Errore nella generazione dell\'ordine');
       return;
     }
 
-    resEl.innerHTML = `<div class="alert alert-success">${icon('check-circle')} Ordine ${js.codice_ordine} creato! Totale: ${js.totale_generale.toFixed(2)} ${currency}</div>`;
-    setTimeout(() => lucide.createIcons(), 0);
-
-    // Create download button for ZIP
-    const hex = js.zip_base64;
-    const bytes = new Uint8Array(hex.length / 2);
-    for (let i = 0; i < bytes.length; i++) bytes[i] = parseInt(hex.substr(i * 2, 2), 16);
-    const blob = new Blob([bytes], { type: 'application/zip' });
-    const url = URL.createObjectURL(blob);
-    const btnDownload = document.createElement('button');
-    btnDownload.className = 'btn-download';
-    btnDownload.textContent = '📥 Scarica scontrini (HTML)';
-    btnDownload.onclick = () => {
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'scontrini_html.zip';
-      a.click();
-    };
-    resEl.appendChild(btnDownload);
+    // Show success tooltip with order info and download button
+    showSuccessTooltip(js.codice_ordine, js.totale_generale, js.zip_base64);
 
     // Reset cart
     cart.length = 0;
@@ -1700,7 +1956,7 @@ document.getElementById('btnGenerate').addEventListener('click', async () => {
     document.getElementById('changeCalculator').style.display = 'none';
     updateUI();
   } catch (err) {
-    resEl.innerHTML = `<div class="alert alert-error">Errore: ${err}</div>`;
+    showErrorTooltip(`Errore: ${err.message || err}`);
   }
 });
 
@@ -2059,6 +2315,16 @@ window.addEventListener('beforeinstallprompt', (e) => {
     <span>Compila i campi mancanti</span>
   </div>
   <ul class="validation-tooltip-list" id="validationList"></ul>
+</div>
+
+<!-- Success Tooltip -->
+<div id="successTooltip" class="success-tooltip">
+  <div class="success-tooltip-header">
+    <i data-lucide="check-circle" style="width: 16px; height: 16px;"></i>
+    <span>Ordine creato con successo!</span>
+  </div>
+  <div class="success-tooltip-content" id="successContent"></div>
+  <div id="successDownloadBtn"></div>
 </div>
 
 </body>

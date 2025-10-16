@@ -1,12 +1,20 @@
 # -*- coding: utf-8 -*-
-import os, json, uuid, io, datetime
+import datetime
+import io
+import json
+import os
+from zipfile import ZIP_DEFLATED, ZipFile
+
 import requests
-from flask import Flask, render_template, request, jsonify, redirect, url_for, flash
-from escpos_send import stampa_escpos_righe, carica_impostazioni
-from auth import login_user, save_token_to_session, clear_session, login_required, is_authenticated
-from api_client import get_products, get_categories, create_order
+from flask import (Flask, jsonify, redirect, render_template, request,
+                   send_from_directory, url_for)
+
 import config
 import printer_manager
+from api_client import create_order, get_categories, get_products
+from auth import (clear_session, is_authenticated, login_required, login_user,
+                  save_token_to_session)
+from escpos_send import carica_impostazioni, stampa_escpos_righe
 
 # Directory dell'applicazione
 APP_DIR = os.path.dirname(__file__)
@@ -15,12 +23,13 @@ APP_DIR = os.path.dirname(__file__)
 COUNTER_JSON = os.path.join(APP_DIR, 'data', 'counter.json')
 
 def next_order_number() -> int:
-    """Restituisce il prossimo numero progressivo per l'ordine.
-
-    Legge il valore da COUNTER_JSON, lo incrementa e lo salva.
-    Se il file non esiste o è corrotto, parte da 1.
     """
-    # Assicurati che la directory esista
+    Restituisce il prossimo numero progressivo per l'ordine.
+    Legge il valore da COUNTER_JSON, lo incrementa e lo salva.
+    
+    Returns:
+        int: Numero progressivo dell'ordine
+    """
     os.makedirs(os.path.dirname(COUNTER_JSON), exist_ok=True)
     last = 0
     if os.path.exists(COUNTER_JSON):
@@ -30,6 +39,7 @@ def next_order_number() -> int:
                 last = int(data.get('last', 0))
         except Exception:
             last = 0
+    
     num = last + 1
     try:
         with open(COUNTER_JSON, 'w', encoding='utf-8') as f:
@@ -38,17 +48,18 @@ def next_order_number() -> int:
         pass
     return num
 
-# Prezzo extra per ogni aggiunta
+
 EXTRA_PER_ADD = 0.50
 
 def bullet_lines(item):
     """
     Ritorna le linee descrittive in stile elenco puntato per ESC/POS.
-    Ad esempio:
-        Margherita:
-            - aggiunte: bufala, acciughe
-            - rimozioni: cipolla
-    Se non ci sono modifiche, restituisce solo il nome seguito da due punti.
+    
+    Args:
+        item: Dizionario con dati articolo (name, adds, removes)
+    
+    Returns:
+        List[str]: Lista di linee formattate
     """
     name = item.get('name', '')
     adds = [a.strip() for a in (item.get('adds') or []) if a.strip()]
@@ -60,17 +71,24 @@ def bullet_lines(item):
         lines.append("    - rimozioni: " + ", ".join(rems))
     return lines
 
+
 def descrizione_con_modifiche(item):
     """
     Restituisce una descrizione estesa della pizza con aggiunte e rimozioni.
-    Se non ci sono modifiche, restituisce semplicemente il nome.
+    
+    Args:
+        item: Dizionario con dati articolo (name, adds, removes)
+    
+    Returns:
+        str: Descrizione formattata dell'articolo
     """
     base = item.get('name', '')
     adds = [a.strip() for a in (item.get('adds') or []) if a.strip()]
     rems = [r.strip() for r in (item.get('removes') or []) if r.strip()]
-    # Nessuna aggiunta né rimozione
+    
     if not adds and not rems:
         return base
+    
     parti = [f"pizza base: {base}"]
     if adds:
         parti.append("aggiunte: " + ", ".join(adds))
@@ -78,17 +96,19 @@ def descrizione_con_modifiche(item):
         parti.append("rimozione: " + ", ".join(rems))
     return " + ".join(parti)
 
+
 def prezzo_unitario(item):
     """
     Calcola il prezzo unitario di un articolo considerando le aggiunte.
-    Ogni aggiunta costa EXTRA_PER_ADD euro; le rimozioni non influiscono.
+    
+    Args:
+        item: Dizionario con dati articolo (price, adds)
+    
+    Returns:
+        float: Prezzo unitario calcolato
     """
     adds = [a for a in (item.get('adds') or []) if str(a).strip()]
     return float(item.get('price', 0)) + EXTRA_PER_ADD * len(adds)
-
-# Percorsi file Excel (mantenuti per compatibilità ma non più usati per prodotti/ordini)
-DATA_XLSX = os.path.join(APP_DIR, 'data', 'products.xlsx')
-ORDINI_XLSX = os.path.join(APP_DIR, 'data', 'ordini.xlsx')
 
 app = Flask(__name__, template_folder='templates', static_folder='static')
 app.secret_key = config.SECRET_KEY
@@ -98,23 +118,32 @@ app.config['SESSION_COOKIE_SECURE'] = config.SESSION_COOKIE_SECURE
 
 def carica_prodotti():
     """
-    Carica i prodotti dall'API REST invece che dal file Excel.
-    Mantiene la compatibilità con il formato precedente.
+    Carica i prodotti dall'API REST.
+    
+    Returns:
+        dict: Dizionario con categorie e prodotti, vuoto in caso di errore
     """
     success, cats, error = get_products()
     if success:
         return cats
-    else:
-        # In caso di errore, restituisce un dizionario vuoto e logga l'errore
-        print(f"Errore caricamento prodotti: {error}")
-        return {}
+    print(f"Errore caricamento prodotti: {error}")
+    return {}
 
 def append_log_ordine(codice, cart, totale, tavolo='', cliente='', pagamento=''):
     """
-    Registra l'ordine tramite l'API REST invece che sul file Excel.
-    Mantiene la compatibilità con la funzione precedente.
+    Registra l'ordine tramite l'API REST.
+    
+    Args:
+        codice: Codice ordine (non utilizzato, mantenuto per compatibilità)
+        cart: Lista articoli del carrello
+        totale: Totale dell'ordine
+        tavolo: Numero tavolo
+        cliente: Nome cliente
+        pagamento: Metodo di pagamento
+        
+    Returns:
+        tuple: (success: bool, order_id: int or None)
     """
-    # Prepara i dati per l'API
     order_data = {
         'table': tavolo,
         'customer': cliente,
@@ -123,48 +152,60 @@ def append_log_ordine(codice, cart, totale, tavolo='', cliente='', pagamento='')
         'items': cart
     }
     
-    # Invia l'ordine all'API
     success, order_id, error = create_order(order_data)
     
     if success:
         print(f"Ordine {codice} creato con successo. ID API: {order_id}")
         return True, order_id
-    else:
-        print(f"Errore creazione ordine {codice}: {error}")
-        return False, None
+    
+    print(f"Errore creazione ordine {codice}: {error}")
+    return False, None
 
-def formatta_righe_scontrino(categoria, articoli, valuta='€', codice='', tavolo='', cliente='', pagamento=''):
+def formatta_righe_scontrino(categoria, articoli, valuta='€', codice='', 
+                            tavolo='', cliente='', pagamento=''):
     """
-    Prepara le righe per la stampa ESC/POS, includendo data/ora, aggiunte e rimozioni.
-    Oltre al totale, stampa anche il metodo di pagamento se fornito.
-    Le aggiunte incrementano il prezzo unitario di EXTRA_PER_ADD.
+    Prepara le righe per la stampa ESC/POS.
+    
+    Args:
+        categoria: Nome categoria
+        articoli: Lista articoli
+        valuta: Simbolo valuta
+        codice: Codice ordine
+        tavolo: Numero tavolo
+        cliente: Nome cliente
+        pagamento: Metodo di pagamento
+    
+    Returns:
+        tuple: (righe: List[str], totale: float)
     """
     larghezza = 42
     righe = []
     header = 'Oratorio di Petosino - SeptemberFest'
     righe.append(header.center(larghezza))
     righe.append('')
-    # Data e ora di emissione
+    
     now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     righe.append(f"Emesso: {now}".center(larghezza))
     righe.append('')
-    # Titolo categoria
+    
     righe.append("<<DH>>")
     titolo = f"** {categoria.upper()} **"
     righe.append(titolo.center(larghezza))
     righe.append("<<NORM>>")
     righe.append('-' * larghezza)
+    
     totale = 0.0
     for it in articoli:
         q = int(it.get('qty', 1))
         unit = prezzo_unitario(it)
         sub = q * unit
         totale += sub
-        # Nome e quantità in grande
+        
         righe.append("<<DH>>")
         name_line = (it.get('name', '') + ':')
-        righe.append(name_line if len(name_line) <= larghezza else name_line[:larghezza])
-        # Modifiche (aggiunte/rimozioni) dopo la parte ingrandita
+        righe.append(name_line if len(name_line) <= larghezza 
+                    else name_line[:larghezza])
+        
         adds = [a.strip() for a in (it.get('adds') or []) if a.strip()]
         rems = [r.strip() for r in (it.get('removes') or []) if r.strip()]
         if adds:
@@ -173,28 +214,28 @@ def formatta_righe_scontrino(categoria, articoli, valuta='€', codice='', tavol
         if rems:
             line = "    - rimozioni: " + ", ".join(rems)
             righe.append(line if len(line) <= larghezza else line[:larghezza])
+        
         sx = f"x{q}"
         dx = f"{sub:.2f}{valuta}"
         spazi = max(1, larghezza - len(sx) - len(dx))
         righe.append(sx + ' ' * spazi + dx)
         righe.append("<<NORM>>")
-        # Riga vuota di separazione
         righe.append('')
-    # Riepilogo totale
+    
     righe.append('-' * larghezza)
     sx = 'TOTALE'
     dx = f"{totale:.2f}{valuta}"
     righe.append(sx + ' ' * (larghezza - len(sx) - len(dx)) + dx)
-    # Metodo di pagamento
+    
     if pagamento:
         righe.append(f"Pagamento: {pagamento}")
-    # Codice ordine
+    
     if codice:
         righe.append('')
         righe.append('')
         righe.append(codice)
         righe.append('')
-    # Tavolo e cliente (stampati in grande nella escpos_send)
+    
     if tavolo or cliente:
         righe.append('')
         if tavolo:
@@ -204,11 +245,24 @@ def formatta_righe_scontrino(categoria, articoli, valuta='€', codice='', tavol
     righe.append('')
     return righe, totale
 
-def html_scontrino(categoria, articoli, valuta, codice, totale, tavolo='', cliente='', pagamento=''):
+def html_scontrino(categoria, articoli, valuta, codice, totale, 
+                  tavolo='', cliente='', pagamento=''):
     """
-    Genera l'HTML per lo scontrino includendo data/ora, modifiche e metodo di pagamento.
+    Genera l'HTML per lo scontrino.
+    
+    Args:
+        categoria: Nome categoria
+        articoli: Lista articoli
+        valuta: Simbolo valuta
+        codice: Codice ordine
+        totale: Totale ordine
+        tavolo: Numero tavolo
+        cliente: Nome cliente
+        pagamento: Metodo di pagamento
+    
+    Returns:
+        str: HTML formattato dello scontrino
     """
-    # Prepara le righe della tabella con descrizione e prezzo unitario
     rows = []
     for it in articoli:
         qty = int(it.get('qty', 1))
@@ -216,7 +270,7 @@ def html_scontrino(categoria, articoli, valuta, codice, totale, tavolo='', clien
         sub = qty * unit
         adds = [a.strip() for a in (it.get('adds') or []) if a.strip()]
         rems = [r.strip() for r in (it.get('removes') or []) if r.strip()]
-        # Costruisci la colonna descrizione con elenco puntato
+        
         nome_html = f"<div>{it['name']}:</div>"
         if adds or rems:
             nome_html += "<ul class='mb-0'>"
@@ -225,6 +279,7 @@ def html_scontrino(categoria, articoli, valuta, codice, totale, tavolo='', clien
             if rems:
                 nome_html += f"<li>rimozioni: {', '.join(rems)}</li>"
             nome_html += "</ul>"
+        
         rows.append(
             "<tr>"
             f"<td class='first'>{nome_html}</td>"
@@ -233,15 +288,17 @@ def html_scontrino(categoria, articoli, valuta, codice, totale, tavolo='', clien
             f"<td class='s'>{sub:.2f} {valuta}</td>"
             "</tr>"
         )
+    
     righe_table = "\n".join(rows)
-    # Logo opzionale
+    
     logo_tag = ""
     logo_path = os.path.join(APP_DIR, 'static', 'logo.png')
     if os.path.exists(logo_path):
-        logo_tag = "<img src='/static/logo.png' alt='logo' style='max-width:140px; display:block; margin:0 auto 6px;'/>"
-    # Data e ora attuali
+        logo_tag = ("<img src='/static/logo.png' alt='logo' "
+                   "style='max-width:140px; display:block; margin:0 auto 6px;'/>")
+    
     now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    # Tavolo e cliente
+    
     tav_cli = ""
     if tavolo or cliente:
         tc = []
@@ -250,9 +307,9 @@ def html_scontrino(categoria, articoli, valuta, codice, totale, tavolo='', clien
         if cliente:
             tc.append(f"CLIENTE: {cliente}")
         tav_cli = "<div class='tc'>" + "<br/>".join(tc) + "</div>"
-    # Pagamento html (al centro)
-    pag_html = f"<div class='pay'>Pagamento: {pagamento}</div>" if pagamento else ""
-    # Componi HTML
+    
+    pag_html = (f"<div class='pay'>Pagamento: {pagamento}</div>" 
+               if pagamento else "")
     html = (
         "<!doctype html><html><head><meta charset='utf-8'>"
         f"<title>Scontrino - {categoria}</title>"
@@ -295,14 +352,10 @@ def html_scontrino(categoria, articoli, valuta, codice, totale, tavolo='', clien
 @app.route('/login', methods=['GET', 'POST'])
 def login_page():
     """Pagina di login per l'autenticazione"""
-    # Se già autenticato, redirige alla home
     if is_authenticated():
         return redirect(url_for('home'))
     
-    # Crea dizionario config per template
-    cfg = {
-        'api_base_url': config.API_BASE_URL
-    }
+    cfg = {'api_base_url': config.API_BASE_URL}
     
     if request.method == 'POST':
         username = request.form.get('username', '').strip()
@@ -325,7 +378,7 @@ def login_page():
 
 @app.route('/api/save-api-url', methods=['POST'])
 def save_api_url_public():
-    """Salva l'URL dell'API senza richiedere autenticazione (usato dalla pagina login)"""
+    """Salva l'URL dell'API senza richiedere autenticazione"""
     try:
         data = request.get_json()
         api_base_url = data.get('api_base_url', '').strip()
@@ -336,13 +389,10 @@ def save_api_url_public():
                 'error': 'URL API richiesto'
             }), 400
         
-        # Rimuovi trailing slash se presente
         api_base_url = api_base_url.rstrip('/')
         
-        # Salva nel file .env
         config.save_to_env_file('API_BASE_URL', api_base_url)
         
-        # Ricarica la configurazione usando la funzione del modulo config
         new_url = config.reload_api_config()
         
         return jsonify({
@@ -366,22 +416,22 @@ def logout():
 @app.route('/')
 @login_required
 def home():
-    """Pagina principale - ora protetta con autenticazione"""
+    """Pagina principale protetta con autenticazione"""
     cfg = carica_impostazioni(os.path.join(APP_DIR, 'settings.json'))
     return render_template('index.html', cfg=cfg)
 
 @app.route('/static/manifest.json')
 def manifest():
     """Serve il manifest.json per PWA"""
-    from flask import send_from_directory
-    return send_from_directory('static', 'manifest.json', mimetype='application/manifest+json')
+    return send_from_directory('static', 'manifest.json', 
+                              mimetype='application/manifest+json')
+
 
 @app.route('/static/sw.js')
 def service_worker():
     """Serve il service worker per PWA"""
-    from flask import send_from_directory
-    response = send_from_directory('static', 'sw.js', mimetype='application/javascript')
-    # Aggiungi header per permettere al service worker di funzionare
+    response = send_from_directory('static', 'sw.js', 
+                                   mimetype='application/javascript')
     response.headers['Service-Worker-Allowed'] = '/'
     return response
 
@@ -453,6 +503,7 @@ def api_search_daily_orders(value):
 @app.post('/genera')
 @login_required
 def genera():
+    """Gestisce la generazione e creazione di un ordine"""
     js = request.json or {}
     cart = js.get('cart', [])
     valuta = js.get('currency', '€')
@@ -460,25 +511,29 @@ def genera():
     tavolo = (js.get('tavolo') or '').strip()
     cliente = (js.get('cliente') or '').strip()
     pagamento = (js.get('pagamento') or '').strip().upper()
-    if not tavolo or not cliente:
-        return jsonify({'ok': False, 'error': 'Tavolo e Cliente sono obbligatori.'}), 400
-    # Valida metodo di pagamento
-    if pagamento not in ('CONTANTI', 'POS'):
-        return jsonify({'ok': False, 'error': 'Metodo di pagamento obbligatorio.'}), 400
     
-    # PASSO 1: Prepara i dati per l'ordine (calcola totale)
+    if not tavolo or not cliente:
+        return jsonify({
+            'ok': False, 
+            'error': 'Tavolo e Cliente sono obbligatori.'
+        }), 400
+    
+    if pagamento not in ('CONTANTI', 'POS'):
+        return jsonify({
+            'ok': False, 
+            'error': 'Metodo di pagamento obbligatorio.'
+        }), 400
+    
     by_cat = {}
     tot = 0.0
     for it in cart:
-        # Filtra articoli senza quantità o con qty zero
         if int(it.get('qty', 0)) <= 0:
             continue
-        # Calcola il totale
+        
         qty = int(it.get('qty', 0))
         unit_price = prezzo_unitario(it)
         tot += qty * unit_price
         
-        # Inserisci nel raggruppamento per categoria includendo aggiunte e rimozioni
         by_cat.setdefault(it['category'], []).append({
             'name': it['name'],
             'qty': qty,
@@ -487,7 +542,6 @@ def genera():
             'removes': it.get('removes') or []
         })
     
-    # PASSO 2: Crea l'ordine tramite API PRIMA di stampare
     order_data = {
         'table': tavolo,
         'customer': cliente,
@@ -499,21 +553,22 @@ def genera():
     success, order_id, error = create_order(order_data)
     
     if not success:
-        return jsonify({'ok': False, 'error': f'Errore creazione ordine: {error}'}), 500
+        return jsonify({
+            'ok': False, 
+            'error': f'Errore creazione ordine: {error}'
+        }), 500
     
-    # PASSO 3: Usa il codice ordine dall'API per gli scontrini
     codice = f"ORDINE N° {order_id}"
     
-    # PASSO 4: Genera gli scontrini con il codice ordine dall'API
     scontrini = []
     for cat, items in by_cat.items():
-        # Usa codice ordine dall'API per ogni scontrino di categoria
-        lines, sub = formatta_righe_scontrino(cat, items, valuta, codice, tavolo, cliente, pagamento)
-        html = html_scontrino(cat, items, valuta, codice, sub, tavolo, cliente, pagamento)
+        lines, sub = formatta_righe_scontrino(cat, items, valuta, codice, 
+                                             tavolo, cliente, pagamento)
+        html = html_scontrino(cat, items, valuta, codice, sub, 
+                            tavolo, cliente, pagamento)
         scontrini.append({'categoria': cat, 'righe': lines, 'html': html})
     
     scontrini.sort(key=lambda x: 0 if x["categoria"].lower() == "pizzeria" else 1)
-
     all_items = []
     for it in cart:
         if int(it.get('qty', 0)) <= 0:
@@ -527,35 +582,45 @@ def genera():
             'adds': it.get('adds') or [],
             'removes': it.get('removes') or []
         })
-    # Scontrino totale complessivo
-    lines_all, _ = formatta_righe_scontrino('TOTALE COMPLESSIVO', all_items, valuta, codice, tavolo, cliente, pagamento)
-    html_all = html_scontrino('TOTALE COMPLESSIVO', all_items, valuta, codice, tot, tavolo, cliente, pagamento)
-    from zipfile import ZipFile, ZIP_DEFLATED
+    
+    lines_all, _ = formatta_righe_scontrino('TOTALE COMPLESSIVO', all_items, 
+                                           valuta, codice, tavolo, cliente, 
+                                           pagamento)
+    html_all = html_scontrino('TOTALE COMPLESSIVO', all_items, valuta, codice, 
+                             tot, tavolo, cliente, pagamento)
+    
     bio = io.BytesIO()
     with ZipFile(bio, 'w', ZIP_DEFLATED) as z:
         for s in scontrini:
-            z.writestr(f"scontrino_{s['categoria'].replace(' ','_')}.html", s['html'])
+            filename = f"scontrino_{s['categoria'].replace(' ','_')}.html"
+            z.writestr(filename, s['html'])
         z.writestr('scontrino_TOTALE.html', html_all)
-    printed = []; errors = []
+    
+    printed = []
+    errors = []
     if auto_print:
+        settings_path = os.path.join(APP_DIR, 'settings.json')
         for s in scontrini:
-            ok, msg = stampa_escpos_righe(s['righe'], taglio=True, settings_path=os.path.join(APP_DIR, 'settings.json'))
+            ok, msg = stampa_escpos_righe(s['righe'], taglio=True, 
+                                         settings_path=settings_path)
             printed.append({'categoria': s['categoria'], 'ok': ok, 'msg': msg})
-            if not ok: errors.append(msg)
-        ok, msg = stampa_escpos_righe(lines_all, taglio=True, settings_path=os.path.join(APP_DIR, 'settings.json'))
-        printed.append({'categoria': 'TOTALE', 'ok': ok, 'msg': msg});
-        if not ok: errors.append(msg)
-    # Restituisci l'ID ordine dall'API
+            if not ok:
+                errors.append(msg)
+        
+        ok, msg = stampa_escpos_righe(lines_all, taglio=True, 
+                                      settings_path=settings_path)
+        printed.append({'categoria': 'TOTALE', 'ok': ok, 'msg': msg})
+        if not ok:
+            errors.append(msg)
+    
     return jsonify({
         'ok': True,
         'zip_base64': bio.getvalue().hex(),
         'totale_generale': tot,
-        'codice_ordine': order_id,  # Usa l'ID dall'API invece del contatore locale
+        'codice_ordine': order_id,
         'stampe': printed,
         'errori': errors
     })
-
-# ================== PRINTER CONFIG ROUTES ==================
 
 @app.route('/printer-config')
 @login_required
@@ -594,7 +659,6 @@ def api_save_printers():
         data = request.json
         printers = data.get('printers', [])
         
-        # Valida ogni stampante
         for idx, printer in enumerate(printers):
             is_valid, error_msg = printer_manager.validate_printer_config(printer)
             if not is_valid:
@@ -603,7 +667,6 @@ def api_save_printers():
                     'error': f"Stampante {idx + 1}: {error_msg}"
                 }), 400
         
-        # Salva la configurazione
         success = printer_manager.save_printer_config(printers)
         
         if success:
@@ -611,11 +674,11 @@ def api_save_printers():
                 'success': True,
                 'message': 'Configurazione salvata con successo'
             })
-        else:
-            return jsonify({
-                'success': False,
-                'error': 'Errore durante il salvataggio'
-            }), 500
+        
+        return jsonify({
+            'success': False,
+            'error': 'Errore durante il salvataggio'
+        }), 500
             
     except Exception as e:
         return jsonify({
@@ -638,14 +701,14 @@ def api_test_printer():
                 'error': 'Indirizzo IP mancante'
             }), 400
         
-        # Crea un test di stampa
         test_lines = [
             {'testo': '================================', 'stile': 'normale'},
             {'testo': 'TEST STAMPANTE', 'stile': 'title'},
             {'testo': '================================', 'stile': 'normale'},
             {'testo': '', 'stile': 'normale'},
             {'testo': f'IP: {ip}:{port}', 'stile': 'normale'},
-            {'testo': f'Data: {datetime.datetime.now().strftime("%d/%m/%Y %H:%M")}', 'stile': 'normale'},
+            {'testo': f'Data: {datetime.datetime.now().strftime("%d/%m/%Y %H:%M")}', 
+             'stile': 'normale'},
             {'testo': '', 'stile': 'normale'},
             {'testo': 'Se vedi questo messaggio,', 'stile': 'normale'},
             {'testo': 'la stampante funziona!', 'stile': 'bold'},
@@ -653,21 +716,18 @@ def api_test_printer():
             {'testo': '================================', 'stile': 'normale'},
         ]
         
-        # Crea settings temporanee con IP e porta fornite
         temp_settings = {
             'printer_ip': ip,
             'printer_port': port
         }
         
-        # Salva temporaneamente le settings
         temp_settings_path = os.path.join(APP_DIR, 'temp_test_settings.json')
         with open(temp_settings_path, 'w', encoding='utf-8') as f:
             json.dump(temp_settings, f)
         
-        # Invia il test di stampa
-        ok, msg = stampa_escpos_righe(test_lines, taglio=True, settings_path=temp_settings_path)
+        ok, msg = stampa_escpos_righe(test_lines, taglio=True, 
+                                      settings_path=temp_settings_path)
         
-        # Rimuovi file temporaneo
         try:
             os.remove(temp_settings_path)
         except:
@@ -678,20 +738,17 @@ def api_test_printer():
                 'success': True,
                 'message': 'Test di stampa inviato con successo'
             })
-        else:
-            return jsonify({
-                'success': False,
-                'error': msg
-            }), 500
+        
+        return jsonify({
+            'success': False,
+            'error': msg
+        }), 500
             
     except Exception as e:
         return jsonify({
             'success': False,
             'error': str(e)
         }), 500
-
-# ================== SETTINGS API ROUTES ==================
-
 @app.route('/api/settings/api', methods=['POST'])
 @login_required
 def api_save_api_settings():
@@ -706,23 +763,17 @@ def api_save_api_settings():
                 'error': 'URL API richiesto'
             }), 400
         
-        # Rimuovi trailing slash se presente
         api_base_url = api_base_url.rstrip('/')
         
-        # Salva nel file .env
         config.save_to_env_file('API_BASE_URL', api_base_url)
-        
-        # Ricarica la configurazione usando la funzione del modulo config
         new_url = config.reload_api_config()
         
-        # IMPORTANTE: Cancella la sessione quando cambi l'API URL dalle impostazioni
-        # Questo forza un nuovo login con la nuova configurazione
         clear_session()
         
         return jsonify({
             'success': True,
-            'message': f'Configurazione API salvata. Effettua nuovamente il login.',
-            'reload': True  # Segnala al frontend di ricaricare/reindirizzare al login
+            'message': 'Configurazione API salvata. Effettua nuovamente il login.',
+            'reload': True
         })
         
     except Exception as e:
@@ -745,10 +796,7 @@ def api_test_connection():
                 'error': 'URL API richiesto'
             }), 400
         
-        # Rimuovi trailing slash se presente
         api_base_url = api_base_url.rstrip('/')
-        
-        # Usa l'endpoint /health per verificare lo stato del server
         health_url = f"{api_base_url}/health"
         
         response = requests.get(health_url, timeout=5)
@@ -760,27 +808,28 @@ def api_test_connection():
                 
                 if status == 'ok':
                     uptime = health_data.get('uptime', 0)
-                    uptime_str = f"{uptime:.1f}s" if uptime < 60 else f"{uptime/60:.1f}m"
+                    uptime_str = (f"{uptime:.1f}s" if uptime < 60 
+                                 else f"{uptime/60:.1f}m")
                     return jsonify({
                         'success': True,
-                        'message': f'✅ Connessione riuscita! Server API operativo.',
+                        'message': '✅ Connessione riuscita! Server API operativo.',
                         'details': f'Status: {status} | Uptime: {uptime_str}'
                     })
-                else:
-                    return jsonify({
-                        'success': False,
-                        'error': f'⚠️ Server raggiunto ma status non valido: {status}'
-                    }), 400
+                
+                return jsonify({
+                    'success': False,
+                    'error': f'⚠️ Server raggiunto ma status non valido: {status}'
+                }), 400
             except Exception as parse_error:
                 return jsonify({
                     'success': False,
                     'error': f'Server raggiunto ma risposta non valida: {str(parse_error)}'
                 }), 400
-        else:
-            return jsonify({
-                'success': False,
-                'error': f'Server raggiunto ma risposta non valida (HTTP {response.status_code})'
-            }), 400
+        
+        return jsonify({
+            'success': False,
+            'error': f'Server raggiunto ma risposta non valida (HTTP {response.status_code})'
+        }), 400
             
     except requests.exceptions.Timeout:
         return jsonify({
@@ -797,9 +846,5 @@ def api_test_connection():
             'success': False,
             'error': f'Errore imprevisto: {str(e)}'
         }), 500
-
-# ========================================================
-
 if __name__ == '__main__':
-    # Avvia il server su tutte le interfacce di rete per essere raggiungibile da altre macchine
     app.run(host='0.0.0.0', port=7010, debug=False)

@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 """
-Client per le chiamate API REST
+Client per le chiamate API REST.
 """
 import requests
+
 import config
-from config import API_FOODS, API_ORDERS, API_CATEGORIES, API_TIMEOUT
 from auth import get_auth_headers
+from config import API_CATEGORIES, API_FOODS, API_ORDERS, API_TIMEOUT
 
 
 def get_categories():
