@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="it">
+
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -8,13 +9,13 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="MyCassa">
-  
+
   <!-- Favicon -->
   <link rel="icon" type="image/png" sizes="32x32" href="/static/assets/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/static/assets/favicon-16x16.png">
   <link rel="apple-touch-icon" sizes="180x180" href="/static/assets/apple-touch-icon.png">
   <link rel="manifest" href="/static/assets/site.webmanifest">
-  
+
   <title>MyCassa</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
   <script src="https://unpkg.com/lucide@latest"></script>
@@ -26,14 +27,14 @@
       display: flex;
       flex-direction: column;
     }
-    
+
     .main-wrapper {
       display: flex;
       flex: 1;
       overflow: hidden;
       gap: 1rem;
     }
-    
+
     .categories-sidebar {
       width: 250px;
       background: var(--card);
@@ -46,7 +47,7 @@
       flex-direction: column;
       gap: 0.5rem;
     }
-    
+
     .categories-title {
       font-size: 1.125rem;
       font-weight: 600;
@@ -56,7 +57,7 @@
       align-items: center;
       gap: 0.5rem;
     }
-    
+
     .category-btn {
       padding: 0.75rem 1rem;
       background: var(--muted);
@@ -77,38 +78,38 @@
       text-overflow: ellipsis;
       margin-bottom: 0.5rem;
     }
-    
+
     .category-btn:hover {
       background: var(--accent);
       border-color: var(--primary);
     }
-    
+
     .category-btn.active {
       background: var(--primary);
       color: var(--primary-foreground);
       border-color: var(--primary);
       font-weight: 600;
     }
-    
+
     .category-btn.all {
       background: var(--secondary);
     }
-    
+
     .category-btn.all.active {
       background: var(--primary);
     }
-    
+
     .left-section {
       flex: 1;
       display: flex;
       flex-direction: column;
       overflow: hidden;
     }
-    
+
     .header {
       margin: 1rem 1rem 1rem 1rem;
     }
-    
+
     .container {
       width: 100%;
       padding: 0 1rem 1rem 1rem;
@@ -117,30 +118,30 @@
       display: flex;
       flex-direction: column;
     }
-    
+
     .right-sidebars {
       display: flex;
       gap: 1rem;
       padding: 1rem 1rem 1rem 0;
     }
-    
+
     .grid {
       display: flex;
       gap: 1rem;
       flex: 1;
       overflow: hidden;
     }
-    
+
     #productsArea {
       flex: 1;
       overflow-y: auto;
       padding-right: 0.5rem;
     }
-    
+
     .category-section {
       margin-bottom: 1.25rem;
     }
-    
+
     .category-title {
       font-size: 1rem;
       font-weight: 600;
@@ -150,13 +151,13 @@
       border-bottom: 2px solid var(--primary);
       text-transform: uppercase;
     }
-    
+
     .products-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
       gap: 0.5rem;
     }
-    
+
     .product-btn {
       background: var(--muted);
       border: 1px solid var(--border);
@@ -171,17 +172,17 @@
       align-items: center;
       justify-content: center;
     }
-    
+
     .product-btn:hover {
       border-color: var(--primary);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
       transform: translateY(-2px);
     }
-    
+
     .product-btn:active {
       transform: translateY(0);
     }
-    
+
     .product-name {
       font-size: 1rem;
       font-weight: 500;
@@ -189,13 +190,13 @@
       margin-bottom: 0.3rem;
       line-height: 1.2;
     }
-    
+
     .product-price {
       font-size: 1.15rem;
       font-weight: 700;
       color: var(--primary);
     }
-    
+
     .sidebar {
       background: var(--card);
       border: 1px solid var(--border);
@@ -206,7 +207,7 @@
       display: flex;
       flex-direction: column;
     }
-    
+
     .sidebar-title {
       font-size: 1.125rem;
       font-weight: 600;
@@ -215,11 +216,11 @@
       justify-content: space-between;
       align-items: center;
     }
-    
+
     .form-group {
       margin-bottom: 0.75rem;
     }
-    
+
     .form-label {
       display: block;
       font-size: 0.875rem;
@@ -227,7 +228,7 @@
       margin-bottom: 0.25rem;
       color: var(--foreground);
     }
-    
+
     .form-input {
       width: 100%;
       padding: 0.5rem 0.75rem;
@@ -237,19 +238,19 @@
       background: var(--background);
       color: var(--foreground);
     }
-    
+
     .form-input:focus {
       outline: none;
       border-color: var(--ring);
       box-shadow: 0 0 0 2px rgba(205, 180, 100, 0.1);
     }
-    
+
     .payment-group {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 0.5rem;
     }
-    
+
     .payment-btn {
       padding: 0.75rem 1rem;
       border: 2px solid var(--border);
@@ -262,19 +263,19 @@
       transition: all 0.2s;
       text-align: center;
     }
-    
+
     .payment-btn:hover {
       border-color: var(--primary);
       background: var(--muted);
     }
-    
+
     .payment-btn.active {
       background: var(--primary);
       color: var(--primary-foreground);
       border-color: var(--primary);
       font-weight: 600;
     }
-    
+
     .cart-list {
       margin: 0.75rem 0;
       border-top: 1px solid var(--border);
@@ -284,45 +285,45 @@
       overflow-y: auto;
       min-height: 0;
     }
-    
+
     .cart-empty {
       text-align: center;
       color: var(--muted-foreground);
       padding: 2rem 0;
       font-size: 0.875rem;
     }
-    
+
     .cart-item {
       padding: 0.75rem;
       background: var(--muted);
       border-radius: var(--radius);
       margin-bottom: 0.5rem;
     }
-    
+
     .cart-item-header {
       display: flex;
       justify-content: space-between;
       align-items: start;
       margin-bottom: 0.5rem;
     }
-    
+
     .cart-item-name {
       font-weight: 500;
       font-size: 0.875rem;
     }
-    
+
     .cart-item-footer {
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
-    
+
     .qty-controls {
       display: flex;
       align-items: center;
       gap: 0.5rem;
     }
-    
+
     .qty-btn {
       width: 1.5rem;
       height: 1.5rem;
@@ -337,18 +338,18 @@
       font-size: 0.875rem;
       font-weight: 600;
     }
-    
+
     .qty-btn:hover {
       background: var(--muted);
       border-color: var(--primary);
     }
-    
+
     .qty-display {
       min-width: 2rem;
       text-align: center;
       font-weight: 500;
     }
-    
+
     .btn-remove {
       background: transparent;
       border: none;
@@ -359,21 +360,21 @@
       width: 1.5rem;
       height: 1.5rem;
     }
-    
+
     .total-section {
       background: var(--muted);
       padding: 0.75rem;
       border-radius: var(--radius);
       margin-bottom: 0.75rem;
     }
-    
+
     .total-row {
       display: flex;
       justify-content: space-between;
       font-size: 1.125rem;
       font-weight: 700;
     }
-    
+
     .btn-generate {
       width: 100%;
       padding: 0.75rem;
@@ -386,16 +387,16 @@
       cursor: pointer;
       transition: all 0.2s;
     }
-    
+
     .btn-generate:hover {
       opacity: 0.9;
     }
-    
+
     .btn-generate:disabled {
       opacity: 0.5;
       cursor: not-allowed;
     }
-    
+
     /* Validation Tooltip */
     .validation-tooltip {
       position: fixed;
@@ -411,13 +412,13 @@
       pointer-events: none;
       transition: opacity 0.2s, transform 0.2s;
     }
-    
+
     .validation-tooltip.show {
       opacity: 1;
       pointer-events: auto;
       transform: translateX(0) !important;
     }
-    
+
     /* Arrow pointing right from bottom-right corner (when tooltip is on left) */
     .validation-tooltip[data-position="left"]::after {
       content: '';
@@ -427,7 +428,7 @@
       border: 8px solid transparent;
       border-left-color: var(--card);
     }
-    
+
     .validation-tooltip[data-position="left"]::before {
       content: '';
       position: absolute;
@@ -438,7 +439,7 @@
       margin-left: 1px;
       z-index: -1;
     }
-    
+
     /* Arrow pointing left from bottom-left corner (when tooltip is on right) */
     .validation-tooltip[data-position="right"]::after {
       content: '';
@@ -448,7 +449,7 @@
       border: 8px solid transparent;
       border-right-color: var(--card);
     }
-    
+
     .validation-tooltip[data-position="right"]::before {
       content: '';
       position: absolute;
@@ -459,7 +460,7 @@
       margin-right: 1px;
       z-index: -1;
     }
-    
+
     .validation-tooltip-header {
       display: flex;
       align-items: center;
@@ -469,21 +470,21 @@
       font-size: 0.875rem;
       margin-bottom: 0.5rem;
     }
-    
+
     [data-theme="dark"] .validation-tooltip-header {
       color: #f87171;
     }
-    
+
     .validation-tooltip-header i {
       flex-shrink: 0;
     }
-    
+
     .validation-tooltip-list {
       list-style: none;
       padding: 0;
       margin: 0;
     }
-    
+
     .validation-tooltip-item {
       font-size: 0.8rem;
       color: var(--muted-foreground);
@@ -491,22 +492,22 @@
       padding-left: 1.25rem;
       position: relative;
     }
-    
+
     .validation-tooltip-item::before {
       content: '•';
       position: absolute;
       left: 0.5rem;
       color: #dc2626;
     }
-    
+
     [data-theme="dark"] .validation-tooltip-item::before {
       color: #f87171;
     }
-    
+
     .btn-generate-wrapper {
       position: relative;
     }
-    
+
     /* Success Tooltip (same structure as validation tooltip but green) */
     .success-tooltip {
       position: fixed;
@@ -522,13 +523,13 @@
       pointer-events: none;
       transition: opacity 0.2s, transform 0.2s;
     }
-    
+
     .success-tooltip.show {
       opacity: 1;
       pointer-events: auto;
       transform: translateX(0) !important;
     }
-    
+
     /* Arrow pointing right from bottom-right corner (when tooltip is on left) */
     .success-tooltip[data-position="left"]::after {
       content: '';
@@ -538,7 +539,7 @@
       border: 8px solid transparent;
       border-left-color: var(--card);
     }
-    
+
     .success-tooltip[data-position="left"]::before {
       content: '';
       position: absolute;
@@ -549,7 +550,7 @@
       margin-left: 1px;
       z-index: -1;
     }
-    
+
     /* Arrow pointing left from bottom-left corner (when tooltip is on right) */
     .success-tooltip[data-position="right"]::after {
       content: '';
@@ -559,7 +560,7 @@
       border: 8px solid transparent;
       border-right-color: var(--card);
     }
-    
+
     .success-tooltip[data-position="right"]::before {
       content: '';
       position: absolute;
@@ -570,7 +571,7 @@
       margin-right: 1px;
       z-index: -1;
     }
-    
+
     .success-tooltip-header {
       display: flex;
       align-items: center;
@@ -580,29 +581,29 @@
       font-size: 0.875rem;
       margin-bottom: 0.5rem;
     }
-    
+
     [data-theme="dark"] .success-tooltip-header {
       color: #4ade80;
     }
-    
+
     .success-tooltip-header i {
       flex-shrink: 0;
     }
-    
+
     .success-tooltip-content {
       font-size: 0.8rem;
       color: var(--muted-foreground);
       margin-bottom: 0.75rem;
     }
-    
+
     .success-tooltip-content:empty {
       margin-bottom: 0;
     }
-    
+
     [data-theme="dark"] .success-tooltip-header.error-state {
       color: #f87171;
     }
-    
+
     .success-tooltip .btn-download {
       width: 100%;
       padding: 0.75rem;
@@ -619,21 +620,22 @@
       justify-content: center;
       gap: 0.5rem;
     }
-    
+
     .success-tooltip .btn-download:hover {
       opacity: 0.9;
       transform: translateY(-1px);
     }
-    
+
     @keyframes spin {
       from {
         transform: rotate(0deg);
       }
+
       to {
         transform: rotate(360deg);
       }
     }
-    
+
     .btn-download {
       width: 100%;
       padding: 0.75rem;
@@ -647,109 +649,110 @@
       transition: all 0.2s;
       margin-top: 0.5rem;
     }
-    
+
     .btn-download:hover {
       background: var(--primary);
       color: var(--primary-foreground);
     }
-    
+
     .checkbox-group {
       margin-bottom: 0.75rem;
       padding: 0.75rem;
       background: var(--muted);
       border-radius: var(--radius);
     }
-    
+
     .checkbox-item {
       display: flex;
       align-items: center;
       gap: 0.5rem;
       cursor: pointer;
     }
-    
+
     .checkbox-item input[type="checkbox"] {
       width: 18px;
       height: 18px;
       cursor: pointer;
       accent-color: var(--primary);
     }
-    
+
     .checkbox-item span {
       font-size: 0.875rem;
       color: var(--foreground);
     }
-    
+
     .alert {
       padding: 0.75rem 1rem;
       border-radius: var(--radius);
       margin-top: 1rem;
       font-size: 0.875rem;
     }
-    
+
     .alert-success {
       background: var(--primary);
       color: var(--primary-foreground);
     }
-    
+
     .alert-error {
       background: var(--destructive);
       color: white;
     }
-    
+
     #orderCode {
       text-transform: uppercase;
     }
-    
+
     .loading {
       text-align: center;
       padding: 3rem;
       color: var(--muted-foreground);
     }
-    
+
     @media (max-width: 1024px) {
       .main-wrapper {
         flex-direction: column;
       }
-      
+
       .categories-sidebar {
         width: 100%;
         margin: 1rem;
         max-height: 200px;
       }
-      
+
       .right-sidebars {
         flex-direction: column;
         padding: 0 1rem 1rem 1rem;
       }
-      
-      .sidebar, .orders-sidebar {
+
+      .sidebar,
+      .orders-sidebar {
         width: 100%;
       }
-      
+
       .grid {
         flex-direction: column;
       }
     }
-    
+
     @media (max-width: 640px) {
       .products-grid {
         grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
       }
-      
+
       .product-btn {
         height: 90px;
         padding: 0.75rem;
       }
-      
+
       .product-name {
         font-size: 0.9rem;
       }
-      
+
       .product-price {
         font-size: 1.05rem;
       }
     }
-    
+
     /* Orders Sidebar Styles */
     .orders-sidebar {
       background: var(--card);
@@ -761,25 +764,25 @@
       display: none;
       flex-direction: column;
     }
-    
+
     .orders-sidebar.active {
       display: flex;
     }
-    
+
     .orders-header {
       margin-bottom: 1rem;
     }
-    
+
     .orders-header h2 {
       font-size: 1.125rem;
       font-weight: 600;
       margin: 0;
     }
-    
+
     .orders-search {
       margin-bottom: 1rem;
     }
-    
+
     .orders-content {
       flex: 1;
       overflow-y: auto;
@@ -788,7 +791,7 @@
       gap: 0.75rem;
       margin-top: 0.75rem;
     }
-    
+
     .order-card {
       background: var(--background);
       border: 1px solid var(--border);
@@ -796,12 +799,12 @@
       padding: 1rem;
       transition: all 0.2s;
     }
-    
+
     .order-card:hover {
       border-color: var(--primary);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     }
-    
+
     .order-header {
       display: flex;
       justify-content: space-between;
@@ -810,46 +813,46 @@
       padding-bottom: 0.75rem;
       border-bottom: 1px solid var(--border);
     }
-    
+
     .order-code {
       font-size: 1.25rem;
       font-weight: 700;
       color: var(--primary);
       font-family: monospace;
     }
-    
+
     .order-date {
       font-size: 0.75rem;
       color: var(--muted-foreground);
     }
-    
+
     .order-info {
       margin-bottom: 0.75rem;
     }
-    
+
     .order-info-row {
       display: flex;
       justify-content: space-between;
       margin-bottom: 0.25rem;
       font-size: 0.875rem;
     }
-    
+
     .order-label {
       color: var(--muted-foreground);
       font-weight: 500;
     }
-    
+
     .order-value {
       font-weight: 600;
       color: var(--foreground);
     }
-    
+
     .order-items {
       margin-top: 0.75rem;
       padding-top: 0.75rem;
       border-top: 1px solid var(--border);
     }
-    
+
     .order-items-toggle {
       display: flex;
       align-items: center;
@@ -862,48 +865,48 @@
       margin-bottom: 0.5rem;
       transition: background 0.2s;
     }
-    
+
     .order-items-toggle:hover {
       background: var(--border);
     }
-    
+
     .order-items-toggle-icon {
       transition: transform 0.3s;
       font-weight: bold;
     }
-    
+
     .order-items-toggle.collapsed .order-items-toggle-icon {
       transform: rotate(-90deg);
     }
-    
+
     .order-items-list {
       max-height: 500px;
       overflow: hidden;
       transition: max-height 0.3s ease, opacity 0.3s ease;
       opacity: 1;
     }
-    
+
     .order-items-list.collapsed {
       max-height: 0;
       opacity: 0;
     }
-    
+
     .order-item {
       display: flex;
       justify-content: space-between;
       padding: 0.25rem 0;
       font-size: 0.875rem;
     }
-    
+
     .order-item-name {
       color: var(--foreground);
     }
-    
+
     .order-item-qty {
       color: var(--muted-foreground);
       margin-right: 0.5rem;
     }
-    
+
     .highlight {
       background-color: #ffd700;
       color: #000;
@@ -911,7 +914,7 @@
       padding: 0.1rem 0.2rem;
       border-radius: 0.25rem;
     }
-    
+
     /* Confirmation Banner */
     .confirmation-overlay {
       position: fixed;
@@ -926,11 +929,11 @@
       z-index: 9999;
       animation: fadeIn 0.2s ease;
     }
-    
+
     .confirmation-overlay.active {
       display: flex;
     }
-    
+
     .confirmation-banner {
       background: var(--card);
       border: 2px solid var(--border);
@@ -941,7 +944,7 @@
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
       animation: slideIn 0.3s ease;
     }
-    
+
     .confirmation-header {
       font-size: 1.25rem;
       font-weight: 600;
@@ -951,35 +954,41 @@
       align-items: center;
       gap: 0.5rem;
     }
-    
+
     .confirmation-message {
       color: var(--muted-foreground);
       margin-bottom: 1.5rem;
       line-height: 1.5;
     }
-    
+
     .confirmation-actions {
       display: flex;
       gap: 0.75rem;
       justify-content: flex-end;
     }
-    
+
     @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
     }
-    
+
     @keyframes slideIn {
-      from { 
+      from {
         transform: translateY(-20px);
         opacity: 0;
       }
-      to { 
+
+      to {
         transform: translateY(0);
         opacity: 1;
       }
     }
-    
+
     .order-total {
       display: flex;
       justify-content: space-between;
@@ -990,20 +999,20 @@
       font-size: 1rem;
       color: var(--primary);
     }
-    
+
     .orders-loading {
       text-align: center;
       padding: 2rem;
       color: var(--muted-foreground);
     }
-    
+
     .orders-empty {
       text-align: center;
       padding: 3rem 1rem;
       color: var(--muted-foreground);
       font-size: 0.875rem;
     }
-    
+
     .btn-load-orders {
       width: 100%;
       padding: 0.75rem;
@@ -1020,608 +1029,620 @@
       justify-content: center;
       gap: 0.5rem;
     }
-    
+
     .btn-load-orders:hover {
       opacity: 0.9;
     }
-    
+
     .btn-load-orders:disabled {
       opacity: 0.5;
       cursor: not-allowed;
     }
   </style>
 </head>
+
 <body>
 
-<div class="main-wrapper">
-  <!-- Categories Sidebar -->
-  <div class="categories-sidebar">
-    <div class="categories-title">
-      <i data-lucide="filter" style="width: 20px; height: 20px;"></i>
-      Categorie
+  <div class="main-wrapper">
+    <!-- Categories Sidebar -->
+    <div class="categories-sidebar">
+      <div class="categories-title">
+        <i data-lucide="filter" style="width: 20px; height: 20px;"></i>
+        Categorie
+      </div>
+      <button class="category-btn all active" onclick="filterCategory(null)">
+        <i data-lucide="grid-3x3" style="width: 18px; height: 18px;"></i>
+        Tutte le categorie
+      </button>
+      <div id="categoriesList">
+        <!-- Categories will be loaded here -->
+      </div>
     </div>
-    <button class="category-btn all active" onclick="filterCategory(null)">
-      <i data-lucide="grid-3x3" style="width: 18px; height: 18px;"></i>
-      Tutte le categorie
-    </button>
-    <div id="categoriesList">
-      <!-- Categories will be loaded here -->
-    </div>
-  </div>
 
-  <!-- Left Section with Header and Products -->
-  <div class="left-section">
-    <!-- Header (only for products area) -->
-    <div class="header">
-      <h1><i data-lucide="pizza" style="width: 24px; height: 24px; vertical-align: middle;"></i> MyCassa</h1>
-      <div class="header-actions">
-        <a href="{{ url_for('settings') }}" class="btn btn-secondary" title="Impostazioni">
-          <i data-lucide="settings" style="width: 18px; height: 18px;"></i>
-        </a>
-        <button id="themeToggle" class="btn btn-secondary btn-icon" title="Toggle Dark Mode">
-          <i data-lucide="moon" id="themeIcon" style="width: 18px; height: 18px;"></i>
-        </button>
-        <a href="{{ url_for('logout') }}" class="btn btn-secondary">Logout</a>
-      </div>
-    </div>
-    
-    <div class="container">
-      <div class="grid" id="mainGrid">
-        <!-- Products Area -->
-        <div id="productsArea">
-          <div class="loading">Caricamento prodotti...</div>
-        </div>
-      </div>
-    </div>
-  </div>
-  
-  <!-- Right Sidebars -->
-  <div class="right-sidebars">
-    <!-- Sidebar Cart -->
-    <div class="sidebar">
-      <div class="sidebar-title">
-        <span><i data-lucide="shopping-cart" style="width: 18px; height: 18px; vertical-align: middle;"></i> Carrello</span>
-        <button id="btnOpenOrders" class="btn btn-secondary" title="Carica Ordini Precedenti" style="padding: 0.4rem 0.8rem; font-size: 0.9rem;">
-          <i data-lucide="clipboard-list" style="width: 16px; height: 16px; vertical-align: middle;"></i> Ordini
-        </button>
-      </div>
-
-      <!-- Load Order by Code -->
-      <div class="form-group">
-        <label class="form-label">Carica Ordine</label>
-        <div style="display: flex; gap: 0.5rem;">
-          <input type="text" id="orderCode" class="form-input" placeholder="Codice ordine (es. ABC)" maxlength="3" style="flex: 1; text-transform: uppercase;">
-          <button type="button" class="btn btn-primary" onclick="loadOrder()" style="white-space: nowrap;">
-            <i data-lucide="search" style="width: 16px; height: 16px; vertical-align: middle;"></i> Cerca
+    <!-- Left Section with Header and Products -->
+    <div class="left-section">
+      <!-- Header (only for products area) -->
+      <div class="header">
+        <h1><i data-lucide="pizza" style="width: 24px; height: 24px; vertical-align: middle;"></i> MyCassa</h1>
+        <div class="header-actions">
+          <a href="{{ url_for('settings') }}" class="btn btn-secondary" title="Impostazioni">
+            <i data-lucide="settings" style="width: 18px; height: 18px;"></i>
+          </a>
+          <button id="themeToggle" class="btn btn-secondary btn-icon" title="Toggle Dark Mode">
+            <i data-lucide="moon" id="themeIcon" style="width: 18px; height: 18px;"></i>
           </button>
-        </div>
-        <div id="orderLoadResult" style="margin-top: 0.5rem;"></div>
-      </div>
-
-      <!-- Order Info -->
-      <div class="form-group">
-        <label class="form-label">Cliente *</label>
-        <input type="text" id="cliente" class="form-input" placeholder="Es. Mario Rossi">
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">Tavolo *</label>
-        <input type="text" id="tavolo" class="form-input" placeholder="Es. 12 o Tavolo A5">
-      </div>
-
-      <!-- Cart List -->
-      <div class="cart-list" id="cartList">
-        <div class="cart-empty">Carrello vuoto</div>
-      </div>
-
-      <!-- Total -->
-      <div class="total-section">
-        <div class="total-row">
-          <span>TOTALE:</span>
-          <span id="totalAmount">0,00 {{ cfg.currency }}</span>
+          <a href="{{ url_for('logout') }}" class="btn btn-secondary">Logout</a>
         </div>
       </div>
 
-      <!-- Payment Method -->
-      <div class="form-group">
-        <label class="form-label">Metodo Pagamento *</label>
-        <div class="payment-group">
-          <button type="button" class="payment-btn" data-value="CONTANTI" onclick="selectPayment('CONTANTI')">
-            <i data-lucide="banknote" style="width: 18px; height: 18px; vertical-align: middle;"></i> Contanti
-          </button>
-          <button type="button" class="payment-btn" data-value="POS" onclick="selectPayment('POS')">
-            <i data-lucide="credit-card" style="width: 18px; height: 18px; vertical-align: middle;"></i> POS
-          </button>
-        </div>
-      </div>
-
-      <!-- Change Calculator (visible only for cash) -->
-      <div id="changeCalculator" style="display: none; margin-bottom: 1rem;">
-        <div class="form-group" style="margin-bottom: 0.5rem;">
-          <label class="form-label">Pagato dal cliente</label>
-          <div style="display: flex; gap: 0.5rem; align-items: center;">
-            <input type="number" id="pagatoCliente" class="form-input" step="0.01" min="0" placeholder="0.00" style="flex: 1;">
-            <span style="font-weight: 500; color: var(--muted-foreground);">{{ cfg.currency }}</span>
+      <div class="container">
+        <div class="grid" id="mainGrid">
+          <!-- Products Area -->
+          <div id="productsArea">
+            <div class="loading">Caricamento prodotti...</div>
           </div>
         </div>
-        <div class="form-group" style="margin-bottom: 0;">
-          <label class="form-label">Resto</label>
-          <input type="text" id="restoCalcolato" class="form-input" value="0,00 {{ cfg.currency }}" readonly style="background: var(--muted); font-weight: 600;">
-        </div>
       </div>
-
-      <!-- Print Option -->
-      <div style="display: flex; gap: 0.5rem; align-items: stretch; margin-bottom: 0.75rem;">
-        <div class="checkbox-group" style="flex: 1; margin-bottom: 0;">
-          <label class="checkbox-item">
-            <input type="checkbox" id="autoPrint" checked>
-            <span>Stampa automatica (ESC/POS)</span>
-          </label>
-        </div>
-        <button type="button" id="btnClearCart" class="btn btn-secondary" onclick="clearCart()" style="background: var(--destructive); color: white; padding: 0.75rem; border-radius: var(--radius); display: flex; align-items: center; justify-content: center;" title="Svuota carrello">
-          <i data-lucide="trash-2" style="width: 18px; height: 18px;"></i>
-        </button>
-      </div>
-
-      <!-- Generate Button -->
-      <button id="btnGenerate" class="btn-generate">Crea Ordine</button>
-
-      <div id="result"></div>
     </div>
 
-    <!-- Orders Sidebar -->
-    <div class="orders-sidebar" id="ordersSidebar">
-      <div class="orders-header">
-        <h2><i data-lucide="clipboard-list" style="width: 20px; height: 20px; vertical-align: middle;"></i> Ordini Giornalieri</h2>
-      </div>
-      
-      <div class="orders-search">
-        <div class="form-group" style="margin-bottom: 0.75rem;">
-          <label class="form-label">Cerca Ordine</label>
-          <input type="text" id="searchOrderInput" class="form-input" placeholder="Cerca per codice, tavolo o cliente...">
+    <!-- Right Sidebars -->
+    <div class="right-sidebars">
+      <!-- Sidebar Cart -->
+      <div class="sidebar">
+        <div class="sidebar-title">
+          <span><i data-lucide="shopping-cart" style="width: 18px; height: 18px; vertical-align: middle;"></i>
+            Carrello</span>
+          <button id="btnOpenOrders" class="btn btn-secondary" title="Carica Ordini Precedenti"
+            style="padding: 0.4rem 0.8rem; font-size: 0.9rem;">
+            <i data-lucide="clipboard-list" style="width: 16px; height: 16px; vertical-align: middle;"></i> Ordini
+          </button>
         </div>
-        <button class="btn-load-orders" id="btnLoadTodayOrders">
-          <i data-lucide="download" id="loadOrdersIcon" style="width: 18px; height: 18px; vertical-align: middle;"></i>
-          <span id="loadOrdersText">Recupera ordini di oggi</span>
-        </button>
+
+        <!-- Load Order by Code -->
+        <div class="form-group">
+          <label class="form-label">Carica Ordine</label>
+          <div style="display: flex; gap: 0.5rem;">
+            <input type="text" id="orderCode" class="form-input" placeholder="Codice ordine (es. ABC)" maxlength="3"
+              style="flex: 1; text-transform: uppercase;">
+            <button type="button" class="btn btn-primary" onclick="loadOrder()" style="white-space: nowrap;">
+              <i data-lucide="search" style="width: 16px; height: 16px; vertical-align: middle;"></i> Cerca
+            </button>
+          </div>
+          <div id="orderLoadResult" style="margin-top: 0.5rem;"></div>
+        </div>
+
+        <!-- Order Info -->
+        <div class="form-group">
+          <label class="form-label">Cliente *</label>
+          <input type="text" id="cliente" class="form-input" placeholder="Es. Mario Rossi">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Tavolo *</label>
+          <input type="text" id="tavolo" class="form-input" placeholder="Es. 12 o Tavolo A5">
+        </div>
+
+        <!-- Cart List -->
+        <div class="cart-list" id="cartList">
+          <div class="cart-empty">Carrello vuoto</div>
+        </div>
+
+        <!-- Total -->
+        <div class="total-section">
+          <div class="total-row">
+            <span>TOTALE:</span>
+            <span id="totalAmount">0,00 {{ cfg.currency }}</span>
+          </div>
+        </div>
+
+        <!-- Payment Method -->
+        <div class="form-group">
+          <label class="form-label">Metodo Pagamento *</label>
+          <div class="payment-group">
+            <button type="button" class="payment-btn" data-value="CONTANTI" onclick="selectPayment('CONTANTI')">
+              <i data-lucide="banknote" style="width: 18px; height: 18px; vertical-align: middle;"></i> Contanti
+            </button>
+            <button type="button" class="payment-btn" data-value="POS" onclick="selectPayment('POS')">
+              <i data-lucide="credit-card" style="width: 18px; height: 18px; vertical-align: middle;"></i> POS
+            </button>
+          </div>
+        </div>
+
+        <!-- Change Calculator (visible only for cash) -->
+        <div id="changeCalculator" style="display: none; margin-bottom: 1rem;">
+          <div class="form-group" style="margin-bottom: 0.5rem;">
+            <label class="form-label">Pagato dal cliente</label>
+            <div style="display: flex; gap: 0.5rem; align-items: center;">
+              <input type="number" id="pagatoCliente" class="form-input" step="0.01" min="0" placeholder="0.00"
+                style="flex: 1;">
+              <span style="font-weight: 500; color: var(--muted-foreground);">{{ cfg.currency }}</span>
+            </div>
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label">Resto</label>
+            <input type="text" id="restoCalcolato" class="form-input" value="0,00 {{ cfg.currency }}" readonly
+              style="background: var(--muted); font-weight: 600;">
+          </div>
+        </div>
+
+        <!-- Print Option -->
+        <div style="display: flex; gap: 0.5rem; align-items: stretch; margin-bottom: 0.75rem;">
+          <div class="checkbox-group" style="flex: 1; margin-bottom: 0;">
+            <label class="checkbox-item">
+              <input type="checkbox" id="autoPrint" checked>
+              <span>Stampa automatica (ESC/POS)</span>
+            </label>
+          </div>
+          <button type="button" id="btnClearCart" class="btn btn-secondary" onclick="clearCart()"
+            style="background: var(--destructive); color: white; padding: 0.75rem; border-radius: var(--radius); display: flex; align-items: center; justify-content: center;"
+            title="Svuota carrello">
+            <i data-lucide="trash-2" style="width: 18px; height: 18px;"></i>
+          </button>
+        </div>
+
+        <!-- Generate Button -->
+        <button id="btnGenerate" class="btn-generate">Crea Ordine</button>
+
+        <div id="result"></div>
       </div>
-      
-      <div class="orders-content" id="ordersContent">
-        <div class="orders-empty">Clicca su "Recupera ordini di oggi" per visualizzare gli ordini</div>
+
+      <!-- Orders Sidebar -->
+      <div class="orders-sidebar" id="ordersSidebar">
+        <div class="orders-header">
+          <h2><i data-lucide="clipboard-list" style="width: 20px; height: 20px; vertical-align: middle;"></i> Ordini
+            Giornalieri</h2>
+        </div>
+
+        <div class="orders-search">
+          <div class="form-group" style="margin-bottom: 0.75rem;">
+            <label class="form-label">Cerca Ordine</label>
+            <input type="text" id="searchOrderInput" class="form-input"
+              placeholder="Cerca per codice, tavolo o cliente...">
+          </div>
+          <button class="btn-load-orders" id="btnLoadTodayOrders">
+            <i data-lucide="download" id="loadOrdersIcon"
+              style="width: 18px; height: 18px; vertical-align: middle;"></i>
+            <span id="loadOrdersText">Recupera ordini di oggi</span>
+          </button>
+        </div>
+
+        <div class="orders-content" id="ordersContent">
+          <div class="orders-empty">Clicca su "Recupera ordini di oggi" per visualizzare gli ordini</div>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
-<!-- Confirmation Banner -->
-<div class="confirmation-overlay" id="confirmationOverlay">
-  <div class="confirmation-banner">
-    <div class="confirmation-header">
-      <i data-lucide="alert-triangle" id="confirmationIcon" style="width: 24px; height: 24px;"></i>
-      <span id="confirmationTitle">Conferma azione</span>
-    </div>
-    <div class="confirmation-message" id="confirmationMessage">
-      Sei sicuro di voler procedere?
-    </div>
-    <div class="confirmation-actions">
-      <button class="btn btn-secondary" id="confirmationCancel">Annulla</button>
-      <button class="btn btn-primary" id="confirmationConfirm" style="background: var(--destructive); color: white;">Conferma</button>
+  <!-- Confirmation Banner -->
+  <div class="confirmation-overlay" id="confirmationOverlay">
+    <div class="confirmation-banner">
+      <div class="confirmation-header">
+        <i data-lucide="alert-triangle" id="confirmationIcon" style="width: 24px; height: 24px;"></i>
+        <span id="confirmationTitle">Conferma azione</span>
+      </div>
+      <div class="confirmation-message" id="confirmationMessage">
+        Sei sicuro di voler procedere?
+      </div>
+      <div class="confirmation-actions">
+        <button class="btn btn-secondary" id="confirmationCancel">Annulla</button>
+        <button class="btn btn-primary" id="confirmationConfirm"
+          style="background: var(--destructive); color: white;">Conferma</button>
+      </div>
     </div>
   </div>
-</div>
 
-<script>
-const currency = '{{ cfg.currency }}';
-const cart = [];
-let categories = [];
-let foodsByCategory = {};
-let isLoading = false; // Previene chiamate duplicate
-let selectedPayment = null; // Metodo di pagamento selezionato
-let selectedCategoryId = null; // Categoria selezionata per il filtro
+  <script>
+    const currency = '{{ cfg.currency }}';
+    const cart = [];
+    let categories = [];
+    let foodsByCategory = {};
+    let isLoading = false; // Previene chiamate duplicate
+    let selectedPayment = null; // Metodo di pagamento selezionato
+    let selectedCategoryId = null; // Categoria selezionata per il filtro
 
-// Helper function to create icon HTML
-function icon(name, size = 16) {
-  return `<i data-lucide="${name}" style="width: ${size}px; height: ${size}px; vertical-align: middle; display: inline-block;"></i>`;
-}
-
-// Confirmation banner functions
-function showConfirmation(title, message, iconName, onConfirm) {
-  const overlay = document.getElementById('confirmationOverlay');
-  const titleEl = document.getElementById('confirmationTitle');
-  const messageEl = document.getElementById('confirmationMessage');
-  const iconEl = document.getElementById('confirmationIcon');
-  const confirmBtn = document.getElementById('confirmationConfirm');
-  const cancelBtn = document.getElementById('confirmationCancel');
-  
-  titleEl.textContent = title;
-  messageEl.textContent = message;
-  iconEl.setAttribute('data-lucide', iconName);
-  lucide.createIcons();
-  
-  overlay.classList.add('active');
-  
-  // Remove previous event listeners
-  const newConfirmBtn = confirmBtn.cloneNode(true);
-  const newCancelBtn = cancelBtn.cloneNode(true);
-  confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
-  cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
-  
-  // Add new event listeners
-  newConfirmBtn.addEventListener('click', () => {
-    overlay.classList.remove('active');
-    if (onConfirm) onConfirm();
-  });
-  
-  newCancelBtn.addEventListener('click', () => {
-    overlay.classList.remove('active');
-  });
-  
-  // Close on overlay click
-  overlay.addEventListener('click', (e) => {
-    if (e.target === overlay) {
-      overlay.classList.remove('active');
+    // Helper function to create icon HTML
+    function icon(name, size = 16) {
+      return `<i data-lucide="${name}" style="width: ${size}px; height: ${size}px; vertical-align: middle; display: inline-block;"></i>`;
     }
-  });
-}
 
-// Load order by code
-async function loadOrder() {
-  const codeInput = document.getElementById('orderCode');
-  const resultEl = document.getElementById('orderLoadResult');
-  const code = codeInput.value.trim().toUpperCase();
-  
-  if (!code || code.length !== 3) {
-    resultEl.innerHTML = '<small style="color: var(--destructive);">' + icon('alert-triangle') + ' Inserisci un codice di 3 caratteri</small>';
-    setTimeout(() => lucide.createIcons(), 0);
-    return;
-  }
-  
-  resultEl.innerHTML = '<small style="color: var(--muted-foreground);">' + icon('loader-2') + ' Ricerca in corso...</small>';
-  setTimeout(() => lucide.createIcons(), 0);
-  
-  try {
-    const resp = await fetch(`/api/orders/${code}`);
-    const data = await resp.json();
-    
-    if (resp.ok && data.success) {
-      const order = data.order;
-      
-      // Clear current cart
-      cart.length = 0;
-      
-      // Load order items into cart
-      if (order.foodsOrdered && order.foodsOrdered.length > 0) {
-        for (const item of order.foodsOrdered) {
-          const categoryName = item.food.category.name || 'N/A';
-          const categoryObj = categories.find(c => c.name === categoryName);
-          const categoryId = categoryObj ? categoryObj.id : 999;
-          
-          cart.push({
-            id: item.food.id,
-            name: item.food.name || 'Prodotto',
-            price: parseFloat(item.food.price) || 0,
-            category: categoryName,
-            categoryId: categoryId,
-            qty: item.quantity
-          });
+    // Confirmation banner functions
+    function showConfirmation(title, message, iconName, onConfirm) {
+      const overlay = document.getElementById('confirmationOverlay');
+      const titleEl = document.getElementById('confirmationTitle');
+      const messageEl = document.getElementById('confirmationMessage');
+      const iconEl = document.getElementById('confirmationIcon');
+      const confirmBtn = document.getElementById('confirmationConfirm');
+      const cancelBtn = document.getElementById('confirmationCancel');
+
+      titleEl.textContent = title;
+      messageEl.textContent = message;
+      iconEl.setAttribute('data-lucide', iconName);
+      lucide.createIcons();
+
+      overlay.classList.add('active');
+
+      // Remove previous event listeners
+      const newConfirmBtn = confirmBtn.cloneNode(true);
+      const newCancelBtn = cancelBtn.cloneNode(true);
+      confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+      cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
+
+      // Add new event listeners
+      newConfirmBtn.addEventListener('click', () => {
+        overlay.classList.remove('active');
+        if (onConfirm) onConfirm();
+      });
+
+      newCancelBtn.addEventListener('click', () => {
+        overlay.classList.remove('active');
+      });
+
+      // Close on overlay click
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) {
+          overlay.classList.remove('active');
         }
-      }
-      
-      // Fill form fields
-      document.getElementById('tavolo').value = order.table || '';
-      document.getElementById('cliente').value = order.customer || '';
-      
-      // Set payment method
-      if (order.paymentMethod) {
-        selectPayment(order.paymentMethod);
-      }
-      
-      updateUI();
-      resultEl.innerHTML = `<small style="color: var(--primary); font-weight: 600;">${icon('check-circle')} Ordine ${code} caricato!</small>`;
-      setTimeout(() => lucide.createIcons(), 0);
-      codeInput.value = '';
-    } else {
-      resultEl.innerHTML = '<small style="color: var(--destructive); font-weight: 600;">' + icon('x-circle') + ' Codice ordine non trovato</small>';
-      setTimeout(() => lucide.createIcons(), 0);
+      });
     }
-  } catch (err) {
-    console.error('Error loading order:', err);
-    resultEl.innerHTML = '<small style="color: var(--destructive);">' + icon('x-circle') + ' Errore di connessione</small>';
-    setTimeout(() => lucide.createIcons(), 0);
-  }
-}
 
-// Load order from daily orders sidebar
-async function loadOrderFromDaily(code, table, customer) {
-  const resultEl = document.getElementById('orderLoadResult');
-  
-  if (!code) {
-    alert('⚠️ Codice ordine non valido');
-    return;
-  }
-  
-  // Show loading feedback
-  if (resultEl) {
-    resultEl.innerHTML = '<small style="color: var(--muted-foreground);">' + icon('loader-2') + ' Caricamento ordine...</small>';
-    setTimeout(() => lucide.createIcons(), 0);
-  }
-  
-  try {
-    const resp = await fetch(`/api/orders/${code}`);
-    const data = await resp.json();
-    
-    if (resp.ok && data.success) {
-      const order = data.order;
-      
-      // Clear current cart
-      cart.length = 0;
-      
-      // Load order items into cart
-      if (order.foodsOrdered && order.foodsOrdered.length > 0) {
-        for (const item of order.foodsOrdered) {
-          const categoryName = item.food.category.name || 'N/A';
-          const categoryObj = categories.find(c => c.name === categoryName);
-          const categoryId = categoryObj ? categoryObj.id : 999;
-          
-          cart.push({
-            id: item.food.id,
-            name: item.food.name || 'Prodotto',
-            price: parseFloat(item.food.price) || 0,
-            category: categoryName,
-            categoryId: categoryId,
-            qty: item.quantity
-          });
-        }
-      }
-      
-      // Fill form fields
-      document.getElementById('tavolo').value = order.table || table || '';
-      document.getElementById('cliente').value = order.customer || customer || '';
-      
-      // Set payment method
-      if (order.paymentMethod) {
-        selectPayment(order.paymentMethod);
-      }
-      
-      updateUI();
-      
-      if (resultEl) {
-        resultEl.innerHTML = `<small style="color: var(--primary); font-weight: 600;">${icon('check-circle')} Ordine ${code} caricato!</small>`;
+    // Load order by code
+    async function loadOrder() {
+      const codeInput = document.getElementById('orderCode');
+      const resultEl = document.getElementById('orderLoadResult');
+      const code = codeInput.value.trim().toUpperCase();
+
+      if (!code || code.length !== 3) {
+        resultEl.innerHTML = '<small style="color: var(--destructive);">' + icon('alert-triangle') + ' Inserisci un codice di 3 caratteri</small>';
         setTimeout(() => lucide.createIcons(), 0);
+        return;
       }
-      
-    } else {
-      if (resultEl) {
-        resultEl.innerHTML = '<small style="color: var(--destructive); font-weight: 600;">' + icon('x-circle') + ' Impossibile caricare l\'ordine</small>';
+
+      resultEl.innerHTML = '<small style="color: var(--muted-foreground);">' + icon('loader-2') + ' Ricerca in corso...</small>';
+      setTimeout(() => lucide.createIcons(), 0);
+
+      try {
+        const resp = await fetch(`/api/orders/${code}`);
+        const data = await resp.json();
+
+        if (resp.ok && data.success) {
+          const order = data.order;
+
+          // Clear current cart
+          cart.length = 0;
+
+          // Load order items into cart
+          if (order.foodsOrdered && order.foodsOrdered.length > 0) {
+            for (const item of order.foodsOrdered) {
+              const categoryName = item.food.category.name || 'N/A';
+              const categoryObj = categories.find(c => c.name === categoryName);
+              const categoryId = categoryObj ? categoryObj.id : 999;
+
+              cart.push({
+                id: item.food.id,
+                name: item.food.name || 'Prodotto',
+                price: parseFloat(item.food.price) || 0,
+                category: categoryName,
+                categoryId: categoryId,
+                qty: item.quantity
+              });
+            }
+          }
+
+          // Fill form fields
+          document.getElementById('tavolo').value = order.table || '';
+          document.getElementById('cliente').value = order.customer || '';
+
+          // Set payment method
+          if (order.paymentMethod) {
+            selectPayment(order.paymentMethod);
+          }
+
+          updateUI();
+          resultEl.innerHTML = `<small style="color: var(--primary); font-weight: 600;">${icon('check-circle')} Ordine ${code} caricato!</small>`;
+          setTimeout(() => lucide.createIcons(), 0);
+          codeInput.value = '';
+        } else {
+          resultEl.innerHTML = '<small style="color: var(--destructive); font-weight: 600;">' + icon('x-circle') + ' Codice ordine non trovato</small>';
+          setTimeout(() => lucide.createIcons(), 0);
+        }
+      } catch (err) {
+        console.error('Error loading order:', err);
+        resultEl.innerHTML = '<small style="color: var(--destructive);">' + icon('x-circle') + ' Errore di connessione</small>';
         setTimeout(() => lucide.createIcons(), 0);
       }
     }
-  } catch (err) {
-    console.error('Error loading order from daily:', err);
-    if (resultEl) {
-      resultEl.innerHTML = '<small style="color: var(--destructive);">' + icon('x-circle') + ' Errore di connessione</small>';
-      setTimeout(() => lucide.createIcons(), 0);
-    }
-  }
-}
 
-// Select payment method
-function selectPayment(method) {
-  selectedPayment = method;
-  document.querySelectorAll('.payment-btn').forEach(btn => {
-    if (btn.dataset.value === method) {
-      btn.classList.add('active');
-    } else {
-      btn.classList.remove('active');
-    }
-  });
-  
-  // Show/hide change calculator based on payment method
-  const calculator = document.getElementById('changeCalculator');
-  if (method === 'CONTANTI') {
-    calculator.style.display = 'block';
-    updateChange();
-  } else {
-    calculator.style.display = 'none';
-  }
-}
+    // Load order from daily orders sidebar
+    async function loadOrderFromDaily(code, table, customer) {
+      const resultEl = document.getElementById('orderLoadResult');
 
-// Fetch categories
-async function loadCategories() {
-  if (isLoading) {
-    console.log('Already loading, skipping...');
-    return;
-  }
-  
-  isLoading = true;
-  try {
-    const resp = await fetch('/api/categories');
-    const data = await resp.json();
-    
-    if (data.success) {
-      categories = data.categories;
-      renderCategoriesSidebar();
-      await loadAllFoods();
-      renderProducts();
-    } else {
-      showError('Errore caricamento categorie: ' + (data.error || 'Sconosciuto'));
-    }
-  } catch (err) {
-    console.error('Error loading categories:', err);
-    showError('Errore di connessione: ' + err.message);
-  } finally {
-    isLoading = false;
-  }
-}
+      if (!code) {
+        alert('⚠️ Codice ordine non valido');
+        return;
+      }
 
-// Render categories in sidebar
-function renderCategoriesSidebar() {
-  const categoriesList = document.getElementById('categoriesList');
-  if (!categoriesList) return;
-  
-  const html = categories.map(cat => `
+      // Show loading feedback
+      if (resultEl) {
+        resultEl.innerHTML = '<small style="color: var(--muted-foreground);">' + icon('loader-2') + ' Caricamento ordine...</small>';
+        setTimeout(() => lucide.createIcons(), 0);
+      }
+
+      try {
+        const resp = await fetch(`/api/orders/${code}`);
+        const data = await resp.json();
+
+        if (resp.ok && data.success) {
+          const order = data.order;
+
+          // Clear current cart
+          cart.length = 0;
+
+          // Load order items into cart
+          if (order.foodsOrdered && order.foodsOrdered.length > 0) {
+            for (const item of order.foodsOrdered) {
+              const categoryName = item.food.category.name || 'N/A';
+              const categoryObj = categories.find(c => c.name === categoryName);
+              const categoryId = categoryObj ? categoryObj.id : 999;
+
+              cart.push({
+                id: item.food.id,
+                name: item.food.name || 'Prodotto',
+                price: parseFloat(item.food.price) || 0,
+                category: categoryName,
+                categoryId: categoryId,
+                qty: item.quantity
+              });
+            }
+          }
+
+          // Fill form fields
+          document.getElementById('tavolo').value = order.table || table || '';
+          document.getElementById('cliente').value = order.customer || customer || '';
+
+          // Set payment method
+          if (order.paymentMethod) {
+            selectPayment(order.paymentMethod);
+          }
+
+          updateUI();
+
+          if (resultEl) {
+            resultEl.innerHTML = `<small style="color: var(--primary); font-weight: 600;">${icon('check-circle')} Ordine ${code} caricato!</small>`;
+            setTimeout(() => lucide.createIcons(), 0);
+          }
+
+        } else {
+          if (resultEl) {
+            resultEl.innerHTML = '<small style="color: var(--destructive); font-weight: 600;">' + icon('x-circle') + ' Impossibile caricare l\'ordine</small>';
+            setTimeout(() => lucide.createIcons(), 0);
+          }
+        }
+      } catch (err) {
+        console.error('Error loading order from daily:', err);
+        if (resultEl) {
+          resultEl.innerHTML = '<small style="color: var(--destructive);">' + icon('x-circle') + ' Errore di connessione</small>';
+          setTimeout(() => lucide.createIcons(), 0);
+        }
+      }
+    }
+
+    // Select payment method
+    function selectPayment(method) {
+      selectedPayment = method;
+      document.querySelectorAll('.payment-btn').forEach(btn => {
+        if (btn.dataset.value === method) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+
+      // Show/hide change calculator based on payment method
+      const calculator = document.getElementById('changeCalculator');
+      if (method === 'CONTANTI') {
+        calculator.style.display = 'block';
+        updateChange();
+      } else {
+        calculator.style.display = 'none';
+      }
+    }
+
+    // Fetch categories
+    async function loadCategories() {
+      if (isLoading) {
+        console.log('Already loading, skipping...');
+        return;
+      }
+
+      isLoading = true;
+      try {
+        const resp = await fetch('/api/categories');
+        const data = await resp.json();
+
+        if (data.success) {
+          categories = data.categories;
+          renderCategoriesSidebar();
+          await loadAllFoods();
+          renderProducts();
+        } else {
+          showError('Errore caricamento categorie: ' + (data.error || 'Sconosciuto'));
+        }
+      } catch (err) {
+        console.error('Error loading categories:', err);
+        showError('Errore di connessione: ' + err.message);
+      } finally {
+        isLoading = false;
+      }
+    }
+
+    // Render categories in sidebar
+    function renderCategoriesSidebar() {
+      const categoriesList = document.getElementById('categoriesList');
+      if (!categoriesList) return;
+
+      const html = categories.map(cat => `
     <button class="category-btn" onclick="filterCategory(${cat.id})" data-category-id="${cat.id}">
       ${cat.name}
     </button>
   `).join('');
-  
-  categoriesList.innerHTML = html;
-}
 
-// Filter products by category
-function filterCategory(categoryId) {
-  selectedCategoryId = categoryId;
-  
-  // Update active state on buttons
-  document.querySelectorAll('.category-btn').forEach(btn => {
-    btn.classList.remove('active');
-  });
-  
-  if (categoryId === null) {
-    document.querySelector('.category-btn.all').classList.add('active');
-  } else {
-    document.querySelector(`[data-category-id="${categoryId}"]`)?.classList.add('active');
-  }
-  
-  renderProducts();
-}
-
-// Fetch foods for all categories with delay to avoid rate limiting
-async function loadAllFoods() {
-  // Carica sequenzialmente con un piccolo delay per evitare rate limit
-  for (const cat of categories) {
-    try {
-      const resp = await fetch(`/api/foods/category/${cat.id}`);
-      const data = await resp.json();
-      
-      if (data.success) {
-        foodsByCategory[cat.id] = data.foods;
-      } else {
-        console.error(`Error loading foods for ${cat.name}:`, data.error);
-      }
-      
-      // Piccolo delay tra le richieste per evitare 429
-      await new Promise(resolve => setTimeout(resolve, 100));
-    } catch (err) {
-      console.error(`Errore caricamento cibi categoria ${cat.name}:`, err);
+      categoriesList.innerHTML = html;
     }
-  }
-}
 
-// Render products by category
-function renderProducts() {
-  const area = document.getElementById('productsArea');
-  if (categories.length === 0) {
-    area.innerHTML = '<div class="loading">Nessuna categoria disponibile</div>';
-    return;
-  }
+    // Filter products by category
+    function filterCategory(categoryId) {
+      selectedCategoryId = categoryId;
 
-  // Filter categories based on selection
-  const categoriesToShow = selectedCategoryId === null 
-    ? categories 
-    : categories.filter(cat => cat.id === selectedCategoryId);
+      // Update active state on buttons
+      document.querySelectorAll('.category-btn').forEach(btn => {
+        btn.classList.remove('active');
+      });
 
-  if (categoriesToShow.length === 0) {
-    area.innerHTML = '<div class="loading">Nessun prodotto disponibile per questa categoria</div>';
-    return;
-  }
+      if (categoryId === null) {
+        document.querySelector('.category-btn.all').classList.add('active');
+      } else {
+        document.querySelector(`[data-category-id="${categoryId}"]`)?.classList.add('active');
+      }
 
-  let html = '';
-  for (const cat of categoriesToShow) {
-    const foods = foodsByCategory[cat.id] || [];
-    if (foods.length === 0) continue;
+      renderProducts();
+    }
 
-    html += `
+    // Fetch foods for all categories with delay to avoid rate limiting
+    async function loadAllFoods() {
+      // Carica sequenzialmente con un piccolo delay per evitare rate limit
+      for (const cat of categories) {
+        try {
+          const resp = await fetch(`/api/foods/category/${cat.id}`);
+          const data = await resp.json();
+
+          if (data.success) {
+            foodsByCategory[cat.id] = data.foods;
+          } else {
+            console.error(`Error loading foods for ${cat.name}:`, data.error);
+          }
+
+          // Piccolo delay tra le richieste per evitare 429
+          await new Promise(resolve => setTimeout(resolve, 100));
+        } catch (err) {
+          console.error(`Errore caricamento cibi categoria ${cat.name}:`, err);
+        }
+      }
+    }
+
+    // Render products by category
+    function renderProducts() {
+      const area = document.getElementById('productsArea');
+      if (categories.length === 0) {
+        area.innerHTML = '<div class="loading">Nessuna categoria disponibile</div>';
+        return;
+      }
+
+      // Filter categories based on selection
+      const categoriesToShow = selectedCategoryId === null
+        ? categories
+        : categories.filter(cat => cat.id === selectedCategoryId);
+
+      if (categoriesToShow.length === 0) {
+        area.innerHTML = '<div class="loading">Nessun prodotto disponibile per questa categoria</div>';
+        return;
+      }
+
+      let html = '';
+      for (const cat of categoriesToShow) {
+        const foods = foodsByCategory[cat.id] || [];
+        if (foods.length === 0) continue;
+
+        html += `
       <div class="category-section">
         <div class="category-title">${cat.name}</div>
         <div class="products-grid">
     `;
 
-    for (const food of foods) {
-      const price = parseFloat(food.price) || 0;
-      html += `
+        for (const food of foods) {
+          const price = parseFloat(food.price) || 0;
+          html += `
         <button class="product-btn" onclick="addProduct(${food.id}, '${food.name.replace(/'/g, "\\'")}', ${price}, '${cat.name}')">
           <div class="product-name">${food.name}</div>
           <div class="product-price">${price.toFixed(2)} ${currency}</div>
         </button>
       `;
-    }
+        }
 
-    html += `
+        html += `
         </div>
       </div>
     `;
-  }
+      }
 
-  area.innerHTML = html || '<div class="loading">Nessun prodotto disponibile</div>';
-}
+      area.innerHTML = html || '<div class="loading">Nessun prodotto disponibile</div>';
+    }
 
-// Add product to cart
-function addProduct(id, name, price, category) {
-  const idx = cart.findIndex(x => x.id === id);
-  if (idx >= 0) {
-    cart[idx].qty++;
-  } else {
-    // Find category ID for sorting
-    const categoryObj = categories.find(c => c.name === category);
-    const categoryId = categoryObj ? categoryObj.id : 999;
-    cart.push({ id, name, price, category, categoryId, qty: 1 });
-  }
-  updateUI();
-}
-
-// Clear entire cart with confirmation
-function clearCart() {
-  if (cart.length === 0) {
-    showConfirmation(
-      'Carrello vuoto',
-      'Il carrello è già vuoto.',
-      'info',
-      null
-    );
-    return;
-  }
-  
-  showConfirmation(
-    'Svuota carrello',
-    'Sei sicuro di voler svuotare completamente il carrello? Questa azione non può essere annullata.',
-    'trash-2',
-    () => {
-      cart.length = 0;
-      document.getElementById('tavolo').value = '';
-      document.getElementById('cliente').value = '';
-      selectedPayment = null;
-      document.querySelectorAll('.payment-btn').forEach(btn => btn.classList.remove('active'));
-      document.getElementById('changeCalculator').style.display = 'none';
+    // Add product to cart
+    function addProduct(id, name, price, category) {
+      const idx = cart.findIndex(x => x.id === id);
+      if (idx >= 0) {
+        cart[idx].qty++;
+      } else {
+        // Find category ID for sorting
+        const categoryObj = categories.find(c => c.name === category);
+        const categoryId = categoryObj ? categoryObj.id : 999;
+        cart.push({ id, name, price, category, categoryId, qty: 1 });
+      }
       updateUI();
     }
-  );
-}
 
-// Update cart UI
-function updateUI() {
-  // Update cart list
-  const listEl = document.getElementById('cartList');
-  if (cart.length === 0) {
-    listEl.innerHTML = '<div class="cart-empty">Carrello vuoto</div>';
-  } else {
-    // Sort cart by category ID before displaying
-    const sortedCart = [...cart].sort((a, b) => {
-      const catIdA = a.categoryId || 999;
-      const catIdB = b.categoryId || 999;
-      return catIdA - catIdB;
-    });
-    
-    // Create a map to find original indices for actions
-    const originalIndices = new Map();
-    sortedCart.forEach(sortedItem => {
-      const originalIdx = cart.findIndex(c => c === sortedItem);
-      originalIndices.set(sortedItem, originalIdx);
-    });
-    
-    listEl.innerHTML = sortedCart.map(item => {
-      const idx = originalIndices.get(item);
-      return `
+    // Clear entire cart with confirmation
+    function clearCart() {
+      if (cart.length === 0) {
+        showConfirmation(
+          'Carrello vuoto',
+          'Il carrello è già vuoto.',
+          'info',
+          null
+        );
+        return;
+      }
+
+      showConfirmation(
+        'Svuota carrello',
+        'Sei sicuro di voler svuotare completamente il carrello? Questa azione non può essere annullata.',
+        'trash-2',
+        () => {
+          cart.length = 0;
+          document.getElementById('tavolo').value = '';
+          document.getElementById('cliente').value = '';
+          selectedPayment = null;
+          document.querySelectorAll('.payment-btn').forEach(btn => btn.classList.remove('active'));
+          document.getElementById('changeCalculator').style.display = 'none';
+          updateUI();
+        }
+      );
+    }
+
+    // Update cart UI
+    function updateUI() {
+      // Update cart list
+      const listEl = document.getElementById('cartList');
+      if (cart.length === 0) {
+        listEl.innerHTML = '<div class="cart-empty">Carrello vuoto</div>';
+      } else {
+        // Sort cart by category ID before displaying
+        const sortedCart = [...cart].sort((a, b) => {
+          const catIdA = a.categoryId || 999;
+          const catIdB = b.categoryId || 999;
+          return catIdA - catIdB;
+        });
+
+        // Create a map to find original indices for actions
+        const originalIndices = new Map();
+        sortedCart.forEach(sortedItem => {
+          const originalIdx = cart.findIndex(c => c === sortedItem);
+          originalIndices.set(sortedItem, originalIdx);
+        });
+
+        listEl.innerHTML = sortedCart.map(item => {
+          const idx = originalIndices.get(item);
+          return `
       <div class="cart-item">
         <div class="cart-item-header">
           <div>
@@ -1640,576 +1661,576 @@ function updateUI() {
         </div>
       </div>
     `;
-    }).join('');
-  }
-
-  // Update total
-  const total = cart.reduce((sum, it) => sum + (it.price * it.qty), 0);
-  document.getElementById('totalAmount').textContent = `${total.toFixed(2)} ${currency}`;
-  
-  // Update clear cart button state
-  const clearCartBtn = document.getElementById('btnClearCart');
-  if (clearCartBtn) {
-    if (cart.length === 0) {
-      clearCartBtn.disabled = true;
-      clearCartBtn.style.opacity = '0.5';
-      clearCartBtn.style.cursor = 'not-allowed';
-    } else {
-      clearCartBtn.disabled = false;
-      clearCartBtn.style.opacity = '1';
-      clearCartBtn.style.cursor = 'pointer';
-    }
-  }
-  
-  // Update change if payment is cash
-  updateChange();
-}
-
-// Calculate and update change
-function updateChange() {
-  if (selectedPayment !== 'CONTANTI') return;
-  
-  const total = cart.reduce((sum, it) => sum + (it.price * it.qty), 0);
-  const paid = parseFloat(document.getElementById('pagatoCliente').value || '0');
-  const change = Math.max(0, paid - total);
-  
-  document.getElementById('restoCalcolato').value = `${change.toFixed(2)} ${currency}`;
-}
-
-function removeItem(idx) {
-  cart.splice(idx, 1);
-  updateUI();
-}
-
-function increaseQty(idx) {
-  cart[idx].qty++;
-  updateUI();
-}
-
-function decreaseQty(idx) {
-  if (cart[idx].qty > 1) {
-    cart[idx].qty--;
-  } else {
-    cart.splice(idx, 1);
-  }
-  updateUI();
-}
-
-// Validate and show tooltip
-function validateOrder() {
-  const errors = [];
-  const tavolo = document.getElementById('tavolo').value.trim();
-  const cliente = document.getElementById('cliente').value.trim();
-  
-  if (!cliente) errors.push('Inserisci il nome del cliente');
-  if (!tavolo) errors.push('Inserisci il numero tavolo');
-  if (cart.length === 0) errors.push('Aggiungi almeno un prodotto al carrello');
-  if (!selectedPayment) errors.push('Seleziona un metodo di pagamento');
-  
-  return errors;
-}
-
-function showValidationTooltip(errors) {
-  const tooltip = document.getElementById('validationTooltip');
-  const list = document.getElementById('validationList');
-  const button = document.getElementById('btnGenerate');
-  
-  list.innerHTML = errors.map(err => `<li class="validation-tooltip-item">${err}</li>`).join('');
-  
-  // Calculate button position
-  const buttonRect = button.getBoundingClientRect();
-  const tooltipWidth = 320; // approximate width
-  const gap = 16;
-  
-  // Calculate left position
-  let leftPos = buttonRect.left - tooltipWidth - gap;
-  
-  // Check if tooltip goes off screen on the left
-  if (leftPos < gap) {
-    // Position to the right of the button instead
-    leftPos = buttonRect.right + gap;
-    tooltip.setAttribute('data-position', 'right');
-  } else {
-    tooltip.setAttribute('data-position', 'left');
-  }
-  
-  // Position tooltip - align bottom with button, with the arrow at bottom right
-  tooltip.style.bottom = `${window.innerHeight - buttonRect.bottom}px`;
-  tooltip.style.top = 'auto';
-  tooltip.style.left = `${leftPos}px`;
-  
-  // Add show class (animation will handle the rest)
-  tooltip.classList.add('show');
-  // Don't show overlay - removed: overlay.classList.add('show');
-  
-  // Reinitialize icons
-  lucide.createIcons();
-  
-  // Hide after 3 seconds
-  setTimeout(() => {
-    hideValidationTooltip();
-  }, 3000);
-}
-
-function hideValidationTooltip() {
-  const tooltip = document.getElementById('validationTooltip');
-  tooltip.classList.remove('show');
-}
-
-function showLoadingTooltip() {
-  const tooltip = document.getElementById('successTooltip');
-  const content = document.getElementById('successContent');
-  const downloadBtnContainer = document.getElementById('successDownloadBtn');
-  const button = document.getElementById('btnGenerate');
-  const header = tooltip.querySelector('.success-tooltip-header');
-  
-  // Change header to loading state
-  header.innerHTML = '<i data-lucide="loader" style="width: 16px; height: 16px; animation: spin 1s linear infinite;"></i><span>Creazione ordine in corso...</span>';
-  
-  // Clear content and download button
-  content.innerHTML = '';
-  downloadBtnContainer.innerHTML = '';
-  
-  // Calculate button position
-  const buttonRect = button.getBoundingClientRect();
-  const tooltipWidth = 320; // approximate width
-  const gap = 16;
-  
-  // Calculate left position
-  let leftPos = buttonRect.left - tooltipWidth - gap;
-  
-  // Check if tooltip goes off screen on the left
-  if (leftPos < gap) {
-    // Position to the right of the button instead
-    leftPos = buttonRect.right + gap;
-    tooltip.setAttribute('data-position', 'right');
-  } else {
-    tooltip.setAttribute('data-position', 'left');
-  }
-  
-  // Position tooltip - align bottom with button, with the arrow at bottom right
-  tooltip.style.bottom = `${window.innerHeight - buttonRect.bottom}px`;
-  tooltip.style.top = 'auto';
-  tooltip.style.left = `${leftPos}px`;
-  
-  // Add show class (animation will handle the rest)
-  tooltip.classList.add('show');
-  
-  // Reinitialize icons
-  lucide.createIcons();
-}
-
-function showErrorTooltip(errorMessage) {
-  const tooltip = document.getElementById('successTooltip');
-  const content = document.getElementById('successContent');
-  const downloadBtnContainer = document.getElementById('successDownloadBtn');
-  const button = document.getElementById('btnGenerate');
-  const header = tooltip.querySelector('.success-tooltip-header');
-  
-  // Change header to error state
-  header.innerHTML = '<i data-lucide="alert-circle" style="width: 16px; height: 16px;"></i><span>Errore nella creazione</span>';
-  header.style.color = '#dc2626';
-  header.classList.add('error-state');
-  
-  // Set error content
-  content.innerHTML = errorMessage;
-  content.style.color = 'var(--foreground)';
-  
-  // Clear download button
-  downloadBtnContainer.innerHTML = '';
-  
-  // Recalculate position (important for proper display)
-  const buttonRect = button.getBoundingClientRect();
-  const tooltipWidth = 320;
-  const gap = 16;
-  
-  let leftPos = buttonRect.left - tooltipWidth - gap;
-  
-  if (leftPos < gap) {
-    leftPos = buttonRect.right + gap;
-    tooltip.setAttribute('data-position', 'right');
-  } else {
-    tooltip.setAttribute('data-position', 'left');
-  }
-  
-  tooltip.style.bottom = `${window.innerHeight - buttonRect.bottom}px`;
-  tooltip.style.top = 'auto';
-  tooltip.style.left = `${leftPos}px`;
-  
-  // Ensure tooltip is visible
-  tooltip.classList.add('show');
-  
-  // Reinitialize icons
-  lucide.createIcons();
-  
-  // Auto hide after 3 seconds
-  setTimeout(() => {
-    hideSuccessTooltip();
-  }, 3000);
-}
-
-function showSuccessTooltip(codiceOrdine, totale, zipBase64) {
-  const tooltip = document.getElementById('successTooltip');
-  const content = document.getElementById('successContent');
-  const downloadBtnContainer = document.getElementById('successDownloadBtn');
-  const header = tooltip.querySelector('.success-tooltip-header');
-  
-  // Restore header to success state
-  header.innerHTML = '<i data-lucide="check-circle" style="width: 16px; height: 16px;"></i><span>Ordine creato con successo!</span>';
-  header.style.color = ''; // Reset to default (green from CSS)
-  header.classList.remove('error-state');
-  
-  // Set content
-  content.innerHTML = `Ordine <strong>${codiceOrdine}</strong><br>Totale: <strong>${totale.toFixed(2)} ${currency}</strong>`;
-  content.style.color = ''; // Reset to default
-  
-  // Create download button
-  const hex = zipBase64;
-  const bytes = new Uint8Array(hex.length / 2);
-  for (let i = 0; i < bytes.length; i++) bytes[i] = parseInt(hex.substr(i * 2, 2), 16);
-  const blob = new Blob([bytes], { type: 'application/zip' });
-  const url = URL.createObjectURL(blob);
-  
-  const btnDownload = document.createElement('button');
-  btnDownload.className = 'btn-download';
-  btnDownload.innerHTML = '<i data-lucide="download" style="width: 16px; height: 16px;"></i> Scarica scontrini (HTML)';
-  btnDownload.onclick = () => {
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'scontrini_html.zip';
-    a.click();
-  };
-  
-  downloadBtnContainer.innerHTML = '';
-  downloadBtnContainer.appendChild(btnDownload);
-  
-  // Reinitialize icons
-  lucide.createIcons();
-  
-  // Auto hide after 3 seconds
-  setTimeout(() => {
-    hideSuccessTooltip();
-  }, 3000);
-}
-
-function hideSuccessTooltip() {
-  const tooltip = document.getElementById('successTooltip');
-  tooltip.classList.remove('show');
-}
-
-// Add event listeners to hide tooltip when user starts fixing errors
-document.getElementById('cliente').addEventListener('input', hideValidationTooltip);
-document.getElementById('tavolo').addEventListener('input', hideValidationTooltip);
-
-// Generate order
-document.getElementById('btnGenerate').addEventListener('click', async () => {
-  const resEl = document.getElementById('result');
-  const tavolo = document.getElementById('tavolo').value.trim();
-  const cliente = document.getElementById('cliente').value.trim();
-
-  // Validate
-  const errors = validateOrder();
-  if (errors.length > 0) {
-    showValidationTooltip(errors);
-    return;
-  }
-  
-  hideValidationTooltip();
-  hideSuccessTooltip();
-  
-  // Show loading tooltip instead of alert below button
-  showLoadingTooltip();
-  resEl.innerHTML = ''; // Clear any previous messages
-  
-  const autoPrint = document.getElementById('autoPrint').checked;
-
-  try {
-    const resp = await fetch('/genera', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        cart: cart,
-        currency: currency,
-        auto_print: autoPrint,
-        tavolo: tavolo,
-        cliente: cliente,
-        pagamento: selectedPayment
-      })
-    });
-
-    const js = await resp.json();
-    if (!resp.ok || !js.ok) {
-      showErrorTooltip(js.error || 'Errore nella generazione dell\'ordine');
-      return;
-    }
-
-    // Show success tooltip with order info and download button
-    showSuccessTooltip(js.codice_ordine, js.totale_generale, js.zip_base64);
-
-    // Reset cart
-    cart.length = 0;
-    document.getElementById('tavolo').value = '';
-    document.getElementById('cliente').value = '';
-    document.getElementById('pagatoCliente').value = '';
-    selectedPayment = null;
-    document.querySelectorAll('.payment-btn').forEach(btn => btn.classList.remove('active'));
-    document.getElementById('changeCalculator').style.display = 'none';
-    updateUI();
-  } catch (err) {
-    showErrorTooltip(`Errore: ${err.message || err}`);
-  }
-});
-
-function showError(msg) {
-  document.getElementById('productsArea').innerHTML = `<div class="loading" style="color: var(--destructive)">${msg}</div>`;
-}
-
-// Update change when paid amount changes
-document.getElementById('pagatoCliente').addEventListener('input', updateChange);
-
-// Dark mode toggle
-const themeToggle = document.getElementById('themeToggle');
-const html = document.documentElement;
-
-// Funzione per aggiornare l'icona del tema
-function updateThemeIcon(theme) {
-  const iconName = theme === 'dark' ? 'sun' : 'moon';
-  // Sostituisci completamente l'HTML dell'icona
-  themeToggle.innerHTML = `<i data-lucide="${iconName}" style="width: 18px; height: 18px;"></i>`;
-  // Ricrea le icone
-  lucide.createIcons();
-}
-
-// Check for saved theme preference or default to light mode
-const currentTheme = localStorage.getItem('theme') || 'light';
-html.setAttribute('data-theme', currentTheme);
-updateThemeIcon(currentTheme);
-
-themeToggle.addEventListener('click', () => {
-  const theme = html.getAttribute('data-theme');
-  const newTheme = theme === 'light' ? 'dark' : 'light';
-  
-  html.setAttribute('data-theme', newTheme);
-  localStorage.setItem('theme', newTheme);
-  updateThemeIcon(newTheme);
-});
-
-// Initialize
-loadCategories();
-updateUI();
-
-// Initialize Lucide icons
-lucide.createIcons();
-
-// === Orders Sidebar Functionality ===
-let allOrders = [];
-let filteredOrders = [];
-let currentSearchTerm = '';
-
-const ordersSidebar = document.getElementById('ordersSidebar');
-const btnOpenOrders = document.getElementById('btnOpenOrders');
-const btnLoadTodayOrders = document.getElementById('btnLoadTodayOrders');
-const searchOrderInput = document.getElementById('searchOrderInput');
-const ordersContent = document.getElementById('ordersContent');
-
-// Toggle orders sidebar
-btnOpenOrders.addEventListener('click', () => {
-  const isOpen = ordersSidebar.classList.contains('active');
-  if (isOpen) {
-    ordersSidebar.classList.remove('active');
-    btnOpenOrders.classList.remove('active');
-  } else {
-    ordersSidebar.classList.add('active');
-    btnOpenOrders.classList.add('active');
-  }
-});
-
-// Load today's orders
-btnLoadTodayOrders.addEventListener('click', async () => {
-  const btnIcon = document.getElementById('loadOrdersIcon');
-  const btnText = document.getElementById('loadOrdersText');
-  
-  btnLoadTodayOrders.disabled = true;
-  btnIcon.textContent = '⏳';
-  btnText.textContent = 'Caricamento...';
-  
-  ordersContent.innerHTML = '<div class="orders-loading">' + icon('loader-2') + ' Caricamento ordini...</div>';
-  setTimeout(() => lucide.createIcons(), 0);
-  
-  try {
-    const resp = await fetch('/api/orders/day/today');
-    
-    if (!resp.ok) {
-      if (resp.status === 404) {
-        ordersContent.innerHTML = '<div class="orders-empty">' + icon('inbox') + ' Nessun ordine trovato per oggi</div>';
-        setTimeout(() => lucide.createIcons(), 0);
-      } else {
-        throw new Error('Errore nel caricamento degli ordini');
+        }).join('');
       }
-      return;
-    }
-    
-    const data = await resp.json();
-    
-    // L'API può restituire direttamente un array o un oggetto con success e orders
-    let orders = [];
-    if (Array.isArray(data)) {
-      orders = data;
-    } else if (data.success && data.orders) {
-      orders = data.orders;
-    } else if (data.orders) {
-      orders = data.orders;
-    }
-    
-    if (orders && orders.length > 0) {
-      allOrders = orders;
-      filteredOrders = [...allOrders];
-      currentSearchTerm = '';
-      renderOrders();
-    } else {
-      ordersContent.innerHTML = '<div class="orders-empty">' + icon('inbox') + ' Nessun ordine trovato per oggi</div>';
-      setTimeout(() => lucide.createIcons(), 0);
-    }
-  } catch (err) {
-    console.error('Error loading orders:', err);
-    ordersContent.innerHTML = '<div class="orders-empty" style="color: var(--destructive);">' + icon('x-circle') + ' Errore di connessione</div>';
-    setTimeout(() => lucide.createIcons(), 0);
-  } finally {
-    btnLoadTodayOrders.disabled = false;
-    btnIcon.setAttribute('data-lucide', 'download');
-    lucide.createIcons();
-    btnText.textContent = 'Recupera ordini di oggi';
-  }
-});
 
-// Search orders
-let searchTimeout;
-searchOrderInput.addEventListener('input', async (e) => {
-  const searchTerm = e.target.value.trim();
-  currentSearchTerm = searchTerm;
-  
-  // Clear previous timeout
-  if (searchTimeout) {
-    clearTimeout(searchTimeout);
-  }
-  
-  // Se la ricerca è vuota, ricarica tutti gli ordini
-  if (searchTerm === '') {
-    filteredOrders = [...allOrders];
-    renderOrders();
-    return;
-  }
-  
-  // Debounce: aspetta 500ms prima di fare la ricerca
-  searchTimeout = setTimeout(async () => {
-    ordersContent.innerHTML = '<div class="orders-loading">' + icon('loader-2') + ' Ricerca in corso...</div>';
-    setTimeout(() => lucide.createIcons(), 0);
-    
-    try {
-      const resp = await fetch(`/api/orders/search/daily/${encodeURIComponent(searchTerm)}`);
-      
-      if (!resp.ok) {
-        if (resp.status === 404) {
-          ordersContent.innerHTML = '<div class="orders-empty">' + icon('search') + ' Nessun ordine trovato</div>';
-          setTimeout(() => lucide.createIcons(), 0);
+      // Update total
+      const total = cart.reduce((sum, it) => sum + (it.price * it.qty), 0);
+      document.getElementById('totalAmount').textContent = `${total.toFixed(2)} ${currency}`;
+
+      // Update clear cart button state
+      const clearCartBtn = document.getElementById('btnClearCart');
+      if (clearCartBtn) {
+        if (cart.length === 0) {
+          clearCartBtn.disabled = true;
+          clearCartBtn.style.opacity = '0.5';
+          clearCartBtn.style.cursor = 'not-allowed';
         } else {
-          throw new Error('Errore nella ricerca');
+          clearCartBtn.disabled = false;
+          clearCartBtn.style.opacity = '1';
+          clearCartBtn.style.cursor = 'pointer';
         }
+      }
+
+      // Update change if payment is cash
+      updateChange();
+    }
+
+    // Calculate and update change
+    function updateChange() {
+      if (selectedPayment !== 'CONTANTI') return;
+
+      const total = cart.reduce((sum, it) => sum + (it.price * it.qty), 0);
+      const paid = parseFloat(document.getElementById('pagatoCliente').value || '0');
+      const change = Math.max(0, paid - total);
+
+      document.getElementById('restoCalcolato').value = `${change.toFixed(2)} ${currency}`;
+    }
+
+    function removeItem(idx) {
+      cart.splice(idx, 1);
+      updateUI();
+    }
+
+    function increaseQty(idx) {
+      cart[idx].qty++;
+      updateUI();
+    }
+
+    function decreaseQty(idx) {
+      if (cart[idx].qty > 1) {
+        cart[idx].qty--;
+      } else {
+        cart.splice(idx, 1);
+      }
+      updateUI();
+    }
+
+    // Validate and show tooltip
+    function validateOrder() {
+      const errors = [];
+      const tavolo = document.getElementById('tavolo').value.trim();
+      const cliente = document.getElementById('cliente').value.trim();
+
+      if (!cliente) errors.push('Inserisci il nome del cliente');
+      if (!tavolo) errors.push('Inserisci il numero tavolo');
+      if (cart.length === 0) errors.push('Aggiungi almeno un prodotto al carrello');
+      if (!selectedPayment) errors.push('Seleziona un metodo di pagamento');
+
+      return errors;
+    }
+
+    function showValidationTooltip(errors) {
+      const tooltip = document.getElementById('validationTooltip');
+      const list = document.getElementById('validationList');
+      const button = document.getElementById('btnGenerate');
+
+      list.innerHTML = errors.map(err => `<li class="validation-tooltip-item">${err}</li>`).join('');
+
+      // Calculate button position
+      const buttonRect = button.getBoundingClientRect();
+      const tooltipWidth = 320; // approximate width
+      const gap = 16;
+
+      // Calculate left position
+      let leftPos = buttonRect.left - tooltipWidth - gap;
+
+      // Check if tooltip goes off screen on the left
+      if (leftPos < gap) {
+        // Position to the right of the button instead
+        leftPos = buttonRect.right + gap;
+        tooltip.setAttribute('data-position', 'right');
+      } else {
+        tooltip.setAttribute('data-position', 'left');
+      }
+
+      // Position tooltip - align bottom with button, with the arrow at bottom right
+      tooltip.style.bottom = `${window.innerHeight - buttonRect.bottom}px`;
+      tooltip.style.top = 'auto';
+      tooltip.style.left = `${leftPos}px`;
+
+      // Add show class (animation will handle the rest)
+      tooltip.classList.add('show');
+      // Don't show overlay - removed: overlay.classList.add('show');
+
+      // Reinitialize icons
+      lucide.createIcons();
+
+      // Hide after 3 seconds
+      setTimeout(() => {
+        hideValidationTooltip();
+      }, 3000);
+    }
+
+    function hideValidationTooltip() {
+      const tooltip = document.getElementById('validationTooltip');
+      tooltip.classList.remove('show');
+    }
+
+    function showLoadingTooltip() {
+      const tooltip = document.getElementById('successTooltip');
+      const content = document.getElementById('successContent');
+      const downloadBtnContainer = document.getElementById('successDownloadBtn');
+      const button = document.getElementById('btnGenerate');
+      const header = tooltip.querySelector('.success-tooltip-header');
+
+      // Change header to loading state
+      header.innerHTML = '<i data-lucide="loader" style="width: 16px; height: 16px; animation: spin 1s linear infinite;"></i><span>Creazione ordine in corso...</span>';
+
+      // Clear content and download button
+      content.innerHTML = '';
+      downloadBtnContainer.innerHTML = '';
+
+      // Calculate button position
+      const buttonRect = button.getBoundingClientRect();
+      const tooltipWidth = 320; // approximate width
+      const gap = 16;
+
+      // Calculate left position
+      let leftPos = buttonRect.left - tooltipWidth - gap;
+
+      // Check if tooltip goes off screen on the left
+      if (leftPos < gap) {
+        // Position to the right of the button instead
+        leftPos = buttonRect.right + gap;
+        tooltip.setAttribute('data-position', 'right');
+      } else {
+        tooltip.setAttribute('data-position', 'left');
+      }
+
+      // Position tooltip - align bottom with button, with the arrow at bottom right
+      tooltip.style.bottom = `${window.innerHeight - buttonRect.bottom}px`;
+      tooltip.style.top = 'auto';
+      tooltip.style.left = `${leftPos}px`;
+
+      // Add show class (animation will handle the rest)
+      tooltip.classList.add('show');
+
+      // Reinitialize icons
+      lucide.createIcons();
+    }
+
+    function showErrorTooltip(errorMessage) {
+      const tooltip = document.getElementById('successTooltip');
+      const content = document.getElementById('successContent');
+      const downloadBtnContainer = document.getElementById('successDownloadBtn');
+      const button = document.getElementById('btnGenerate');
+      const header = tooltip.querySelector('.success-tooltip-header');
+
+      // Change header to error state
+      header.innerHTML = '<i data-lucide="alert-circle" style="width: 16px; height: 16px;"></i><span>Errore nella creazione</span>';
+      header.style.color = '#dc2626';
+      header.classList.add('error-state');
+
+      // Set error content
+      content.innerHTML = errorMessage;
+      content.style.color = 'var(--foreground)';
+
+      // Clear download button
+      downloadBtnContainer.innerHTML = '';
+
+      // Recalculate position (important for proper display)
+      const buttonRect = button.getBoundingClientRect();
+      const tooltipWidth = 320;
+      const gap = 16;
+
+      let leftPos = buttonRect.left - tooltipWidth - gap;
+
+      if (leftPos < gap) {
+        leftPos = buttonRect.right + gap;
+        tooltip.setAttribute('data-position', 'right');
+      } else {
+        tooltip.setAttribute('data-position', 'left');
+      }
+
+      tooltip.style.bottom = `${window.innerHeight - buttonRect.bottom}px`;
+      tooltip.style.top = 'auto';
+      tooltip.style.left = `${leftPos}px`;
+
+      // Ensure tooltip is visible
+      tooltip.classList.add('show');
+
+      // Reinitialize icons
+      lucide.createIcons();
+
+      // Auto hide after 3 seconds
+      setTimeout(() => {
+        hideSuccessTooltip();
+      }, 3000);
+    }
+
+    function showSuccessTooltip(codiceOrdine, totale, zipBase64) {
+      const tooltip = document.getElementById('successTooltip');
+      const content = document.getElementById('successContent');
+      const downloadBtnContainer = document.getElementById('successDownloadBtn');
+      const header = tooltip.querySelector('.success-tooltip-header');
+
+      // Restore header to success state
+      header.innerHTML = '<i data-lucide="check-circle" style="width: 16px; height: 16px;"></i><span>Ordine creato con successo!</span>';
+      header.style.color = ''; // Reset to default (green from CSS)
+      header.classList.remove('error-state');
+
+      // Set content
+      content.innerHTML = `Ordine <strong>${codiceOrdine}</strong><br>Totale: <strong>${totale.toFixed(2)} ${currency}</strong>`;
+      content.style.color = ''; // Reset to default
+
+      // Create download button
+      const hex = zipBase64;
+      const bytes = new Uint8Array(hex.length / 2);
+      for (let i = 0; i < bytes.length; i++) bytes[i] = parseInt(hex.substr(i * 2, 2), 16);
+      const blob = new Blob([bytes], { type: 'application/zip' });
+      const url = URL.createObjectURL(blob);
+
+      const btnDownload = document.createElement('button');
+      btnDownload.className = 'btn-download';
+      btnDownload.innerHTML = '<i data-lucide="download" style="width: 16px; height: 16px;"></i> Scarica scontrini (HTML)';
+      btnDownload.onclick = () => {
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'scontrini_html.zip';
+        a.click();
+      };
+
+      downloadBtnContainer.innerHTML = '';
+      downloadBtnContainer.appendChild(btnDownload);
+
+      // Reinitialize icons
+      lucide.createIcons();
+
+      // Auto hide after 3 seconds
+      setTimeout(() => {
+        hideSuccessTooltip();
+      }, 3000);
+    }
+
+    function hideSuccessTooltip() {
+      const tooltip = document.getElementById('successTooltip');
+      tooltip.classList.remove('show');
+    }
+
+    // Add event listeners to hide tooltip when user starts fixing errors
+    document.getElementById('cliente').addEventListener('input', hideValidationTooltip);
+    document.getElementById('tavolo').addEventListener('input', hideValidationTooltip);
+
+    // Generate order
+    document.getElementById('btnGenerate').addEventListener('click', async () => {
+      const resEl = document.getElementById('result');
+      const tavolo = document.getElementById('tavolo').value.trim();
+      const cliente = document.getElementById('cliente').value.trim();
+
+      // Validate
+      const errors = validateOrder();
+      if (errors.length > 0) {
+        showValidationTooltip(errors);
         return;
       }
-      
-      const data = await resp.json();
-      
-      // L'API può restituire direttamente un array o un oggetto con orders
-      let orders = [];
-      if (Array.isArray(data)) {
-        orders = data;
-      } else if (data.orders) {
-        orders = data.orders;
+
+      hideValidationTooltip();
+      hideSuccessTooltip();
+
+      // Show loading tooltip instead of alert below button
+      showLoadingTooltip();
+      resEl.innerHTML = ''; // Clear any previous messages
+
+      const autoPrint = document.getElementById('autoPrint').checked;
+
+      try {
+        const resp = await fetch('/genera', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            cart: cart,
+            currency: currency,
+            auto_print: autoPrint,
+            tavolo: tavolo,
+            cliente: cliente,
+            pagamento: selectedPayment
+          })
+        });
+
+        const js = await resp.json();
+        if (!resp.ok || !js.ok) {
+          showErrorTooltip(js.error || 'Errore nella generazione dell\'ordine');
+          return;
+        }
+
+        // Show success tooltip with order info and download button
+        showSuccessTooltip(js.codice_ordine, js.totale_generale, js.zip_base64);
+
+        // Reset cart
+        cart.length = 0;
+        document.getElementById('tavolo').value = '';
+        document.getElementById('cliente').value = '';
+        document.getElementById('pagatoCliente').value = '';
+        selectedPayment = null;
+        document.querySelectorAll('.payment-btn').forEach(btn => btn.classList.remove('active'));
+        document.getElementById('changeCalculator').style.display = 'none';
+        updateUI();
+      } catch (err) {
+        showErrorTooltip(`Errore: ${err.message || err}`);
       }
-      
-      if (orders && orders.length > 0) {
-        filteredOrders = orders;
-        renderOrders();
+    });
+
+    function showError(msg) {
+      document.getElementById('productsArea').innerHTML = `<div class="loading" style="color: var(--destructive)">${msg}</div>`;
+    }
+
+    // Update change when paid amount changes
+    document.getElementById('pagatoCliente').addEventListener('input', updateChange);
+
+    // Dark mode toggle
+    const themeToggle = document.getElementById('themeToggle');
+    const html = document.documentElement;
+
+    // Funzione per aggiornare l'icona del tema
+    function updateThemeIcon(theme) {
+      const iconName = theme === 'dark' ? 'sun' : 'moon';
+      // Sostituisci completamente l'HTML dell'icona
+      themeToggle.innerHTML = `<i data-lucide="${iconName}" style="width: 18px; height: 18px;"></i>`;
+      // Ricrea le icone
+      lucide.createIcons();
+    }
+
+    // Check for saved theme preference or default to light mode
+    const currentTheme = localStorage.getItem('theme') || 'light';
+    html.setAttribute('data-theme', currentTheme);
+    updateThemeIcon(currentTheme);
+
+    themeToggle.addEventListener('click', () => {
+      const theme = html.getAttribute('data-theme');
+      const newTheme = theme === 'light' ? 'dark' : 'light';
+
+      html.setAttribute('data-theme', newTheme);
+      localStorage.setItem('theme', newTheme);
+      updateThemeIcon(newTheme);
+    });
+
+    // Initialize
+    loadCategories();
+    updateUI();
+
+    // Initialize Lucide icons
+    lucide.createIcons();
+
+    // === Orders Sidebar Functionality ===
+    let allOrders = [];
+    let filteredOrders = [];
+    let currentSearchTerm = '';
+
+    const ordersSidebar = document.getElementById('ordersSidebar');
+    const btnOpenOrders = document.getElementById('btnOpenOrders');
+    const btnLoadTodayOrders = document.getElementById('btnLoadTodayOrders');
+    const searchOrderInput = document.getElementById('searchOrderInput');
+    const ordersContent = document.getElementById('ordersContent');
+
+    // Toggle orders sidebar
+    btnOpenOrders.addEventListener('click', () => {
+      const isOpen = ordersSidebar.classList.contains('active');
+      if (isOpen) {
+        ordersSidebar.classList.remove('active');
+        btnOpenOrders.classList.remove('active');
       } else {
-        ordersContent.innerHTML = '<div class="orders-empty">' + icon('search') + ' Nessun ordine trovato</div>';
-        setTimeout(() => lucide.createIcons(), 0);
+        ordersSidebar.classList.add('active');
+        btnOpenOrders.classList.add('active');
       }
-    } catch (err) {
-      console.error('Error searching orders:', err);
-      ordersContent.innerHTML = '<div class="orders-empty" style="color: var(--destructive);">' + icon('x-circle') + ' Errore di ricerca</div>';
+    });
+
+    // Load today's orders
+    btnLoadTodayOrders.addEventListener('click', async () => {
+      const btnIcon = document.getElementById('loadOrdersIcon');
+      const btnText = document.getElementById('loadOrdersText');
+
+      btnLoadTodayOrders.disabled = true;
+      btnIcon.textContent = '⏳';
+      btnText.textContent = 'Caricamento...';
+
+      ordersContent.innerHTML = '<div class="orders-loading">' + icon('loader-2') + ' Caricamento ordini...</div>';
+      setTimeout(() => lucide.createIcons(), 0);
+
+      try {
+        const resp = await fetch('/api/orders/day/today');
+
+        if (!resp.ok) {
+          if (resp.status === 404) {
+            ordersContent.innerHTML = '<div class="orders-empty">' + icon('inbox') + ' Nessun ordine trovato per oggi</div>';
+            setTimeout(() => lucide.createIcons(), 0);
+          } else {
+            throw new Error('Errore nel caricamento degli ordini');
+          }
+          return;
+        }
+
+        const data = await resp.json();
+
+        // L'API può restituire direttamente un array o un oggetto con success e orders
+        let orders = [];
+        if (Array.isArray(data)) {
+          orders = data;
+        } else if (data.success && data.orders) {
+          orders = data.orders;
+        } else if (data.orders) {
+          orders = data.orders;
+        }
+
+        if (orders && orders.length > 0) {
+          allOrders = orders;
+          filteredOrders = [...allOrders];
+          currentSearchTerm = '';
+          renderOrders();
+        } else {
+          ordersContent.innerHTML = '<div class="orders-empty">' + icon('inbox') + ' Nessun ordine trovato per oggi</div>';
+          setTimeout(() => lucide.createIcons(), 0);
+        }
+      } catch (err) {
+        console.error('Error loading orders:', err);
+        ordersContent.innerHTML = '<div class="orders-empty" style="color: var(--destructive);">' + icon('x-circle') + ' Errore di connessione</div>';
+        setTimeout(() => lucide.createIcons(), 0);
+      } finally {
+        btnLoadTodayOrders.disabled = false;
+        btnIcon.setAttribute('data-lucide', 'download');
+        lucide.createIcons();
+        btnText.textContent = 'Recupera ordini di oggi';
+      }
+    });
+
+    // Search orders
+    let searchTimeout;
+    searchOrderInput.addEventListener('input', async (e) => {
+      const searchTerm = e.target.value.trim();
+      currentSearchTerm = searchTerm;
+
+      // Clear previous timeout
+      if (searchTimeout) {
+        clearTimeout(searchTimeout);
+      }
+
+      // Se la ricerca è vuota, ricarica tutti gli ordini
+      if (searchTerm === '') {
+        filteredOrders = [...allOrders];
+        renderOrders();
+        return;
+      }
+
+      // Debounce: aspetta 500ms prima di fare la ricerca
+      searchTimeout = setTimeout(async () => {
+        ordersContent.innerHTML = '<div class="orders-loading">' + icon('loader-2') + ' Ricerca in corso...</div>';
+        setTimeout(() => lucide.createIcons(), 0);
+
+        try {
+          const resp = await fetch(`/api/orders/search/daily/${encodeURIComponent(searchTerm)}`);
+
+          if (!resp.ok) {
+            if (resp.status === 404) {
+              ordersContent.innerHTML = '<div class="orders-empty">' + icon('search') + ' Nessun ordine trovato</div>';
+              setTimeout(() => lucide.createIcons(), 0);
+            } else {
+              throw new Error('Errore nella ricerca');
+            }
+            return;
+          }
+
+          const data = await resp.json();
+
+          // L'API può restituire direttamente un array o un oggetto con orders
+          let orders = [];
+          if (Array.isArray(data)) {
+            orders = data;
+          } else if (data.orders) {
+            orders = data.orders;
+          }
+
+          if (orders && orders.length > 0) {
+            filteredOrders = orders;
+            renderOrders();
+          } else {
+            ordersContent.innerHTML = '<div class="orders-empty">' + icon('search') + ' Nessun ordine trovato</div>';
+            setTimeout(() => lucide.createIcons(), 0);
+          }
+        } catch (err) {
+          console.error('Error searching orders:', err);
+          ordersContent.innerHTML = '<div class="orders-empty" style="color: var(--destructive);">' + icon('x-circle') + ' Errore di ricerca</div>';
+          setTimeout(() => lucide.createIcons(), 0);
+        }
+      }, 500);
+    });
+
+    // Render orders
+    function renderOrders() {
+      if (filteredOrders.length === 0) {
+        ordersContent.innerHTML = '<div class="orders-empty">' + icon('search') + ' Nessun ordine corrisponde alla ricerca</div>';
+        setTimeout(() => lucide.createIcons(), 0);
+        return;
+      }
+
+      const ordersHtml = filteredOrders.map(order => createOrderCard(order)).join('');
+      ordersContent.innerHTML = ordersHtml;
       setTimeout(() => lucide.createIcons(), 0);
     }
-  }, 500);
-});
 
-// Render orders
-function renderOrders() {
-  if (filteredOrders.length === 0) {
-    ordersContent.innerHTML = '<div class="orders-empty">' + icon('search') + ' Nessun ordine corrisponde alla ricerca</div>';
-    setTimeout(() => lucide.createIcons(), 0);
-    return;
-  }
-  
-  const ordersHtml = filteredOrders.map(order => createOrderCard(order)).join('');
-  ordersContent.innerHTML = ordersHtml;
-  setTimeout(() => lucide.createIcons(), 0);
-}
+    // Check if text matches search term (for full field highlighting)
+    function matchesSearch(text, searchTerm) {
+      if (!searchTerm || !text) return false;
+      return String(text).toLowerCase().includes(searchTerm.toLowerCase());
+    }
 
-// Check if text matches search term (for full field highlighting)
-function matchesSearch(text, searchTerm) {
-  if (!searchTerm || !text) return false;
-  return String(text).toLowerCase().includes(searchTerm.toLowerCase());
-}
+    // Toggle order items visibility
+    function toggleOrderItems(toggleElement) {
+      const listElement = toggleElement.nextElementSibling;
+      const isCollapsed = listElement.classList.contains('collapsed');
 
-// Toggle order items visibility
-function toggleOrderItems(toggleElement) {
-  const listElement = toggleElement.nextElementSibling;
-  const isCollapsed = listElement.classList.contains('collapsed');
-  
-  if (isCollapsed) {
-    listElement.classList.remove('collapsed');
-    toggleElement.classList.remove('collapsed');
-  } else {
-    listElement.classList.add('collapsed');
-    toggleElement.classList.add('collapsed');
-  }
-}
+      if (isCollapsed) {
+        listElement.classList.remove('collapsed');
+        toggleElement.classList.remove('collapsed');
+      } else {
+        listElement.classList.add('collapsed');
+        toggleElement.classList.add('collapsed');
+      }
+    }
 
-// Create order card HTML
-function createOrderCard(order) {
-  const code = order.id || order.code || 'N/A';
-  const table = order.table !== undefined ? String(order.table) : 'N/A';
-  const customer = order.customer || 'N/A';
-  const payment = order.paymentMethod || 'N/A';
-  const total = parseFloat(order.price || order.totalPrice || 0);
-  
-  // Check if fields match search to apply full highlighting
-  const codeMatches = matchesSearch(code, currentSearchTerm);
-  const tableMatches = matchesSearch(table, currentSearchTerm);
-  const customerMatches = matchesSearch(customer, currentSearchTerm);
-  
-  // Format date
-  let dateStr = 'N/A';
-  if (order.createdAt || order.dateTime) {
-    const date = new Date(order.createdAt || order.dateTime);
-    dateStr = date.toLocaleString('it-IT', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  }
-  
-  // Render food items
-  let itemsHtml = '';
-  if (order.foodsOrdered && order.foodsOrdered.length > 0) {
-    itemsHtml = order.foodsOrdered.map(item => {
-      // Gestione per API che restituisce solo foodId e quantity
-      if (item.foodId && !item.food) {
-        const qty = item.quantity || 0;
-        return `
+    // Create order card HTML
+    function createOrderCard(order) {
+      const code = order.id || order.code || 'N/A';
+      const table = order.table !== undefined ? String(order.table) : 'N/A';
+      const customer = order.customer || 'N/A';
+      const payment = order.paymentMethod || 'N/A';
+      const total = parseFloat(order.price || order.totalPrice || 0);
+
+      // Check if fields match search to apply full highlighting
+      const codeMatches = matchesSearch(code, currentSearchTerm);
+      const tableMatches = matchesSearch(table, currentSearchTerm);
+      const customerMatches = matchesSearch(customer, currentSearchTerm);
+
+      // Format date
+      let dateStr = 'N/A';
+      if (order.createdAt || order.dateTime) {
+        const date = new Date(order.createdAt || order.dateTime);
+        dateStr = date.toLocaleString('it-IT', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+      }
+
+      // Render food items
+      let itemsHtml = '';
+      if (order.foodsOrdered && order.foodsOrdered.length > 0) {
+        itemsHtml = order.foodsOrdered.map(item => {
+          // Gestione per API che restituisce solo foodId e quantity
+          if (item.foodId && !item.food) {
+            const qty = item.quantity || 0;
+            return `
           <div class="order-item">
             <div class="order-item-name">
               <span class="order-item-qty">${qty}x</span>
@@ -2218,16 +2239,16 @@ function createOrderCard(order) {
             <div>-</div>
           </div>
         `;
-      }
-      
-      // Gestione per API che restituisce l'oggetto food completo
-      const foodName = item.food?.name || item.name || 'Prodotto';
-      const foodMatches = matchesSearch(foodName, currentSearchTerm);
-      const qty = item.quantity || 0;
-      const itemPrice = parseFloat(item.food?.price || item.price || 0);
-      const itemTotal = itemPrice * qty;
-      
-      return `
+          }
+
+          // Gestione per API che restituisce l'oggetto food completo
+          const foodName = item.food?.name || item.name || 'Prodotto';
+          const foodMatches = matchesSearch(foodName, currentSearchTerm);
+          const qty = item.quantity || 0;
+          const itemPrice = parseFloat(item.food?.price || item.price || 0);
+          const itemTotal = itemPrice * qty;
+
+          return `
         <div class="order-item">
           <div class="order-item-name">
             <span class="order-item-qty">${qty}x</span>
@@ -2236,10 +2257,10 @@ function createOrderCard(order) {
           <div>${itemTotal > 0 ? itemTotal.toFixed(2) + ' ' + currency : '-'}</div>
         </div>
       `;
-    }).join('');
-  }
-  
-  return `
+        }).join('');
+      }
+
+      return `
     <div class="order-card">
       <div class="order-header">
         <div>
@@ -2283,49 +2304,50 @@ function createOrderCard(order) {
       </button>
     </div>
   `;
-}
+    }
 
-// Register Service Worker for PWA
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/static/sw.js')
-      .then(registration => {
-        console.log('ServiceWorker registered:', registration.scope);
-      })
-      .catch(error => {
-        console.log('ServiceWorker registration failed:', error);
+    // Register Service Worker for PWA
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/static/sw.js')
+          .then(registration => {
+            console.log('ServiceWorker registered:', registration.scope);
+          })
+          .catch(error => {
+            console.log('ServiceWorker registration failed:', error);
+          });
       });
-  });
-}
+    }
 
-// PWA Install prompt
-let deferredPrompt;
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  deferredPrompt = e;
-  console.log('PWA install prompt available');
-});
+    // PWA Install prompt
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      console.log('PWA install prompt available');
+    });
 
-</script>
+  </script>
 
-<!-- Validation Tooltip -->
-<div id="validationTooltip" class="validation-tooltip">
-  <div class="validation-tooltip-header">
-    <i data-lucide="alert-circle" style="width: 16px; height: 16px;"></i>
-    <span>Compila i campi mancanti</span>
+  <!-- Validation Tooltip -->
+  <div id="validationTooltip" class="validation-tooltip">
+    <div class="validation-tooltip-header">
+      <i data-lucide="alert-circle" style="width: 16px; height: 16px;"></i>
+      <span>Compila i campi mancanti</span>
+    </div>
+    <ul class="validation-tooltip-list" id="validationList"></ul>
   </div>
-  <ul class="validation-tooltip-list" id="validationList"></ul>
-</div>
 
-<!-- Success Tooltip -->
-<div id="successTooltip" class="success-tooltip">
-  <div class="success-tooltip-header">
-    <i data-lucide="check-circle" style="width: 16px; height: 16px;"></i>
-    <span>Ordine creato con successo!</span>
+  <!-- Success Tooltip -->
+  <div id="successTooltip" class="success-tooltip">
+    <div class="success-tooltip-header">
+      <i data-lucide="check-circle" style="width: 16px; height: 16px;"></i>
+      <span>Ordine creato con successo!</span>
+    </div>
+    <div class="success-tooltip-content" id="successContent"></div>
+    <div id="successDownloadBtn"></div>
   </div>
-  <div class="success-tooltip-content" id="successContent"></div>
-  <div id="successDownloadBtn"></div>
-</div>
 
 </body>
+
 </html>

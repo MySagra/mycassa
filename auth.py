@@ -5,9 +5,9 @@ Modulo per la gestione dell'autenticazione con JWT.
 from functools import wraps
 
 import requests
-from flask import redirect, session, url_for
+from flask import redirect, session, url_for, request as flask_request
 
-from config import API_LOGIN, API_TIMEOUT
+from config import API_LOGIN, API_LOGOUT, API_REFRESH, API_TIMEOUT
 
 
 def login_user(username, password):
@@ -30,11 +30,13 @@ def login_user(username, password):
         
         if response.status_code == 200:
             data = response.json()
-            token = data.get('token') or data.get('access_token')
+            # L'access token è nel body della risposta
+            token = data.get('access_token') or data.get('accessToken') or data.get('token')
             if token:
+                # Il refresh token è automaticamente salvato come cookie HttpOnly dal server
                 return True, token, None
             else:
-                return False, None, 'Token non ricevuto dalla risposta API'
+                return False, None, 'Access token non ricevuto dalla risposta API'
         elif response.status_code == 401:
             return False, None, 'Credenziali non valide'
         else:
@@ -46,6 +48,82 @@ def login_user(username, password):
         return False, None, 'Impossibile connettersi al server API'
     except Exception as e:
         return False, None, f'Errore imprevisto: {str(e)}'
+
+
+def refresh_access_token():
+    """
+    Richiede un nuovo access token usando il refresh token (cookie HttpOnly).
+    Il refresh token viene inviato automaticamente dal browser via cookie.
+    
+    Returns:
+        tuple: (success: bool, token: str or None, error_message: str or None)
+    """
+    try:
+        # Ottieni i cookie dalla richiesta Flask corrente per inoltrarli al backend
+        cookies = {}
+        if flask_request:
+            cookies = flask_request.cookies
+        
+        # Invia la richiesta di refresh con i cookie della richiesta corrente
+        response = requests.post(
+            API_REFRESH,
+            timeout=API_TIMEOUT,
+            cookies=cookies  # Inoltra i cookie (incluso il refresh token HttpOnly)
+        )
+        
+        if response.status_code == 200:
+            data = response.json()
+            # Il nuovo access token è nel body della risposta
+            token = data.get('access_token') or data.get('accessToken') or data.get('token')
+            if token:
+                return True, token, None
+            else:
+                return False, None, 'Access token non ricevuto dalla risposta di refresh'
+        elif response.status_code == 401:
+            return False, None, 'Refresh token scaduto o non valido'
+        else:
+            return False, None, f'Errore refresh: {response.status_code}'
+            
+    except requests.exceptions.Timeout:
+        return False, None, 'Timeout della richiesta refresh'
+    except requests.exceptions.ConnectionError:
+        return False, None, 'Impossibile connettersi al server API per il refresh'
+    except Exception as e:
+        return False, None, f'Errore imprevisto durante refresh: {str(e)}'
+
+
+def logout_user():
+    """
+    Effettua il logout chiamando l'API per invalidare il refresh token.
+    
+    Returns:
+        tuple: (success: bool, error_message: str or None)
+    """
+    try:
+        # Ottieni i cookie dalla richiesta Flask corrente
+        cookies = {}
+        if flask_request:
+            cookies = flask_request.cookies
+        
+        # Chiama l'endpoint di logout per invalidare il refresh token sul server
+        response = requests.post(
+            API_LOGOUT,
+            timeout=API_TIMEOUT,
+            cookies=cookies  # Inoltra i cookie per identificare la sessione
+        )
+        
+        if response.status_code in [200, 204]:
+            return True, None
+        else:
+            # Anche se il logout remoto fallisce, procediamo con la pulizia locale
+            return True, f'Logout locale eseguito (server response: {response.status_code})'
+            
+    except requests.exceptions.Timeout:
+        return True, 'Logout locale eseguito (timeout server)'
+    except requests.exceptions.ConnectionError:
+        return True, 'Logout locale eseguito (server non raggiungibile)'
+    except Exception as e:
+        return True, f'Logout locale eseguito (errore: {str(e)})'
 
 
 def save_token_to_session(token):

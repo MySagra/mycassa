@@ -1,17 +1,18 @@
 <!doctype html>
 <html lang="it">
+
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f59e0b">
   <meta name="description" content="Sistema POS per ristoranti e eventi - MyCassa">
-  
+
   <!-- Favicon -->
   <link rel="icon" type="image/png" sizes="32x32" href="/static/assets/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/static/assets/favicon-16x16.png">
   <link rel="apple-touch-icon" sizes="180x180" href="/static/assets/apple-touch-icon.png">
   <link rel="manifest" href="/static/assets/site.webmanifest">
-  
+
   <title>Login - MyCassa</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
   <script src="https://unpkg.com/lucide@latest"></script>
@@ -24,12 +25,12 @@
       justify-content: center;
       padding: 1rem;
     }
-    
+
     .login-container {
       width: 100%;
       max-width: 420px;
     }
-    
+
     .login-card {
       background: var(--card);
       border: 1px solid var(--border);
@@ -37,14 +38,14 @@
       box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
       overflow: hidden;
     }
-    
+
     .login-header {
       background: var(--primary);
       color: var(--primary-foreground);
       padding: 2rem;
       text-align: center;
     }
-    
+
     .login-header-icon {
       width: 96px;
       height: 96px;
@@ -56,68 +57,68 @@
       margin: 0 auto 1rem;
       overflow: hidden;
     }
-    
+
     .login-header-icon img {
       width: 100%;
       height: 100%;
       object-fit: cover;
     }
-    
+
     .login-header-icon svg {
       width: 100%;
       height: 100%;
     }
-    
+
     .login-header-icon.has-image {
       background: transparent;
       padding: 0.75rem;
     }
-    
+
     .login-header h1 {
       font-size: 1.5rem;
       font-weight: 700;
       margin-bottom: 0.5rem;
       color: var(--primary-foreground);
     }
-    
+
     .login-header p {
       font-size: 0.875rem;
       opacity: 0.9;
       margin: 0;
     }
-    
+
     .login-body {
       padding: 2rem;
     }
-    
+
     .input-wrapper {
       position: relative;
       display: flex;
       align-items: center;
     }
-    
+
     .input-icon {
       position: absolute;
       left: 0.875rem;
       color: var(--muted-foreground);
       pointer-events: none;
     }
-    
+
     .form-input {
       padding-left: 2.75rem;
     }
-    
+
     .form-input::placeholder {
       color: var(--muted-foreground);
     }
-    
+
     .checkbox-wrapper {
       display: flex;
       align-items: center;
       gap: 0.5rem;
       margin-bottom: 1.5rem;
     }
-    
+
     .checkbox-input {
       width: 1rem;
       height: 1rem;
@@ -126,14 +127,14 @@
       cursor: pointer;
       accent-color: var(--primary);
     }
-    
+
     .checkbox-label {
       font-size: 0.875rem;
       color: var(--foreground);
       cursor: pointer;
       user-select: none;
     }
-    
+
     /* Override btn-primary for login button - golden style */
     .login-body .btn-primary {
       background: linear-gradient(135deg, #f59e0b 0%, #eab308 100%);
@@ -146,30 +147,30 @@
       width: 100%;
       justify-content: center;
     }
-    
+
     .login-body .btn-primary:hover {
       background: linear-gradient(135deg, #eab308 0%, #f59e0b 100%);
       box-shadow: 0 4px 8px rgba(245, 158, 11, 0.4);
       opacity: 1;
       transform: translateY(-1px);
     }
-    
+
     .login-body .btn-primary:active {
       transform: translateY(0);
       box-shadow: 0 2px 4px rgba(245, 158, 11, 0.3);
     }
-    
+
     [data-theme="dark"] .login-body .btn-primary {
       background: linear-gradient(135deg, #f59e0b 0%, #eab308 100%);
       color: #78350f;
       border-color: #f59e0b;
     }
-    
+
     [data-theme="dark"] .login-body .btn-primary:hover {
       background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
       box-shadow: 0 4px 12px rgba(245, 158, 11, 0.5);
     }
-    
+
     .alert {
       padding: 0.875rem;
       border-radius: var(--radius);
@@ -180,55 +181,55 @@
       align-items: center;
       gap: 0.5rem;
     }
-    
+
     .alert-success {
       background: rgba(34, 197, 94, 0.15);
       border: 1px solid rgba(34, 197, 94, 0.4);
       color: #16a34a;
       font-weight: 500;
     }
-    
+
     [data-theme="dark"] .alert-success {
       background: rgba(34, 197, 94, 0.2);
       border-color: rgba(34, 197, 94, 0.5);
       color: #4ade80;
     }
-    
+
     .alert-error {
       background: rgba(239, 68, 68, 0.1);
       border: 1px solid rgba(239, 68, 68, 0.3);
       color: #dc2626;
     }
-    
+
     [data-theme="dark"] .alert-error {
       background: rgba(239, 68, 68, 0.15);
       border-color: rgba(239, 68, 68, 0.4);
       color: #f87171;
     }
-    
+
     .login-footer {
       text-align: center;
       margin-top: 1.5rem;
       padding-top: 1.5rem;
       border-top: 1px solid var(--border);
     }
-    
+
     .login-footer-text {
       font-size: 0.75rem;
       color: var(--muted-foreground);
     }
-    
+
     .login-footer-text a {
       color: var(--muted-foreground);
       text-decoration: none;
       transition: all 0.2s;
     }
-    
+
     .login-footer-text a:hover {
       color: var(--primary);
       text-decoration: underline;
     }
-    
+
     .theme-toggle {
       position: fixed;
       top: 1rem;
@@ -246,25 +247,25 @@
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
       color: var(--foreground);
     }
-    
+
     [data-theme="dark"] .theme-toggle {
       background: var(--muted);
       border-color: var(--primary);
       box-shadow: 0 2px 8px rgba(245, 158, 11, 0.2);
     }
-    
+
     .theme-toggle:hover {
       background: var(--accent);
       transform: scale(1.05);
       border-color: var(--primary);
     }
-    
+
     [data-theme="dark"] .theme-toggle:hover {
       background: var(--primary);
       color: var(--primary-foreground);
       box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
     }
-    
+
     /* API Config Button - Same style as theme toggle */
     .api-config-toggle {
       position: fixed;
@@ -284,32 +285,32 @@
       color: var(--foreground);
       z-index: 1000;
     }
-    
+
     [data-theme="dark"] .api-config-toggle {
       background: var(--muted);
       border-color: var(--primary);
       box-shadow: 0 2px 8px rgba(245, 158, 11, 0.2);
     }
-    
+
     .api-config-toggle:hover {
       background: var(--accent);
       transform: scale(1.05);
       border-color: var(--primary);
     }
-    
+
     [data-theme="dark"] .api-config-toggle:hover {
       background: var(--primary);
       color: var(--primary-foreground);
       box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
     }
-    
+
     .api-config-toggle.active {
       background: var(--primary);
       color: var(--primary-foreground);
       border-color: var(--primary);
       box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
     }
-    
+
     /* API Config Card */
     .api-config-card {
       position: fixed;
@@ -326,26 +327,27 @@
       z-index: 999;
       animation: slideDown 0.2s ease;
     }
-    
+
     [data-theme="dark"] .api-config-card {
       box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
     }
-    
+
     .api-config-card.show {
       display: block;
     }
-    
+
     @keyframes slideDown {
       from {
         opacity: 0;
         transform: translateY(-10px);
       }
+
       to {
         opacity: 1;
         transform: translateY(0);
       }
     }
-    
+
     .api-card-header {
       display: flex;
       align-items: center;
@@ -354,17 +356,17 @@
       padding-bottom: 0.75rem;
       border-bottom: 1px solid var(--border);
     }
-    
+
     .api-card-title {
       font-size: 1rem;
       font-weight: 600;
       color: var(--foreground);
     }
-    
+
     .form-group-api {
       margin-bottom: 1rem;
     }
-    
+
     .form-label-api {
       display: block;
       font-size: 0.875rem;
@@ -372,7 +374,7 @@
       margin-bottom: 0.5rem;
       color: var(--foreground);
     }
-    
+
     .form-input-api {
       width: 100%;
       padding: 0.625rem;
@@ -383,25 +385,25 @@
       font-size: 0.875rem;
       transition: all 0.2s;
     }
-    
+
     .form-input-api:focus {
       outline: none;
       border-color: var(--primary);
       box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
     }
-    
+
     .form-help-api {
       font-size: 0.75rem;
       color: var(--muted-foreground);
       margin-top: 0.25rem;
     }
-    
+
     .api-buttons {
       display: flex;
       gap: 0.5rem;
       justify-content: flex-end;
     }
-    
+
     .btn-api {
       padding: 0.5rem 1rem;
       border: none;
@@ -414,28 +416,28 @@
       align-items: center;
       gap: 0.35rem;
     }
-    
+
     .btn-api-test {
       background: var(--secondary);
       color: var(--secondary-foreground);
       border: 1px solid var(--border);
     }
-    
+
     .btn-api-test:hover {
       background: var(--accent);
     }
-    
+
     .btn-api-save {
       background: var(--primary);
       color: var(--primary-foreground);
     }
-    
+
     .btn-api-save:hover {
       opacity: 0.9;
       transform: translateY(-1px);
       box-shadow: 0 4px 8px rgba(245, 158, 11, 0.3);
     }
-    
+
     .alert-api {
       padding: 0.65rem;
       border-radius: var(--radius);
@@ -446,61 +448,61 @@
       gap: 0.35rem;
       line-height: 1.4;
     }
-    
+
     .alert-api-success {
       background: rgba(34, 197, 94, 0.1);
       border: 1px solid rgba(34, 197, 94, 0.3);
       color: #16a34a;
     }
-    
+
     [data-theme="dark"] .alert-api-success {
       background: rgba(34, 197, 94, 0.15);
       border-color: rgba(34, 197, 94, 0.4);
       color: #4ade80;
     }
-    
+
     .alert-api-error {
       background: rgba(239, 68, 68, 0.1);
       border: 1px solid rgba(239, 68, 68, 0.3);
       color: #dc2626;
     }
-    
+
     [data-theme="dark"] .alert-api-error {
       background: rgba(239, 68, 68, 0.15);
       border-color: rgba(239, 68, 68, 0.4);
       color: #f87171;
     }
-    
+
     .alert-api-info {
       background: rgba(59, 130, 246, 0.1);
       border: 1px solid rgba(59, 130, 246, 0.3);
       color: #2563eb;
     }
-    
+
     [data-theme="dark"] .alert-api-info {
       background: rgba(59, 130, 246, 0.15);
       border-color: rgba(59, 130, 246, 0.4);
       color: #60a5fa;
     }
-    
-    
+
+
     @media (max-width: 480px) {
       body {
         padding: 0.5rem;
       }
-      
+
       .login-header {
         padding: 1.5rem;
       }
-      
+
       .login-body {
         padding: 1.5rem;
       }
-      
+
       .login-header h1 {
         font-size: 1.25rem;
       }
-      
+
       .api-config-card {
         top: 4.5rem;
         right: 0.5rem;
@@ -508,23 +510,24 @@
         width: auto;
         max-width: none;
       }
-      
+
       .api-config-toggle {
         right: 0.5rem;
       }
-      
+
       .theme-toggle {
         right: 0.5rem;
       }
     }
   </style>
 </head>
+
 <body>
   <!-- API Config Button -->
   <button class="api-config-toggle" onclick="toggleApiConfig()" aria-label="Configura API" title="Configura Server API">
     <i data-lucide="server" style="width: 18px; height: 18px;"></i>
   </button>
-  
+
   <!-- Theme Toggle Button -->
   <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
     <i data-lucide="sun" style="width: 18px; height: 18px;"></i>
@@ -540,7 +543,7 @@
         <h1>MyCassa</h1>
         <p>Accedi per continuare</p>
       </div>
-      
+
       <div class="login-body">
         {% if error %}
         <div class="alert alert-error">
@@ -548,87 +551,65 @@
           <span>{{ error }}</span>
         </div>
         {% endif %}
-        
+
         <form method="POST" action="{{ url_for('login_page') }}">
           <div class="form-group">
             <label for="username" class="form-label">Username</label>
             <div class="input-wrapper">
               <i data-lucide="user" class="input-icon" style="width: 18px; height: 18px;"></i>
-              <input 
-                type="text" 
-                class="form-input" 
-                id="username" 
-                name="username" 
-                required 
-                autofocus
-                placeholder="Inserisci il tuo username"
-                autocomplete="username">
+              <input type="text" class="form-input" id="username" name="username" required autofocus
+                placeholder="Inserisci il tuo username" autocomplete="username">
             </div>
           </div>
-          
+
           <div class="form-group">
             <label for="password" class="form-label">Password</label>
             <div class="input-wrapper">
               <i data-lucide="lock" class="input-icon" style="width: 18px; height: 18px;"></i>
-              <input 
-                type="password" 
-                class="form-input" 
-                id="password" 
-                name="password" 
-                required
-                placeholder="Inserisci la tua password"
-                autocomplete="current-password">
+              <input type="password" class="form-input" id="password" name="password" required
+                placeholder="Inserisci la tua password" autocomplete="current-password">
             </div>
           </div>
-          
+
           <div class="checkbox-wrapper">
-            <input 
-              class="checkbox-input" 
-              type="checkbox" 
-              id="remember" 
-              name="remember">
+            <input class="checkbox-input" type="checkbox" id="remember" name="remember">
             <label class="checkbox-label" for="remember">
               Ricordami
             </label>
           </div>
-          
+
           <button type="submit" class="btn btn-primary">
             <i data-lucide="log-in" style="width: 18px; height: 18px;"></i>
             <span>Accedi</span>
           </button>
-          
+
           <div class="login-footer">
             <p class="login-footer-text">
               MyCassa - <a href="https://mysagra.com/" target="_blank" rel="noopener noreferrer">MySagra</a>
             </p>
-            
+
           </div>
         </form>
       </div>
     </div>
   </div>
-  
+
   <!-- API Configuration Card -->
   <div class="api-config-card" id="apiConfigCard">
     <div class="api-card-header">
       <i data-lucide="server" style="width: 18px; height: 18px;"></i>
       <h3 class="api-card-title">Configurazione API</h3>
     </div>
-    
+
     <div id="apiAlertContainer"></div>
-    
+
     <div class="form-group-api">
       <label class="form-label-api">URL Server API</label>
-      <input 
-        type="url" 
-        id="apiUrlInput" 
-        class="form-input-api" 
-        value="{{ cfg.api_base_url }}"
-        placeholder="http://192.168.1.100:4300"
-      >
+      <input type="url" id="apiUrlInput" class="form-input-api" value="{{ cfg.api_base_url }}"
+        placeholder="http://192.168.1.100:4300">
       <p class="form-help-api">Inserisci l'indirizzo completo del server API</p>
     </div>
-    
+
     <div class="api-buttons">
       <button class="btn-api btn-api-save" onclick="saveApiConfig()" style="width: 100%;">
         <i data-lucide="save" style="width: 14px; height: 14px;"></i>
@@ -636,63 +617,63 @@
       </button>
     </div>
   </div>
-  
+
   <script>
     // Wait for DOM to be ready
-    document.addEventListener('DOMContentLoaded', function() {
-      
+    document.addEventListener('DOMContentLoaded', function () {
+
       // Initialize Lucide icons
       lucide.createIcons();
-      
+
       // Load saved theme
       const savedTheme = localStorage.getItem('theme') || 'light';
       document.documentElement.setAttribute('data-theme', savedTheme);
-      
+
       // Update theme toggle icon
       const themeToggle = document.querySelector('.theme-toggle');
       if (themeToggle) {
         updateThemeIcon(savedTheme);
       }
-      
+
       // Load custom login icon
       loadCustomIcon();
     });
-    
+
     // Funzione per aggiornare l'icona del tema
     function updateThemeIcon(theme) {
       const themeToggle = document.querySelector('.theme-toggle');
       if (!themeToggle) return;
-      
+
       const iconName = theme === 'dark' ? 'sun' : 'moon';
       // Sostituisci completamente l'HTML dell'icona
       themeToggle.innerHTML = `<i data-lucide="${iconName}" style="width: 18px; height: 18px;"></i>`;
       // Ricrea le icone
       lucide.createIcons();
     }
-    
+
     // Theme toggle functionality
     function toggleTheme() {
       const html = document.documentElement;
       const currentTheme = html.getAttribute('data-theme');
       const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-      
+
       html.setAttribute('data-theme', newTheme);
       localStorage.setItem('theme', newTheme);
-      
+
       // Update icon
       updateThemeIcon(newTheme);
     }
-    
+
     // Load custom login icon
     function loadCustomIcon() {
       const iconContainer = document.getElementById('loginIcon');
       if (!iconContainer) return;
-      
+
       // Try SVG first, then PNG
       const timestamp = Date.now();
       tryLoadSvg(iconContainer, timestamp);
     }
-    
+
     function tryLoadSvg(container, timestamp) {
       fetch(`/static/assets/images/login-icon.svg?v=${timestamp}`)
         .then(response => {
@@ -708,36 +689,36 @@
           tryLoadPng(container, timestamp);
         });
     }
-    
+
     function tryLoadPng(container, timestamp) {
       const img = new Image();
-      img.onload = function() {
+      img.onload = function () {
         container.innerHTML = '';
         container.classList.add('has-image');
         img.alt = 'Logo';
         container.appendChild(img);
       };
-      img.onerror = function() {
+      img.onerror = function () {
         // Keep default icon
         lucide.createIcons();
       };
       img.src = `/static/assets/images/login-icon.png?v=${timestamp}`;
     }
-    
+
     // API Configuration Functions
     function toggleApiConfig() {
       console.log('toggleApiConfig called!');
       const card = document.getElementById('apiConfigCard');
       const btn = document.querySelector('.api-config-toggle');
-      
+
       console.log('card:', card);
       console.log('btn:', btn);
-      
+
       if (!card || !btn) {
         console.error('Card or button not found!');
         return;
       }
-      
+
       if (card.classList.contains('show')) {
         card.classList.remove('show');
         btn.classList.remove('active');
@@ -748,30 +729,30 @@
         setTimeout(() => lucide.createIcons(), 10);
       }
     }
-    
+
     async function saveApiConfig() {
       const alertContainer = document.getElementById('apiAlertContainer');
       const apiUrl = document.getElementById('apiUrlInput').value.trim();
-      
+
       if (!apiUrl) {
         alertContainer.innerHTML = '<div class="alert-api alert-api-error"><i data-lucide="x-circle" style="width: 14px; height: 14px;"></i> Inserisci l\'URL dell\'API</div>';
         lucide.createIcons();
         return;
       }
-      
+
       // Salvataggio diretto (senza test, perché richiede autenticazione)
       alertContainer.innerHTML = '<div class="alert-api alert-api-info"><i data-lucide="loader-2" style="width: 14px; height: 14px;"></i> Salvataggio in corso...</div>';
       lucide.createIcons();
-      
+
       try {
         const response = await fetch('/api/save-api-url', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ api_base_url: apiUrl })
         });
-        
+
         const data = await response.json();
-        
+
         if (data.success) {
           alertContainer.innerHTML = '<div class="alert-api alert-api-success"><i data-lucide="check-circle" style="width: 14px; height: 14px;"></i> ✅ Configurazione salvata! Ora puoi fare login.</div>';
           setTimeout(() => {
@@ -787,18 +768,19 @@
         lucide.createIcons();
       }
     }
-    
+
     // Close API config card when clicking outside
-    document.addEventListener('click', function(event) {
+    document.addEventListener('click', function (event) {
       const card = document.getElementById('apiConfigCard');
       const btn = document.querySelector('.api-config-toggle');
-      
+
       if (!card || !btn) return;
-      
+
       if (!card.contains(event.target) && !btn.contains(event.target) && card.classList.contains('show')) {
         toggleApiConfig();
       }
     });
   </script>
 </body>
+
 </html>

@@ -5,8 +5,65 @@ Client per le chiamate API REST.
 import requests
 
 import config
-from auth import get_auth_headers
+from auth import get_auth_headers, refresh_access_token, save_token_to_session
 from config import API_CATEGORIES, API_FOODS, API_ORDERS, API_TIMEOUT
+
+
+def make_api_request(method, url, headers=None, json=None, data=None, timeout=API_TIMEOUT, retry_on_401=True):
+    """
+    Wrapper per le richieste API che gestisce automaticamente il refresh del token.
+    
+    Args:
+        method: Metodo HTTP ('GET', 'POST', etc.)
+        url: URL dell'endpoint
+        headers: Headers della richiesta (opzionale)
+        json: Body JSON (opzionale)
+        data: Body dati (opzionale)
+        timeout: Timeout della richiesta
+        retry_on_401: Se True, tenta il refresh del token in caso di 401
+        
+    Returns:
+        requests.Response: Oggetto Response
+        
+    Raises:
+        requests.exceptions.*: Eccezioni di rete
+    """
+    # Prima richiesta con token corrente
+    if headers is None:
+        headers = get_auth_headers()
+    
+    response = requests.request(
+        method=method,
+        url=url,
+        headers=headers,
+        json=json,
+        data=data,
+        timeout=timeout
+    )
+    
+    # Se riceviamo 401 e retry_on_401 è True, tentiamo il refresh
+    if response.status_code == 401 and retry_on_401:
+        # Tenta il refresh del token
+        success, new_token, error = refresh_access_token()
+        
+        if success and new_token:
+            # Salva il nuovo token in sessione
+            save_token_to_session(new_token)
+            
+            # Aggiorna gli headers con il nuovo token
+            headers['Authorization'] = f'Bearer {new_token}'
+            
+            # Riprova la richiesta con il nuovo token (senza retry per evitare loop)
+            response = requests.request(
+                method=method,
+                url=url,
+                headers=headers,
+                json=json,
+                data=data,
+                timeout=timeout
+            )
+    
+    return response
 
 
 def get_categories():
@@ -17,15 +74,10 @@ def get_categories():
         tuple: (success: bool, categories: list or None, error_message: str or None)
     """
     try:
-        headers = get_auth_headers()
         # Usa l'endpoint per le categorie disponibili
         url = f"{config.API_BASE_URL}/v1/categories/available"
         
-        response = requests.get(
-            url,
-            headers=headers,
-            timeout=API_TIMEOUT
-        )
+        response = make_api_request('GET', url)
         
         if response.status_code == 200:
             categories = response.json()
@@ -53,12 +105,7 @@ def get_products():
         tuple: (success: bool, data: list or None, error_message: str or None)
     """
     try:
-        headers = get_auth_headers()
-        response = requests.get(
-            API_FOODS,
-            headers=headers,
-            timeout=API_TIMEOUT
-        )
+        response = make_api_request('GET', API_FOODS)
         
         if response.status_code == 200:
             foods = response.json()
@@ -122,9 +169,6 @@ def create_order(order_data):
         tuple: (success: bool, order_id: int or None, error_message: str or None)
     """
     try:
-        headers = get_auth_headers()
-        headers['Content-Type'] = 'application/json'
-        
         # Converte il tavolo in numero
         table_str = order_data.get('table', '0')
         try:
@@ -150,12 +194,7 @@ def create_order(order_data):
                 }
                 payload['foodsOrdered'].append(api_item)
         
-        response = requests.post(
-            API_ORDERS,
-            json=payload,
-            headers=headers,
-            timeout=API_TIMEOUT
-        )
+        response = make_api_request('POST', API_ORDERS, json=payload)
         
         if response.status_code in (200, 201):
             result = response.json()
@@ -190,15 +229,9 @@ def get_orders(filters=None):
         tuple: (success: bool, orders: list or None, error_message: str or None)
     """
     try:
-        headers = get_auth_headers()
         params = filters or {}
         
-        response = requests.get(
-            API_ORDERS,
-            headers=headers,
-            params=params,
-            timeout=API_TIMEOUT
-        )
+        response = make_api_request('GET', API_ORDERS)
         
         if response.status_code == 200:
             orders = response.json()
@@ -229,14 +262,9 @@ def get_foods_by_category(category_id):
         tuple: (success: bool, foods: list or None, error_message: str or None)
     """
     try:
-        headers = get_auth_headers()
         url = f"{config.API_BASE_URL}/v1/foods/available/categories/{category_id}"
         
-        response = requests.get(
-            url,
-            headers=headers,
-            timeout=API_TIMEOUT
-        )
+        response = make_api_request('GET', url)
         
         if response.status_code == 200:
             foods = response.json()
@@ -267,14 +295,9 @@ def get_order_by_id(order_id):
         tuple: (success: bool, order: dict or None, error_message: str or None)
     """
     try:
-        headers = get_auth_headers()
         url = f"{config.API_BASE_URL}/v1/orders/{order_id}"
         
-        response = requests.get(
-            url,
-            headers=headers,
-            timeout=API_TIMEOUT
-        )
+        response = make_api_request('GET', url)
         
         if response.status_code == 200:
             order = response.json()
@@ -304,14 +327,9 @@ def get_today_orders():
         tuple: (success: bool, orders: list or None, error_message: str or None)
     """
     try:
-        headers = get_auth_headers()
         url = f"{config.API_BASE_URL}/v1/orders/day/today"
         
-        response = requests.get(
-            url,
-            headers=headers,
-            timeout=API_TIMEOUT
-        )
+        response = make_api_request('GET', url)
         
         if response.status_code == 200:
             orders = response.json()
@@ -344,14 +362,9 @@ def search_daily_orders(search_value):
         tuple: (success: bool, orders: list or None, error_message: str or None)
     """
     try:
-        headers = get_auth_headers()
         url = f"{config.API_BASE_URL}/v1/orders/search/daily/{search_value}"
         
-        response = requests.get(
-            url,
-            headers=headers,
-            timeout=API_TIMEOUT
-        )
+        response = make_api_request('GET', url)
         
         if response.status_code == 200:
             orders = response.json()
@@ -371,4 +384,3 @@ def search_daily_orders(search_value):
         return False, None, 'Impossibile connettersi al server API'
     except Exception as e:
         return False, None, f'Errore imprevisto: {str(e)}'
-

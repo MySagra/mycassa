@@ -94,6 +94,8 @@ API_BASE_URL = (_env_vars.get('API_BASE_URL') or
 
 # Endpoint API
 API_LOGIN = f"{API_BASE_URL}/auth/login"
+API_LOGOUT = f"{API_BASE_URL}/auth/logout"
+API_REFRESH = f"{API_BASE_URL}/auth/refresh"
 API_FOODS = f"{API_BASE_URL}/v1/foods"
 API_ORDERS = f"{API_BASE_URL}/v1/orders"
 API_CATEGORIES = f"{API_BASE_URL}/v1/categories"

@@ -1,16 +1,17 @@
 ﻿<!doctype html>
 <html lang="it">
+
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f59e0b">
-  
+
   <!-- Favicon -->
   <link rel="icon" type="image/png" sizes="32x32" href="/static/assets/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/static/assets/favicon-16x16.png">
   <link rel="apple-touch-icon" sizes="180x180" href="/static/assets/apple-touch-icon.png">
   <link rel="manifest" href="/static/assets/site.webmanifest">
-  
+
   <title>Impostazioni - MyCassa</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
   <script src="https://unpkg.com/lucide@latest"></script>
@@ -22,14 +23,14 @@
       display: flex;
       flex-direction: column;
     }
-    
+
     .header {
       border-bottom: 1px solid var(--border);
       padding: 0.5rem 1rem;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
       margin: 0;
     }
-    
+
     .header h1 {
       font-size: 1rem;
       font-weight: 600;
@@ -38,28 +39,28 @@
       align-items: center;
       gap: 0.5rem;
     }
-    
+
     .header h1 i {
       flex-shrink: 0;
     }
-    
+
     .header-actions {
       display: flex;
       align-items: center;
       gap: 0.5rem;
     }
-    
+
     .btn-destructive {
       background: var(--destructive);
       color: white;
     }
-    
+
     .main-wrapper {
       display: flex;
       flex: 1;
       overflow: hidden;
     }
-    
+
     /* Settings Sidebar */
     .settings-sidebar {
       width: 250px;
@@ -68,13 +69,13 @@
       overflow-y: auto;
       padding: 1rem;
     }
-    
+
     .settings-nav {
       display: flex;
       flex-direction: column;
       gap: 0.25rem;
     }
-    
+
     .settings-nav-item {
       padding: 0.75rem 1rem;
       border-radius: var(--radius);
@@ -89,36 +90,36 @@
       background: transparent;
       border: 1px solid transparent;
     }
-    
+
     .settings-nav-item:hover {
       background: var(--muted);
     }
-    
+
     .settings-nav-item.active {
       background: var(--primary);
       color: var(--primary-foreground);
       font-weight: 600;
     }
-    
+
     /* Content Area */
     .settings-content {
       flex: 1;
       overflow-y: auto;
       padding: 1.5rem;
     }
-    
+
     .settings-section {
       display: none;
     }
-    
+
     .settings-section.active {
       display: block;
     }
-    
+
     .section-header {
       margin-bottom: 1.5rem;
     }
-    
+
     .container {
       width: 100%;
       max-width: 1200px;
@@ -127,7 +128,7 @@
       flex: 1;
       overflow-y: auto;
     }
-    
+
     .section-title {
       font-size: 1.5rem;
       font-weight: 600;
@@ -137,19 +138,19 @@
       align-items: center;
       gap: 0.75rem;
     }
-    
+
     .section-description {
       color: var(--muted-foreground);
       font-size: 0.875rem;
       margin-bottom: 1rem;
     }
-    
+
     .section-description {
       color: var(--muted-foreground);
       font-size: 0.875rem;
       margin-bottom: 1rem;
     }
-    
+
     .settings-card {
       background: var(--card);
       border: 1px solid var(--border);
@@ -157,7 +158,7 @@
       padding: 1.5rem;
       margin-bottom: 1.5rem;
     }
-    
+
     .card-title {
       font-size: 1.125rem;
       font-weight: 600;
@@ -167,7 +168,7 @@
       align-items: center;
       gap: 0.5rem;
     }
-    
+
     .card {
       background: var(--card);
       border: 1px solid var(--border);
@@ -175,7 +176,7 @@
       padding: 1.25rem;
       margin-bottom: 1rem;
     }
-    
+
     .printer-header {
       display: flex;
       justify-content: space-between;
@@ -184,26 +185,26 @@
       padding-bottom: 0.75rem;
       border-bottom: 2px solid var(--primary);
     }
-    
+
     .printer-name {
       font-size: 1.125rem;
       font-weight: 600;
       color: var(--foreground);
     }
-    
+
     .form-help {
       font-size: 0.75rem;
       color: var(--muted-foreground);
       margin-top: 0.25rem;
     }
-    
+
     .categories-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
       gap: 0.5rem;
       margin-top: 0.5rem;
     }
-    
+
     .category-checkbox {
       display: flex;
       align-items: center;
@@ -215,29 +216,29 @@
       cursor: pointer;
       transition: all 0.2s;
     }
-    
+
     .category-checkbox:hover {
       border-color: var(--primary);
     }
-    
+
     .category-checkbox input[type="checkbox"] {
       width: 18px;
       height: 18px;
       cursor: pointer;
       accent-color: var(--primary);
     }
-    
+
     .category-checkbox.active {
       background: var(--primary);
       border-color: var(--primary);
       color: var(--primary-foreground);
     }
-    
+
     .category-checkbox span {
       font-size: 0.875rem;
       font-weight: 500;
     }
-    
+
     .btn-add-printer {
       width: 100%;
       padding: 0.75rem;
@@ -251,11 +252,11 @@
       transition: all 0.2s;
       margin-top: 1rem;
     }
-    
+
     .btn-add-printer:hover {
       opacity: 0.9;
     }
-    
+
     /* Printer specific styles */
     .printer-card {
       background: var(--card);
@@ -264,7 +265,7 @@
       padding: 1.25rem;
       margin-bottom: 1rem;
     }
-    
+
     .printer-header {
       display: flex;
       justify-content: space-between;
@@ -273,7 +274,7 @@
       padding-bottom: 0.75rem;
       border-bottom: 2px solid var(--primary);
     }
-    
+
     .printer-name {
       font-size: 1.125rem;
       font-weight: 600;
@@ -281,28 +282,28 @@
       display: flex;
       align-items: center;
     }
-    
+
     .printer-body {
       display: block;
     }
-    
+
     .printer-card.collapsed .printer-body {
       display: none;
     }
-    
+
     .printer-card.collapsed .printer-header {
       border-bottom: none;
       margin-bottom: 0;
       padding-bottom: 0;
     }
-    
+
     .categories-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
       gap: 0.5rem;
       margin-top: 0.5rem;
     }
-    
+
     .category-checkbox {
       display: flex;
       align-items: center;
@@ -314,29 +315,29 @@
       cursor: pointer;
       transition: all 0.2s;
     }
-    
+
     .category-checkbox:hover {
       border-color: var(--primary);
     }
-    
+
     .category-checkbox input[type="checkbox"] {
       width: 18px;
       height: 18px;
       cursor: pointer;
       accent-color: var(--primary);
     }
-    
+
     .category-checkbox.active {
       background: var(--primary);
       border-color: var(--primary);
       color: var(--primary-foreground);
     }
-    
+
     .category-checkbox span {
       font-size: 0.875rem;
       font-weight: 500;
     }
-    
+
     .btn-add-printer {
       width: 100%;
       padding: 0.75rem;
@@ -350,11 +351,11 @@
       transition: all 0.2s;
       margin-top: 1rem;
     }
-    
+
     .btn-add-printer:hover {
       opacity: 0.9;
     }
-    
+
     .btn-collapse {
       background: transparent;
       border: none;
@@ -369,27 +370,27 @@
       justify-content: center;
       transition: transform 0.2s;
     }
-    
+
     .printer-card.collapsed .btn-collapse {
       transform: rotate(-90deg);
     }
-    
+
     .empty-state {
       text-align: center;
       padding: 3rem 1rem;
       color: var(--muted-foreground);
     }
-    
+
     .empty-state-icon {
       font-size: 3rem;
       margin-bottom: 1rem;
     }
-    
+
     .btn-group {
       display: flex;
       gap: 0.5rem;
     }
-    
+
     .status-indicator {
       display: inline-block;
       width: 8px;
@@ -397,443 +398,441 @@
       border-radius: 50%;
       margin-right: 0.5rem;
     }
-    
+
     .status-active {
       background: #22c55e;
     }
-    
+
     .status-inactive {
       background: #ef4444;
     }
-    
+
     .printer-card.collapsed .printer-body {
       display: none;
     }
-    
+
     .printer-card.collapsed .printer-header {
       border-bottom: none;
       margin-bottom: 0;
       padding-bottom: 0;
     }
-    
+
     @media (max-width: 768px) {
       .main-wrapper {
         flex-direction: column;
       }
-      
+
       .settings-sidebar {
         width: 100%;
         border-right: none;
         border-bottom: 1px solid var(--border);
         padding: 0.5rem;
       }
-      
+
       .settings-nav {
         flex-direction: row;
         overflow-x: auto;
       }
-      
+
       .settings-nav-item {
         white-space: nowrap;
       }
     }
   </style>
 </head>
+
 <body>
 
-<!-- Header -->
-<div class="header">
-  <h1>
-    <i data-lucide="settings" style="width: 20px; height: 20px;"></i>
-    Impostazioni
-  </h1>
-  <div class="header-actions">
-    <button id="themeToggle" class="btn btn-secondary btn-icon" title="Toggle Dark Mode">
-      <i data-lucide="moon" id="themeIcon" style="width: 18px; height: 18px;"></i>
-    </button>
-    <a href="{{ url_for('home') }}" class="btn btn-secondary">
-      <i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i>
-      Torna al POS
-    </a>
-  </div>
-</div>
-
-<!-- Main Wrapper -->
-<div class="main-wrapper">
-  <!-- Sidebar Navigation -->
-  <div class="settings-sidebar">
-    <nav class="settings-nav">
-      <div class="settings-nav-item active" onclick="showSection('general')">
-        <i data-lucide="server" style="width: 18px; height: 18px;"></i>
-        Generale
-      </div>
-      <div class="settings-nav-item" onclick="showSection('printers')">
-        <i data-lucide="printer" style="width: 18px; height: 18px;"></i>
-        Stampanti
-      </div>
-      <div class="settings-nav-item" onclick="showSection('about')">
-        <i data-lucide="info" style="width: 18px; height: 18px;"></i>
-        Informazioni
-      </div>
-    </nav>
-  </div>
-
-  <!-- Content Area -->
-  <div class="settings-content">
-    <!-- General Settings Section -->
-    <div id="general-section" class="settings-section active">
-      <div class="section-header">
-        <h2 class="section-title">
-          <i data-lucide="server" style="width: 28px; height: 28px;"></i>
-          Impostazioni Generali
-        </h2>
-        <p class="section-description">Configura le impostazioni di base dell'applicazione</p>
-      </div>
-
-      <!-- API Configuration Card -->
-      <div class="settings-card">
-        <h3 class="card-title">
-          <i data-lucide="globe" style="width: 20px; height: 20px;"></i>
-          Configurazione API
-        </h3>
-        
-        <div id="apiResult"></div>
-        
-        <form id="apiForm">
-          <div class="form-group">
-            <label class="form-label">URL Base API *</label>
-            <input 
-              type="url" 
-              id="apiBaseUrl" 
-              class="form-input" 
-              value="{{ cfg.api_base_url if cfg.api_base_url else '' }}"
-              placeholder="es. http://192.168.1.100:4300"
-              required
-            >
-            <p class="form-help">Inserisci l'indirizzo completo del server API (es. http://192.168.1.100:4300)</p>
-          </div>
-          
-          <div style="display: flex; gap: 0.75rem; justify-content: flex-end;">
-            <button type="button" class="btn btn-secondary" onclick="testApiConnection()">
-              <i data-lucide="zap" style="width: 16px; height: 16px;"></i>
-              Testa Connessione
-            </button>
-            <button type="submit" class="btn btn-primary">
-              <i data-lucide="save" style="width: 16px; height: 16px;"></i>
-              Salva Configurazione
-            </button>
-          </div>
-        </form>
-      </div>
+  <!-- Header -->
+  <div class="header">
+    <h1>
+      <i data-lucide="settings" style="width: 20px; height: 20px;"></i>
+      Impostazioni
+    </h1>
+    <div class="header-actions">
+      <button id="themeToggle" class="btn btn-secondary btn-icon" title="Toggle Dark Mode">
+        <i data-lucide="moon" id="themeIcon" style="width: 18px; height: 18px;"></i>
+      </button>
+      <a href="{{ url_for('home') }}" class="btn btn-secondary">
+        <i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i>
+        Torna al POS
+      </a>
     </div>
+  </div>
 
-    <!-- Printers Section -->
-    <div id="printers-section" class="settings-section">
-      <div class="section-header">
-        <h2 class="section-title">
-          <i data-lucide="printer" style="width: 28px; height: 28px;"></i>
-          Gestione Stampanti
-        </h2>
-        <p class="section-description">Configura le stampanti ESC/POS per la stampa automatica degli ordini</p>
-      </div>
-
-      <div id="printerAlertContainer"></div>
-      
-      <div id="printersContainer">
-        <div class="empty-state">
-          <div class="empty-state-icon">📭</div>
-          <p>Nessuna stampante configurata</p>
+  <!-- Main Wrapper -->
+  <div class="main-wrapper">
+    <!-- Sidebar Navigation -->
+    <div class="settings-sidebar">
+      <nav class="settings-nav">
+        <div class="settings-nav-item active" onclick="showSection('general')">
+          <i data-lucide="server" style="width: 18px; height: 18px;"></i>
+          Generale
         </div>
-      </div>
-      
-      <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
-        <button class="btn-add-printer" onclick="addPrinter()" style="flex: 1;">
-          <i data-lucide="plus" style="width: 18px; height: 18px; display: inline-block; vertical-align: middle;"></i>
-          Aggiungi Stampante
-        </button>
-        <button class="btn-add-printer" onclick="savePrinters()" style="flex: 1; background: var(--secondary); color: var(--secondary-foreground); border: 2px solid var(--primary);">
-          <i data-lucide="save" style="width: 18px; height: 18px; display: inline-block; vertical-align: middle;"></i>
-          Salva Configurazione
-        </button>
-      </div>
-    </div>
-
-    <!-- About Section -->
-    <div id="about-section" class="settings-section">
-      <div class="section-header">
-        <h2 class="section-title">
-          <i data-lucide="info" style="width: 28px; height: 28px;"></i>
+        <div class="settings-nav-item" onclick="showSection('printers')">
+          <i data-lucide="printer" style="width: 18px; height: 18px;"></i>
+          Stampanti
+        </div>
+        <div class="settings-nav-item" onclick="showSection('about')">
+          <i data-lucide="info" style="width: 18px; height: 18px;"></i>
           Informazioni
-        </h2>
-        <p class="section-description">Dettagli sull'applicazione e documentazione</p>
-      </div>
-
-      <div class="settings-card">
-        <h3 class="card-title">
-          <i data-lucide="package" style="width: 20px; height: 20px;"></i>
-          MyCassa POS
-        </h3>
-        
-        <div style="margin-bottom: 1rem;">
-          <p style="margin-bottom: 0.5rem;"><strong>Versione:</strong> 2.0.0</p>
-          <p style="margin-bottom: 0.5rem;"><strong>Tipo:</strong> Progressive Web App (PWA)</p>
-          <p style="margin-bottom: 0.5rem;"><strong>Descrizione:</strong> Sistema POS moderno per gestione ordini, stampa scontrini e sincronizzazione con API REST.</p>
         </div>
-        
-        <div style="padding: 1rem; background: var(--muted); border-radius: var(--radius); margin-top: 1rem;">
-          <h4 style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
-            <i data-lucide="sparkles" style="width: 18px; height: 18px;"></i>
-            Caratteristiche
-          </h4>
-          <ul style="margin-left: 1.5rem; color: var(--muted-foreground); font-size: 0.875rem;">
-            <li>Interfaccia moderna con supporto dark mode</li>
-            <li>Gestione ordini con carrello dinamico</li>
-            <li>Stampa automatica su stampanti ESC/POS</li>
-            <li>Sincronizzazione con backend REST API</li>
-            <li>Filtri per categorie prodotti</li>
-            <li>Ricerca ordini precedenti</li>
-            <li>Funzionamento offline (PWA)</li>
-          </ul>
-        </div>
-      </div>
+      </nav>
     </div>
 
-  </div><!-- End settings-content -->
-</div><!-- End main-wrapper -->
+    <!-- Content Area -->
+    <div class="settings-content">
+      <!-- General Settings Section -->
+      <div id="general-section" class="settings-section active">
+        <div class="section-header">
+          <h2 class="section-title">
+            <i data-lucide="server" style="width: 28px; height: 28px;"></i>
+            Impostazioni Generali
+          </h2>
+          <p class="section-description">Configura le impostazioni di base dell'applicazione</p>
+        </div>
 
-<script>
-// Initialize Lucide Icons
-lucide.createIcons();
+        <!-- API Configuration Card -->
+        <div class="settings-card">
+          <h3 class="card-title">
+            <i data-lucide="globe" style="width: 20px; height: 20px;"></i>
+            Configurazione API
+          </h3>
 
-// Navigation between sections
-function showSection(sectionName) {
-  // Hide all sections
-  document.querySelectorAll('.settings-section').forEach(section => {
-    section.classList.remove('active');
-  });
-  
-  // Remove active from all nav items
-  document.querySelectorAll('.settings-nav-item').forEach(item => {
-    item.classList.remove('active');
-  });
-  
-  // Show selected section
-  document.getElementById(`${sectionName}-section`).classList.add('active');
-  
-  // Add active to clicked nav item
-  event.target.closest('.settings-nav-item').classList.add('active');
-  
-  // Load printer data when navigating to printers section
-  if (sectionName === 'printers' && categories.length === 0) {
-    loadCategories().then(() => {
-      loadPrinters();
-    });
-  }
-  
-  // Reinitialize icons after DOM change
-  setTimeout(() => lucide.createIcons(), 10);
-}
+          <div id="apiResult"></div>
 
-// === API Settings ===
-document.getElementById('apiForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  
-  const resultEl = document.getElementById('apiResult');
-  const apiBaseUrl = document.getElementById('apiBaseUrl').value.trim();
-  
-  if (!apiBaseUrl) {
-    resultEl.innerHTML = '<div class="alert alert-error"><i data-lucide="x-circle" style="width: 16px; height: 16px;"></i> Inserisci l\'URL dell\'API</div>';
+          <form id="apiForm">
+            <div class="form-group">
+              <label class="form-label">URL Base API *</label>
+              <input type="url" id="apiBaseUrl" class="form-input"
+                value="{{ cfg.api_base_url if cfg.api_base_url else '' }}" placeholder="es. http://192.168.1.100:4300"
+                required>
+              <p class="form-help">Inserisci l'indirizzo completo del server API (es. http://192.168.1.100:4300)</p>
+            </div>
+
+            <div style="display: flex; gap: 0.75rem; justify-content: flex-end;">
+              <button type="button" class="btn btn-secondary" onclick="testApiConnection()">
+                <i data-lucide="zap" style="width: 16px; height: 16px;"></i>
+                Testa Connessione
+              </button>
+              <button type="submit" class="btn btn-primary">
+                <i data-lucide="save" style="width: 16px; height: 16px;"></i>
+                Salva Configurazione
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Printers Section -->
+      <div id="printers-section" class="settings-section">
+        <div class="section-header">
+          <h2 class="section-title">
+            <i data-lucide="printer" style="width: 28px; height: 28px;"></i>
+            Gestione Stampanti
+          </h2>
+          <p class="section-description">Configura le stampanti ESC/POS per la stampa automatica degli ordini</p>
+        </div>
+
+        <div id="printerAlertContainer"></div>
+
+        <div id="printersContainer">
+          <div class="empty-state">
+            <div class="empty-state-icon">📭</div>
+            <p>Nessuna stampante configurata</p>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+          <button class="btn-add-printer" onclick="addPrinter()" style="flex: 1;">
+            <i data-lucide="plus" style="width: 18px; height: 18px; display: inline-block; vertical-align: middle;"></i>
+            Aggiungi Stampante
+          </button>
+          <button class="btn-add-printer" onclick="savePrinters()"
+            style="flex: 1; background: var(--secondary); color: var(--secondary-foreground); border: 2px solid var(--primary);">
+            <i data-lucide="save" style="width: 18px; height: 18px; display: inline-block; vertical-align: middle;"></i>
+            Salva Configurazione
+          </button>
+        </div>
+      </div>
+
+      <!-- About Section -->
+      <div id="about-section" class="settings-section">
+        <div class="section-header">
+          <h2 class="section-title">
+            <i data-lucide="info" style="width: 28px; height: 28px;"></i>
+            Informazioni
+          </h2>
+          <p class="section-description">Dettagli sull'applicazione e documentazione</p>
+        </div>
+
+        <div class="settings-card">
+          <h3 class="card-title">
+            <i data-lucide="package" style="width: 20px; height: 20px;"></i>
+            MyCassa POS
+          </h3>
+
+          <div style="margin-bottom: 1rem;">
+            <p style="margin-bottom: 0.5rem;"><strong>Versione:</strong> 2.0.0</p>
+            <p style="margin-bottom: 0.5rem;"><strong>Tipo:</strong> Progressive Web App (PWA)</p>
+            <p style="margin-bottom: 0.5rem;"><strong>Descrizione:</strong> Sistema POS moderno per gestione ordini,
+              stampa scontrini e sincronizzazione con API REST.</p>
+          </div>
+
+          <div style="padding: 1rem; background: var(--muted); border-radius: var(--radius); margin-top: 1rem;">
+            <h4 style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+              <i data-lucide="sparkles" style="width: 18px; height: 18px;"></i>
+              Caratteristiche
+            </h4>
+            <ul style="margin-left: 1.5rem; color: var(--muted-foreground); font-size: 0.875rem;">
+              <li>Interfaccia moderna con supporto dark mode</li>
+              <li>Gestione ordini con carrello dinamico</li>
+              <li>Stampa automatica su stampanti ESC/POS</li>
+              <li>Sincronizzazione con backend REST API</li>
+              <li>Filtri per categorie prodotti</li>
+              <li>Ricerca ordini precedenti</li>
+              <li>Funzionamento offline (PWA)</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- End settings-content -->
+  </div><!-- End main-wrapper -->
+
+  <script>
+    // Initialize Lucide Icons
     lucide.createIcons();
-    return;
-  }
-  
-  // Step 1: Test della connessione
-  resultEl.innerHTML = '<div class="alert alert-info"><i data-lucide="loader-2" style="width: 16px; height: 16px;"></i> Test connessione in corso...</div>';
-  lucide.createIcons();
-  
-  try {
-    // Test connessione prima di salvare
-    const testResponse = await fetch('/api/settings/test', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ api_base_url: apiBaseUrl })
-    });
-    
-    const testData = await testResponse.json();
-    
-    if (!testData.success) {
-      // Test fallito - NON salvare
-      resultEl.innerHTML = `<div class="alert alert-error"><i data-lucide="x-circle" style="width: 16px; height: 16px;"></i> ❌ Test fallito: ${testData.error}<br><small>La configurazione NON è stata salvata. Verifica l'URL e riprova.</small></div>`;
+
+    // Navigation between sections
+    function showSection(sectionName) {
+      // Hide all sections
+      document.querySelectorAll('.settings-section').forEach(section => {
+        section.classList.remove('active');
+      });
+
+      // Remove active from all nav items
+      document.querySelectorAll('.settings-nav-item').forEach(item => {
+        item.classList.remove('active');
+      });
+
+      // Show selected section
+      document.getElementById(`${sectionName}-section`).classList.add('active');
+
+      // Add active to clicked nav item
+      event.target.closest('.settings-nav-item').classList.add('active');
+
+      // Load printer data when navigating to printers section
+      if (sectionName === 'printers' && categories.length === 0) {
+        loadCategories().then(() => {
+          loadPrinters();
+        });
+      }
+
+      // Reinitialize icons after DOM change
+      setTimeout(() => lucide.createIcons(), 10);
+    }
+
+    // === API Settings ===
+    document.getElementById('apiForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const resultEl = document.getElementById('apiResult');
+      const apiBaseUrl = document.getElementById('apiBaseUrl').value.trim();
+
+      if (!apiBaseUrl) {
+        resultEl.innerHTML = '<div class="alert alert-error"><i data-lucide="x-circle" style="width: 16px; height: 16px;"></i> Inserisci l\'URL dell\'API</div>';
+        lucide.createIcons();
+        return;
+      }
+
+      // Step 1: Test della connessione
+      resultEl.innerHTML = '<div class="alert alert-info"><i data-lucide="loader-2" style="width: 16px; height: 16px;"></i> Test connessione in corso...</div>';
       lucide.createIcons();
-      return;
-    }
-    
-    // Step 2: Test riuscito, procedi con il salvataggio
-    resultEl.innerHTML = '<div class="alert alert-success"><i data-lucide="check-circle" style="width: 16px; height: 16px;"></i> ✅ Test riuscito! Salvataggio in corso...</div>';
-    lucide.createIcons();
-    
-    await new Promise(resolve => setTimeout(resolve, 500)); // Breve pausa per feedback visivo
-    
-    const saveResponse = await fetch('/api/settings/api', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ api_base_url: apiBaseUrl })
+
+      try {
+        // Test connessione prima di salvare
+        const testResponse = await fetch('/api/settings/test', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ api_base_url: apiBaseUrl })
+        });
+
+        const testData = await testResponse.json();
+
+        if (!testData.success) {
+          // Test fallito - NON salvare
+          resultEl.innerHTML = `<div class="alert alert-error"><i data-lucide="x-circle" style="width: 16px; height: 16px;"></i> ❌ Test fallito: ${testData.error}<br><small>La configurazione NON è stata salvata. Verifica l'URL e riprova.</small></div>`;
+          lucide.createIcons();
+          return;
+        }
+
+        // Step 2: Test riuscito, procedi con il salvataggio
+        resultEl.innerHTML = '<div class="alert alert-success"><i data-lucide="check-circle" style="width: 16px; height: 16px;"></i> ✅ Test riuscito! Salvataggio in corso...</div>';
+        lucide.createIcons();
+
+        await new Promise(resolve => setTimeout(resolve, 500)); // Breve pausa per feedback visivo
+
+        const saveResponse = await fetch('/api/settings/api', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ api_base_url: apiBaseUrl })
+        });
+
+        const saveData = await saveResponse.json();
+
+        if (saveData.success) {
+          resultEl.innerHTML = '<div class="alert alert-success"><i data-lucide="check-circle" style="width: 16px; height: 16px;"></i> ✅ Configurazione API salvata! Reindirizzamento al login...</div>';
+          lucide.createIcons();
+
+          // Reindirizza al login dopo 2 secondi (la sessione è stata invalidata)
+          setTimeout(() => {
+            window.location.href = '/login';
+          }, 2000);
+        } else {
+          resultEl.innerHTML = `<div class="alert alert-error"><i data-lucide="x-circle" style="width: 16px; height: 16px;"></i> ${saveData.error || 'Errore nel salvataggio'}</div>`;
+          lucide.createIcons();
+        }
+      } catch (err) {
+        resultEl.innerHTML = `<div class="alert alert-error"><i data-lucide="x-circle" style="width: 16px; height: 16px;"></i> Errore di connessione: ${err.message}<br><small>La configurazione NON è stata salvata.</small></div>`;
+        lucide.createIcons();
+      }
     });
-    
-    const saveData = await saveResponse.json();
-    
-    if (saveData.success) {
-      resultEl.innerHTML = '<div class="alert alert-success"><i data-lucide="check-circle" style="width: 16px; height: 16px;"></i> ✅ Configurazione API salvata! Reindirizzamento al login...</div>';
+
+    async function testApiConnection() {
+      const resultEl = document.getElementById('apiResult');
+      const apiBaseUrl = document.getElementById('apiBaseUrl').value.trim();
+
+      if (!apiBaseUrl) {
+        resultEl.innerHTML = '<div class="alert alert-error"><i data-lucide="x-circle" style="width: 16px; height: 16px;"></i> Inserisci l\'URL dell\'API prima di testare</div>';
+        lucide.createIcons();
+        return;
+      }
+
+      resultEl.innerHTML = '<div class="alert alert-info"><i data-lucide="loader-2" style="width: 16px; height: 16px;"></i> Test connessione in corso...</div>';
       lucide.createIcons();
-      
-      // Reindirizza al login dopo 2 secondi (la sessione è stata invalidata)
-      setTimeout(() => {
-        window.location.href = '/login';
-      }, 2000);
-    } else {
-      resultEl.innerHTML = `<div class="alert alert-error"><i data-lucide="x-circle" style="width: 16px; height: 16px;"></i> ${saveData.error || 'Errore nel salvataggio'}</div>`;
-      lucide.createIcons();
-    }
-  } catch (err) {
-    resultEl.innerHTML = `<div class="alert alert-error"><i data-lucide="x-circle" style="width: 16px; height: 16px;"></i> Errore di connessione: ${err.message}<br><small>La configurazione NON è stata salvata.</small></div>`;
-    lucide.createIcons();
-  }
-});
 
-async function testApiConnection() {
-  const resultEl = document.getElementById('apiResult');
-  const apiBaseUrl = document.getElementById('apiBaseUrl').value.trim();
-  
-  if (!apiBaseUrl) {
-    resultEl.innerHTML = '<div class="alert alert-error"><i data-lucide="x-circle" style="width: 16px; height: 16px;"></i> Inserisci l\'URL dell\'API prima di testare</div>';
-    lucide.createIcons();
-    return;
-  }
-  
-  resultEl.innerHTML = '<div class="alert alert-info"><i data-lucide="loader-2" style="width: 16px; height: 16px;"></i> Test connessione in corso...</div>';
-  lucide.createIcons();
-  
-  try {
-    // Usa il nuovo endpoint backend che gestisce il test
-    const response = await fetch('/api/settings/test', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ api_base_url: apiBaseUrl })
-    });
-    
-    const data = await response.json();
-    
-    if (data.success) {
-      const details = data.details ? `<br><small>${data.details}</small>` : '';
-      resultEl.innerHTML = `<div class="alert alert-success"><i data-lucide="check-circle" style="width: 16px; height: 16px;"></i> ${data.message}${details}</div>`;
-    } else {
-      resultEl.innerHTML = `<div class="alert alert-error"><i data-lucide="x-circle" style="width: 16px; height: 16px;"></i> ${data.error}</div>`;
-    }
-    lucide.createIcons();
-  } catch (err) {
-    resultEl.innerHTML = `<div class="alert alert-error"><i data-lucide="x-circle" style="width: 16px; height: 16px;"></i> Errore di connessione: ${err.message}</div>`;
-    lucide.createIcons();
-  }
-}
+      try {
+        // Usa il nuovo endpoint backend che gestisce il test
+        const response = await fetch('/api/settings/test', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ api_base_url: apiBaseUrl })
+        });
 
-// === Printer Management ===
-let printers = [];
-let categories = [];
+        const data = await response.json();
 
-// Load categories from API
-async function loadCategories() {
-  try {
-    const resp = await fetch('/api/categories');
-    const data = await resp.json();
-    
-    if (data.success) {
-      categories = data.categories;
-    } else {
-      showPrinterAlert('Errore caricamento categorie: ' + (data.error || 'Sconosciuto'), 'error');
+        if (data.success) {
+          const details = data.details ? `<br><small>${data.details}</small>` : '';
+          resultEl.innerHTML = `<div class="alert alert-success"><i data-lucide="check-circle" style="width: 16px; height: 16px;"></i> ${data.message}${details}</div>`;
+        } else {
+          resultEl.innerHTML = `<div class="alert alert-error"><i data-lucide="x-circle" style="width: 16px; height: 16px;"></i> ${data.error}</div>`;
+        }
+        lucide.createIcons();
+      } catch (err) {
+        resultEl.innerHTML = `<div class="alert alert-error"><i data-lucide="x-circle" style="width: 16px; height: 16px;"></i> Errore di connessione: ${err.message}</div>`;
+        lucide.createIcons();
+      }
     }
-  } catch (err) {
-    console.error('Error loading categories:', err);
-    showPrinterAlert('Errore di connessione: ' + err.message, 'error');
-  }
-}
 
-// Load printer configuration
-async function loadPrinters() {
-  try {
-    const resp = await fetch('/api/printers/config');
-    const data = await resp.json();
-    
-    if (data.success) {
-      printers = data.printers || [];
-      renderPrinters();
-    } else {
-      showPrinterAlert('Errore caricamento configurazione: ' + (data.error || 'Sconosciuto'), 'error');
-    }
-  } catch (err) {
-    console.error('Error loading printers:', err);
-    showPrinterAlert('Errore di connessione: ' + err.message, 'error');
-  }
-}
+    // === Printer Management ===
+    let printers = [];
+    let categories = [];
 
-// Save printer configuration
-async function savePrinters() {
-  // Validate printers before saving
-  for (let i = 0; i < printers.length; i++) {
-    const p = printers[i];
-    if (!p.name || !p.ip) {
-      showPrinterAlert(`⚠️ Stampante ${i + 1}: inserisci nome e indirizzo IP`, 'error');
-      return;
-    }
-  }
-  
-  // Check for duplicate IPs
-  const ipSet = new Set();
-  for (let i = 0; i < printers.length; i++) {
-    const ip = printers[i].ip.trim();
-    if (ipSet.has(ip)) {
-      showPrinterAlert(`⚠️ Errore: L'indirizzo IP "${ip}" è già usato da un'altra stampante`, 'error');
-      return;
-    }
-    ipSet.add(ip);
-  }
-  
-  showPrinterAlert('💾 Salvataggio in corso...', 'success');
-  
-  try {
-    const resp = await fetch('/api/printers/config', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ printers: printers })
-    });
-    
-    const data = await resp.json();
-    
-    if (data.success) {
-      showPrinterAlert('✅ Configurazione salvata con successo!', 'success');
-    } else {
-      showPrinterAlert('❌ Errore salvataggio: ' + (data.error || 'Sconosciuto'), 'error');
-    }
-  } catch (err) {
-    console.error('Error saving printers:', err);
-    showPrinterAlert('❌ Errore di connessione: ' + err.message, 'error');
-  }
-}
+    // Load categories from API
+    async function loadCategories() {
+      try {
+        const resp = await fetch('/api/categories');
+        const data = await resp.json();
 
-// Render printers list
-function renderPrinters() {
-  const container = document.getElementById('printersContainer');
-  
-  if (printers.length === 0) {
-    container.innerHTML = `
+        if (data.success) {
+          categories = data.categories;
+        } else {
+          showPrinterAlert('Errore caricamento categorie: ' + (data.error || 'Sconosciuto'), 'error');
+        }
+      } catch (err) {
+        console.error('Error loading categories:', err);
+        showPrinterAlert('Errore di connessione: ' + err.message, 'error');
+      }
+    }
+
+    // Load printer configuration
+    async function loadPrinters() {
+      try {
+        const resp = await fetch('/api/printers/config');
+        const data = await resp.json();
+
+        if (data.success) {
+          printers = data.printers || [];
+          renderPrinters();
+        } else {
+          showPrinterAlert('Errore caricamento configurazione: ' + (data.error || 'Sconosciuto'), 'error');
+        }
+      } catch (err) {
+        console.error('Error loading printers:', err);
+        showPrinterAlert('Errore di connessione: ' + err.message, 'error');
+      }
+    }
+
+    // Save printer configuration
+    async function savePrinters() {
+      // Validate printers before saving
+      for (let i = 0; i < printers.length; i++) {
+        const p = printers[i];
+        if (!p.name || !p.ip) {
+          showPrinterAlert(`⚠️ Stampante ${i + 1}: inserisci nome e indirizzo IP`, 'error');
+          return;
+        }
+      }
+
+      // Check for duplicate IPs
+      const ipSet = new Set();
+      for (let i = 0; i < printers.length; i++) {
+        const ip = printers[i].ip.trim();
+        if (ipSet.has(ip)) {
+          showPrinterAlert(`⚠️ Errore: L'indirizzo IP "${ip}" è già usato da un'altra stampante`, 'error');
+          return;
+        }
+        ipSet.add(ip);
+      }
+
+      showPrinterAlert('💾 Salvataggio in corso...', 'success');
+
+      try {
+        const resp = await fetch('/api/printers/config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ printers: printers })
+        });
+
+        const data = await resp.json();
+
+        if (data.success) {
+          showPrinterAlert('✅ Configurazione salvata con successo!', 'success');
+        } else {
+          showPrinterAlert('❌ Errore salvataggio: ' + (data.error || 'Sconosciuto'), 'error');
+        }
+      } catch (err) {
+        console.error('Error saving printers:', err);
+        showPrinterAlert('❌ Errore di connessione: ' + err.message, 'error');
+      }
+    }
+
+    // Render printers list
+    function renderPrinters() {
+      const container = document.getElementById('printersContainer');
+
+      if (printers.length === 0) {
+        container.innerHTML = `
       <div class="empty-state">
         <div class="empty-state-icon">📭</div>
         <p>Nessuna stampante configurata</p>
       </div>
     `;
-    return;
-  }
-  
-  container.innerHTML = printers.map((printer, idx) => `
+        return;
+      }
+
+      container.innerHTML = printers.map((printer, idx) => `
     <div class="printer-card ${printer.collapsed ? 'collapsed' : ''}" id="printer-${idx}">
       <div class="printer-header">
         <div style="display: flex; align-items: center; gap: 0.5rem;">
@@ -884,8 +883,8 @@ function renderPrinters() {
         <label class="form-label">Categorie da Stampare</label>
         <div class="categories-grid">
           ${categories.map(cat => {
-            const isChecked = printer.categories && printer.categories.includes(cat.id);
-            return `
+        const isChecked = printer.categories && printer.categories.includes(cat.id);
+        return `
               <label class="category-checkbox ${isChecked ? 'active' : ''}">
                 <input type="checkbox" 
                        ${isChecked ? 'checked' : ''} 
@@ -893,151 +892,152 @@ function renderPrinters() {
                 <span>${cat.name}</span>
               </label>
             `;
-          }).join('')}
+      }).join('')}
         </div>
       </div>
       </div>
     </div>
   `).join('');
-  
-  // Reinitialize Lucide icons after rendering
-  setTimeout(() => lucide.createIcons(), 10);
-}
 
-// Add new printer
-function addPrinter() {
-  printers.push({
-    name: '',
-    ip: '',
-    port: 9100,
-    categories: [],
-    enabled: true
-  });
-  renderPrinters();
-  showPrinterAlert('➕ Stampante aggiunta. Ricorda di salvare!', 'success');
-}
-
-// Remove printer
-function removePrinter(idx) {
-  if (confirm('Sei sicuro di voler rimuovere questa stampante?')) {
-    printers.splice(idx, 1);
-    renderPrinters();
-    showPrinterAlert('🗑️ Stampante rimossa. Ricorda di salvare!', 'success');
-  }
-}
-
-// Update printer field
-function updatePrinter(idx, field, value) {
-  printers[idx][field] = value;
-  // Non salva automaticamente, l'utente deve cliccare "Salva"
-}
-
-// Toggle printer enabled/disabled
-function togglePrinter(idx) {
-  printers[idx].enabled = !printers[idx].enabled;
-  renderPrinters();
-  showPrinterAlert(printers[idx].enabled ? '🟢 Stampante attivata' : '🔴 Stampante disattivata', 'success');
-}
-
-// Toggle category for printer
-function toggleCategory(idx, categoryId, checked) {
-  if (!printers[idx].categories) {
-    printers[idx].categories = [];
-  }
-  
-  if (checked) {
-    if (!printers[idx].categories.includes(categoryId)) {
-      printers[idx].categories.push(categoryId);
+      // Reinitialize Lucide icons after rendering
+      setTimeout(() => lucide.createIcons(), 10);
     }
-  } else {
-    printers[idx].categories = printers[idx].categories.filter(id => id !== categoryId);
-  }
-  
-  renderPrinters();
-  // Non salva automaticamente, l'utente deve cliccare "Salva"
-}
 
-// Toggle collapse/expand printer card
-function toggleCollapse(idx) {
-  printers[idx].collapsed = !printers[idx].collapsed;
-  renderPrinters();
-}
+    // Add new printer
+    function addPrinter() {
+      printers.push({
+        name: '',
+        ip: '',
+        port: 9100,
+        categories: [],
+        enabled: true
+      });
+      renderPrinters();
+      showPrinterAlert('➕ Stampante aggiunta. Ricorda di salvare!', 'success');
+    }
 
-// Test printer connection
-async function testPrinter(idx) {
-  const printer = printers[idx];
-  
-  if (!printer.ip) {
-    showPrinterAlert('Inserisci l\'indirizzo IP della stampante', 'error');
-    return;
-  }
-  
-  showPrinterAlert('🔄 Invio test di stampa...', 'success');
-  
-  try {
-    const resp = await fetch('/api/printers/test', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        ip: printer.ip,
-        port: printer.port || 9100
-      })
+    // Remove printer
+    function removePrinter(idx) {
+      if (confirm('Sei sicuro di voler rimuovere questa stampante?')) {
+        printers.splice(idx, 1);
+        renderPrinters();
+        showPrinterAlert('🗑️ Stampante rimossa. Ricorda di salvare!', 'success');
+      }
+    }
+
+    // Update printer field
+    function updatePrinter(idx, field, value) {
+      printers[idx][field] = value;
+      // Non salva automaticamente, l'utente deve cliccare "Salva"
+    }
+
+    // Toggle printer enabled/disabled
+    function togglePrinter(idx) {
+      printers[idx].enabled = !printers[idx].enabled;
+      renderPrinters();
+      showPrinterAlert(printers[idx].enabled ? '🟢 Stampante attivata' : '🔴 Stampante disattivata', 'success');
+    }
+
+    // Toggle category for printer
+    function toggleCategory(idx, categoryId, checked) {
+      if (!printers[idx].categories) {
+        printers[idx].categories = [];
+      }
+
+      if (checked) {
+        if (!printers[idx].categories.includes(categoryId)) {
+          printers[idx].categories.push(categoryId);
+        }
+      } else {
+        printers[idx].categories = printers[idx].categories.filter(id => id !== categoryId);
+      }
+
+      renderPrinters();
+      // Non salva automaticamente, l'utente deve cliccare "Salva"
+    }
+
+    // Toggle collapse/expand printer card
+    function toggleCollapse(idx) {
+      printers[idx].collapsed = !printers[idx].collapsed;
+      renderPrinters();
+    }
+
+    // Test printer connection
+    async function testPrinter(idx) {
+      const printer = printers[idx];
+
+      if (!printer.ip) {
+        showPrinterAlert('Inserisci l\'indirizzo IP della stampante', 'error');
+        return;
+      }
+
+      showPrinterAlert('🔄 Invio test di stampa...', 'success');
+
+      try {
+        const resp = await fetch('/api/printers/test', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            ip: printer.ip,
+            port: printer.port || 9100
+          })
+        });
+
+        const data = await resp.json();
+
+        if (data.success) {
+          showPrinterAlert('✅ Test di stampa inviato con successo!', 'success');
+        } else {
+          showPrinterAlert('❌ Errore test stampa: ' + (data.error || 'Sconosciuto'), 'error');
+        }
+      } catch (err) {
+        console.error('Error testing printer:', err);
+        showPrinterAlert('❌ Errore di connessione: ' + err.message, 'error');
+      }
+    }
+
+    // Show alert message for printers
+    function showPrinterAlert(message, type) {
+      const container = document.getElementById('printerAlertContainer');
+      const alertClass = type === 'error' ? 'alert-error' : 'alert-success';
+
+      container.innerHTML = `<div class="alert ${alertClass}">${message}</div>`;
+
+      setTimeout(() => {
+        container.innerHTML = '';
+      }, 5000);
+    }
+
+    // Initialize printer data when navigating to printers section
+    // This will be called when the user clicks on the printers tab
+
+    // Dark mode toggle
+    const themeToggle = document.getElementById('themeToggle');
+    const html = document.documentElement;
+
+    // Funzione per aggiornare l'icona del tema
+    function updateThemeIcon(theme) {
+      const iconName = theme === 'dark' ? 'sun' : 'moon';
+      // Sostituisci completamente l'HTML dell'icona
+      themeToggle.innerHTML = `<i data-lucide="${iconName}" style="width: 18px; height: 18px;"></i>`;
+      // Ricrea le icone
+      lucide.createIcons();
+    }
+
+    const currentTheme = localStorage.getItem('theme') || 'light';
+    html.setAttribute('data-theme', currentTheme);
+    updateThemeIcon(currentTheme);
+
+    themeToggle.addEventListener('click', () => {
+      const theme = html.getAttribute('data-theme');
+      const newTheme = theme === 'light' ? 'dark' : 'light';
+
+      html.setAttribute('data-theme', newTheme);
+      localStorage.setItem('theme', newTheme);
+      updateThemeIcon(newTheme);
     });
-    
-    const data = await resp.json();
-    
-    if (data.success) {
-      showPrinterAlert('✅ Test di stampa inviato con successo!', 'success');
-    } else {
-      showPrinterAlert('❌ Errore test stampa: ' + (data.error || 'Sconosciuto'), 'error');
-    }
-  } catch (err) {
-    console.error('Error testing printer:', err);
-    showPrinterAlert('❌ Errore di connessione: ' + err.message, 'error');
-  }
-}
-
-// Show alert message for printers
-function showPrinterAlert(message, type) {
-  const container = document.getElementById('printerAlertContainer');
-  const alertClass = type === 'error' ? 'alert-error' : 'alert-success';
-  
-  container.innerHTML = `<div class="alert ${alertClass}">${message}</div>`;
-  
-  setTimeout(() => {
-    container.innerHTML = '';
-  }, 5000);
-}
-
-// Initialize printer data when navigating to printers section
-// This will be called when the user clicks on the printers tab
-
-// Dark mode toggle
-const themeToggle = document.getElementById('themeToggle');
-const html = document.documentElement;
-
-// Funzione per aggiornare l'icona del tema
-function updateThemeIcon(theme) {
-  const iconName = theme === 'dark' ? 'sun' : 'moon';
-  // Sostituisci completamente l'HTML dell'icona
-  themeToggle.innerHTML = `<i data-lucide="${iconName}" style="width: 18px; height: 18px;"></i>`;
-  // Ricrea le icone
-  lucide.createIcons();
-}
-
-const currentTheme = localStorage.getItem('theme') || 'light';
-html.setAttribute('data-theme', currentTheme);
-updateThemeIcon(currentTheme);
-
-themeToggle.addEventListener('click', () => {
-  const theme = html.getAttribute('data-theme');
-  const newTheme = theme === 'light' ? 'dark' : 'light';
-  
-  html.setAttribute('data-theme', newTheme);
-  localStorage.setItem('theme', newTheme);
-  updateThemeIcon(newTheme);
-});
-</script>
+  </script>
 
 </body>
+
 </html>

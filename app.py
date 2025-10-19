@@ -13,7 +13,7 @@ import config
 import printer_manager
 from api_client import create_order, get_categories, get_products
 from auth import (clear_session, is_authenticated, login_required, login_user,
-                  save_token_to_session)
+                  save_token_to_session, logout_user)
 from escpos_send import carica_impostazioni, stampa_escpos_righe
 
 # Directory dell'applicazione
@@ -408,7 +408,10 @@ def save_api_url_public():
 
 @app.route('/logout')
 def logout():
-    """Effettua il logout cancellando il token dalla sessione"""
+    """Effettua il logout cancellando il token dalla sessione e invalidando il refresh token sul server"""
+    # Chiama l'API di logout per invalidare il refresh token
+    logout_user()
+    # Pulisce la sessione locale
     clear_session()
     return redirect(url_for('login_page'))
 
