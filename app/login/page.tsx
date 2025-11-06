@@ -14,7 +14,6 @@ import {
   FormControl,
   FormField,
   FormItem,
-  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
@@ -49,9 +48,9 @@ export default function LoginPage() {
     try {
       console.log('Starting login process...');
       const result = await loginAction(values.username, values.password);
-      
+
       console.log('Login result:', result);
-      
+
       if (result.success) {
         console.log('Login successful, redirecting to /cassa');
         // Wait a bit for session to be fully set
@@ -70,10 +69,26 @@ export default function LoginPage() {
     }
   }
 
+  // Handle validation errors from react-hook-form (zod)
+  function onError(errors: any) {
+    // If both username and password are missing, show a combined message
+    const usernameError = (errors.username as any)?.message;
+    const passwordError = (errors.password as any)?.message;
+
+    if (usernameError && passwordError) {
+      toast.error(`Username e Password sono obbligatori`);
+      return;
+    }
+
+    const first = Object.values(errors)[0];
+    const message = (first as any)?.message || 'Errore di validazione';
+    toast.error(message);
+  }
+
   return (
     <div className="h-screen w-full flex place-content-center items-center bg-background text-foreground">
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+  <form onSubmit={form.handleSubmit(onSubmit, onError)} className="space-y-8">
           <div className="h-screen w-full flex flex-col items-center place-content-center">
             <Card className="w-[350px] bg-card text-card-foreground">
               <CardHeader>
@@ -91,7 +106,6 @@ export default function LoginPage() {
                       <FormControl>
                         <Input autoComplete="off" placeholder="Username" {...field} />
                       </FormControl>
-                      <FormMessage />
                     </FormItem>
                   )}
                 />
@@ -104,21 +118,12 @@ export default function LoginPage() {
                       <FormControl>
                         <Input autoComplete="off" placeholder="Password" type="password" {...field} />
                       </FormControl>
-                      <FormMessage />
                     </FormItem>
                   )}
                 />
               </CardContent>
-              <CardFooter className="flex justify-between">
-                <Button
-                  variant="outline"
-                  type="button"
-                  onClick={() => form.reset()}
-                  disabled={isLoading}
-                >
-                  Cancella
-                </Button>
-                <Button type="submit" disabled={isLoading}>
+              <CardFooter>
+                <Button type="submit" disabled={isLoading} className="w-full">
                   {isLoading ? "Accesso..." : "Accedi"}
                 </Button>
               </CardFooter>

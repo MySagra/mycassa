@@ -1,4 +1,3 @@
-import { Toaster } from "@/components/ui/sonner"
 import { Metadata } from "next";
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {

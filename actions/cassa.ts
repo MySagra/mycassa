@@ -63,6 +63,37 @@ export async function getFoods() {
 }
 
 /**
+ * Get today's orders
+ */
+export async function getTodayOrders() {
+  const session = await auth();
+  
+  if (!session?.accessToken) {
+    throw new Error('Non autenticato');
+  }
+
+  try {
+    const response = await fetch(`${process.env.API_URL}/v1/orders/day/today`, {
+      headers: {
+        'Authorization': `Bearer ${session.accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      cache: 'no-store',
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || 'Impossibile caricare gli ordini di oggi');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('getTodayOrders error:', error);
+    throw error;
+  }
+}
+
+/**
  * Get order by display code
  */
 export async function getOrderByCode(displayCode: string) {

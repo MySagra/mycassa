@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import { getCategories, getFoods, getOrderByCode, confirmOrder as confirmOrderAction, createOrder } from '@/actions/cassa';
+import { getCategories, getFoods, getOrderByCode, confirmOrder as confirmOrderAction, createOrder, getTodayOrders } from '@/actions/cassa';
 import { logout as logoutAction } from '@/actions/auth';
 import { Category, Food, CartItem, PaymentMethod, OrderDetailResponse } from '@/lib/api-types';
 import { Button } from '@/components/ui/button';
@@ -12,16 +12,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
-import {
-    Sheet,
-    SheetClose,
-    SheetContent,
-    SheetDescription,
-    SheetFooter,
-    SheetHeader,
-    SheetTitle,
-    SheetTrigger,
-} from "@/components/ui/sheet";
 import {
     Filter,
     Settings,
@@ -38,7 +28,9 @@ import {
     Pencil,
     X,
     Percent,
-    Download
+    Download,
+    Eye,
+    FileText
 } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import {
@@ -93,6 +85,16 @@ interface ExtendedCartItem extends CartItem {
     ingredientQuantities?: Record<string, number>; // ingredientId -> quantity
 }
 
+// Daily Order type
+interface DailyOrder {
+    id: number;
+    displayCode: string;
+    table: string;
+    customer: string;
+    createdAt: string;
+    subTotal: string;
+}
+
 export default function CassaPage() {
     const router = useRouter();
     const { data: session, status } = useSession();
@@ -126,6 +128,11 @@ export default function CassaPage() {
     const [openDiscountDialog, setOpenDiscountDialog] = useState(false);
     const [discountAmount, setDiscountAmount] = useState<string>('');
     const [appliedDiscountAmount, setAppliedDiscountAmount] = useState<number>(0);
+    const [enableTableInput, setEnableTableInput] = useState(true);
+    const [dailyOrders, setDailyOrders] = useState<DailyOrder[]>([]);
+    const [loadingDailyOrders, setLoadingDailyOrders] = useState(false);
+    const [viewingOrderDetail, setViewingOrderDetail] = useState<OrderDetailResponse | null>(null);
+    const [loadingOrderDetail, setLoadingOrderDetail] = useState(false);
 
     // Get validation message for order button
     const getOrderValidationMessage = () => {
@@ -144,7 +151,7 @@ export default function CassaPage() {
             }
         }
 
-        if (!table.trim()) {
+        if (enableTableInput && !table.trim()) {
             errors.push('Inserisci il numero del tavolo');
         }
 
@@ -165,6 +172,25 @@ export default function CassaPage() {
             router.push('/login');
         }
     }, [isAuthenticated, isLoading, router]);
+
+    // Load table input setting
+    useEffect(() => {
+        const loadTableInputSetting = async () => {
+            try {
+                const response = await fetch('/api/settings?key=enableTableInput');
+                if (response.ok) {
+                    const data = await response.json();
+                    setEnableTableInput(data.enableTableInput ?? true);
+                }
+            } catch (error) {
+                console.error('Error loading table input setting:', error);
+            }
+        };
+
+        if (isAuthenticated) {
+            loadTableInputSetting();
+        }
+    }, [isAuthenticated]);
 
     // Load categories
     useEffect(() => {
@@ -438,6 +464,81 @@ export default function CassaPage() {
         }
     };
 
+    // Load today's orders
+    const loadTodayOrders = async () => {
+        setLoadingDailyOrders(true);
+        try {
+            const orders = await getTodayOrders();
+            setDailyOrders(orders);
+            toast.success(`Caricati ${orders.length} ordini di oggi`);
+        } catch (error: any) {
+            console.error('Error loading today orders:', error);
+            toast.error(error.message || 'Impossibile caricare gli ordini di oggi');
+        } finally {
+            setLoadingDailyOrders(false);
+        }
+    };
+
+    // View order detail
+    const viewOrderDetail = async (displayCode: string) => {
+        setLoadingOrderDetail(true);
+        try {
+            const order = await getOrderByCode(displayCode);
+            setViewingOrderDetail(order);
+        } catch (error: any) {
+            console.error('Error loading order detail:', error);
+            toast.error(error.message || 'Impossibile caricare i dettagli dell\'ordine');
+        } finally {
+            setLoadingOrderDetail(false);
+        }
+    };
+
+    // Load order to cart from daily orders
+    const loadOrderToCart = async (order: DailyOrder) => {
+        try {
+            const orderDetail = await getOrderByCode(order.displayCode);
+
+            // Set customer and table
+            setCustomer(orderDetail.customer);
+            setTable(orderDetail.table);
+            setDisplayCode(order.displayCode);
+
+            // Build cart from order items
+            const cartItems: ExtendedCartItem[] = [];
+            orderDetail.categorizedItems.forEach((catItem: any) => {
+                catItem.items.forEach((item: any) => {
+                    const food: Food = {
+                        id: item.food.id,
+                        name: item.food.name,
+                        description: item.food.description,
+                        price: parseFloat(item.food.price),
+                        categoryId: catItem.category.id,
+                        available: item.food.available,
+                        category: {
+                            id: catItem.category.id,
+                            name: catItem.category.name,
+                            available: true,
+                            position: 0,
+                        },
+                        ingredients: item.food.ingredients,
+                    };
+                    cartItems.push({
+                        cartItemId: `${food.id}-${Date.now()}-${Math.random()}`,
+                        food,
+                        quantity: item.quantity
+                    });
+                });
+            });
+
+            setCart(cartItems);
+
+            toast.success(`Ordine ${order.displayCode} caricato nel carrello`);
+        } catch (error: any) {
+            console.error('Error loading order to cart:', error);
+            toast.error(error.message || 'Impossibile caricare l\'ordine nel carrello');
+        }
+    };
+
     // Apply discount
     const applyDiscount = () => {
         if (!discountAmount.trim()) {
@@ -505,23 +606,70 @@ export default function CassaPage() {
         return surcharge * item.quantity; // Multiply by item quantity
     };
 
+    // Merge cart items with same foodId and notes
+    const mergeCartItems = (items: ExtendedCartItem[]) => {
+        const mergedMap = new Map<string, {
+            foodId: string;
+            quantity: number;
+            notes?: string;
+        }>();
+
+        items.forEach((item) => {
+            const ingredientNotes = generateIngredientNotes(item);
+            const customNotes = item.notes || '';
+            
+            // Concatenate custom notes with ingredient notes
+            let finalNotes = '';
+            if (customNotes && ingredientNotes) {
+                finalNotes = `${customNotes}, ${ingredientNotes}`;
+            } else if (customNotes) {
+                finalNotes = customNotes;
+            } else if (ingredientNotes) {
+                finalNotes = ingredientNotes;
+            }
+
+            // Create unique key: foodId + notes (or empty string if no notes)
+            const key = `${item.food.id}|${finalNotes}`;
+
+            if (mergedMap.has(key)) {
+                // Merge quantities
+                const existing = mergedMap.get(key)!;
+                existing.quantity += item.quantity;
+            } else {
+                // Add new entry
+                mergedMap.set(key, {
+                    foodId: item.food.id,
+                    quantity: item.quantity,
+                    ...(finalNotes && { notes: finalNotes }),
+                });
+            }
+        });
+
+        return Array.from(mergedMap.values());
+    };
+
     // Confirm order
     const confirmOrder = async () => {
-        // Validate inputs with Zod
-        const result = orderSchema.safeParse({ customer, table });
-
-        if (!result.success) {
-            const errors = result.error.issues.reduce((acc, issue) => {
-                acc[issue.path[0] as 'customer' | 'table'] = issue.message;
-                return acc;
-            }, {} as { customer?: string; table?: string });
-
-            setValidationErrors(errors);
-
-            // Show first error
-            const firstError = result.error.issues[0];
-            toast.error(firstError.message);
+        // Validate customer
+        const customerValidation = orderSchema.shape.customer.safeParse(customer);
+        
+        if (!customerValidation.success) {
+            const error = customerValidation.error.issues[0].message;
+            setValidationErrors({ customer: error });
+            toast.error(error);
             return;
+        }
+
+        // Validate table only if enabled
+        if (enableTableInput) {
+            const tableValidation = z.string().min(1, 'Il numero del tavolo è obbligatorio').safeParse(table);
+            
+            if (!tableValidation.success) {
+                const error = tableValidation.error.issues[0].message;
+                setValidationErrors({ table: error });
+                toast.error(error);
+                return;
+            }
         }
 
         // Validate paidAmount if payment method is CASH and paidAmount is provided
@@ -534,6 +682,7 @@ export default function CassaPage() {
             }
         }
 
+        // Clear validation errors if all is good
         setValidationErrors({});
 
         if (cart.length === 0) {
@@ -542,85 +691,41 @@ export default function CassaPage() {
         }
 
         try {
+            // Merge cart items with same foodId and notes
+            const mergedOrderItems = mergeCartItems(cart);
+
             // If displayCode exists, load the order to confirm it
             if (displayCode.trim()) {
                 const orderResponse = await getOrderByCode(displayCode.toUpperCase());
                 const orderId = parseInt(orderResponse.id);
-                
-                // Prepare order items with notes from ingredient modifications
-                const orderItems = cart.map((item) => {
-                    const ingredientNotes = generateIngredientNotes(item);
-                    const customNotes = item.notes || '';
-                    
-                    // Concatenate custom notes with ingredient notes
-                    let finalNotes = '';
-                    if (customNotes && ingredientNotes) {
-                        finalNotes = `${customNotes}, ${ingredientNotes}`;
-                    } else if (customNotes) {
-                        finalNotes = customNotes;
-                    } else if (ingredientNotes) {
-                        finalNotes = ingredientNotes;
-                    }
-
-                    return {
-                        foodId: item.food.id,
-                        quantity: item.quantity,
-                        ...(finalNotes && { notes: finalNotes }),
-                    };
-                });
 
                 await confirmOrderAction({
                     orderId,
                     paymentMethod,
                     discount: appliedDiscountAmount,
-                    orderItems,
+                    orderItems: mergedOrderItems,
                 });
             } else {
-                // Create new order (without notes)
+                // Create new order with notes
                 const createOrderResponse = await createOrder({
-                    table: parseInt(table),
+                    table: enableTableInput && table.trim() ? parseInt(table) : 0,
                     customer,
-                    orderItems: cart.map((item) => ({
-                        foodId: item.food.id,
-                        quantity: item.quantity,
-                    })),
+                    orderItems: mergedOrderItems,
                 });
 
                 // Get the created order ID
                 const createdOrderId = parseInt(createOrderResponse.id);
 
-                // Prepare order items with notes from ingredient modifications
-                const orderItems = cart.map((item) => {
-                    const ingredientNotes = generateIngredientNotes(item);
-                    const customNotes = item.notes || '';
-                    
-                    // Concatenate custom notes with ingredient notes
-                    let finalNotes = '';
-                    if (customNotes && ingredientNotes) {
-                        finalNotes = `${customNotes}, ${ingredientNotes}`;
-                    } else if (customNotes) {
-                        finalNotes = customNotes;
-                    } else if (ingredientNotes) {
-                        finalNotes = ingredientNotes;
-                    }
-
-                    return {
-                        foodId: item.food.id,
-                        quantity: item.quantity,
-                        ...(finalNotes && { notes: finalNotes }),
-                    };
-                });
-
                 // Calculate total surcharge from all items
                 const totalSurcharge = cart.reduce((sum, item) => sum + calculateIngredientSurcharge(item), 0);
 
-                // Confirm the created order with notes, discount, and surcharge
+                // Confirm the created order with discount and surcharge
                 await confirmOrderAction({
                     orderId: createdOrderId,
                     paymentMethod,
                     discount: appliedDiscountAmount,
                     surcharge: totalSurcharge,
-                    orderItems,
+                    orderItems: mergedOrderItems,
                 });
             }
 
@@ -660,7 +765,7 @@ export default function CassaPage() {
                         </div>
 
                         <div className="flex items-center gap-2">
-                            <Button variant="outline" size="icon" onClick={() => router.push('/impostazioni')}>
+                            <Button variant="outline" size="icon" onClick={() => router.push('/settings')}>
                                 <Settings className="h-5 w-5" />
                             </Button>
                             <Button
@@ -829,23 +934,25 @@ export default function CassaPage() {
                         </div>
 
                         {/* Table */}
-                        <div>
-                            <Label htmlFor="table" className='mb-2'>Tavolo *</Label>
-                            <Input
-                                autoComplete='off'
-                                id="table"
-                                placeholder="Es. 12 o Tavolo A5"
-                                value={table}
-                                onChange={(e) => {
-                                    setTable(e.target.value);
-                                    setValidationErrors(prev => ({ ...prev, table: undefined }));
-                                }}
-                                className={validationErrors.table ? 'border-red-500' : ''}
-                            />
-                            {validationErrors.table && (
-                                <p className="text-xs text-red-500 mt-1">{validationErrors.table}</p>
-                            )}
-                        </div>
+                        {enableTableInput && (
+                            <div>
+                                <Label htmlFor="table" className='mb-2'>Tavolo *</Label>
+                                <Input
+                                    autoComplete='off'
+                                    id="table"
+                                    placeholder="Es. 12 o Tavolo A5"
+                                    value={table}
+                                    onChange={(e) => {
+                                        setTable(e.target.value);
+                                        setValidationErrors(prev => ({ ...prev, table: undefined }));
+                                    }}
+                                    className={validationErrors.table ? 'border-red-500' : ''}
+                                />
+                                {validationErrors.table && (
+                                    <p className="text-xs text-red-500 mt-1">{validationErrors.table}</p>
+                                )}
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -1071,20 +1178,20 @@ export default function CassaPage() {
                         </>
 
                         <TooltipProvider>
-                            <Tooltip open={cart.length === 0 || !customer || !table ? undefined : false}>
+                            <Tooltip open={cart.length === 0 || !customer || (enableTableInput && !table) ? undefined : false}>
                                 <TooltipTrigger asChild>
                                     <div className="flex-1">
                                         <Button
                                             className="w-full bg-amber-500 text-lg font-semibold hover:bg-amber-600"
                                             size="lg"
                                             onClick={confirmOrder}
-                                            disabled={cart.length === 0 || !customer || !table}
+                                            disabled={cart.length === 0 || !customer || (enableTableInput && !table)}
                                         >
                                             Crea Ordine
                                         </Button>
                                     </div>
                                 </TooltipTrigger>
-                                {(cart.length === 0 || !customer || !table) && (
+                                {(cart.length === 0 || !customer || (enableTableInput && !table)) && (
                                     <TooltipContent side="top" className="max-w-xs">
                                         <div className="text-sm">{getOrderValidationMessage()}</div>
                                     </TooltipContent>
@@ -1126,14 +1233,12 @@ export default function CassaPage() {
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                 />
                                 <Button
-                                    onClick={() => {
-                                        // TODO: Implement fetch daily orders
-                                        toast.info('Funzionalità in arrivo');
-                                    }}
+                                    onClick={loadTodayOrders}
                                     className="w-full"
+                                    disabled={loadingDailyOrders}
                                 >
                                     <Download className="mr-2 h-4 w-4" />
-                                    Recupera ordini di oggi
+                                    {loadingDailyOrders ? 'Caricamento...' : 'Recupera ordini di oggi'}
                                 </Button>
                             </div>
                         </div>
@@ -1141,10 +1246,75 @@ export default function CassaPage() {
 
                     <ScrollArea className="flex-1">
                         <div className="p-4 space-y-3">
-                            {/* Placeholder content - qui andranno gli ordini */}
-                            <div className="text-center text-muted-foreground py-8">
-                                Nessun ordine trovato per oggi
-                            </div>
+                            {dailyOrders.length === 0 ? (
+                                <div className="text-center text-muted-foreground py-8">
+                                    {loadingDailyOrders ? 'Caricamento ordini...' : 'Nessun ordine trovato per oggi'}
+                                </div>
+                            ) : (
+                                dailyOrders
+                                    .filter((order) => {
+                                        if (!searchQuery.trim()) return true;
+                                        const query = searchQuery.toLowerCase();
+                                        return (
+                                            order.displayCode.toLowerCase().includes(query) ||
+                                            order.table.toLowerCase().includes(query) ||
+                                            order.customer.toLowerCase().includes(query)
+                                        );
+                                    })
+                                    .map((order) => (
+                                        <Card key={order.id} className="border hover:border-amber-500 transition-colors">
+                                            <CardContent className="space-y-3">
+                                                <div className="flex items-start justify-between">
+                                                    <div className="space-y-1">
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="font-mono font-bold text-lg text-amber-600">
+                                                                {order.displayCode}
+                                                            </span>
+                                                            <span className="text-sm text-muted-foreground">
+                                                                Tavolo {order.table}
+                                                            </span>
+                                                        </div>
+                                                        <p className="text-sm font-medium">{order.customer}</p>
+                                                        <p className="text-xs text-muted-foreground">
+                                                            {new Date(order.createdAt).toLocaleString('it-IT', {
+                                                                day: '2-digit',
+                                                                month: '2-digit',
+                                                                year: 'numeric',
+                                                                hour: '2-digit',
+                                                                minute: '2-digit'
+                                                            })}
+                                                        </p>
+                                                    </div>
+                                                    <div className="text-right">
+                                                        <p className="text-lg font-bold text-amber-600">
+                                                            {parseFloat(order.subTotal).toFixed(2)} €
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                <div className="flex gap-2">
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        className="flex-1"
+                                                        onClick={() => viewOrderDetail(order.displayCode)}
+                                                    >
+                                                        <Eye className="mr-2 h-4 w-4" />
+                                                        Visualizza
+                                                    </Button>
+                                                    <Button
+                                                        variant="default"
+                                                        size="sm"
+                                                        className="flex-1 bg-amber-500 hover:bg-amber-600"
+                                                        onClick={() => loadOrderToCart(order)}
+                                                    >
+                                                        <ShoppingCart className="mr-2 h-4 w-4" />
+                                                        Carica
+                                                    </Button>
+                                                </div>
+                                            </CardContent>
+                                        </Card>
+                                    ))
+                            )}
                         </div>
                     </ScrollArea>
                 </aside>
@@ -1352,6 +1522,110 @@ export default function CassaPage() {
                             onClick={applyDiscount}
                         >
                             Applica
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Order Detail Dialog */}
+            <Dialog open={viewingOrderDetail !== null} onOpenChange={(open) => !open && setViewingOrderDetail(null)}>
+                <DialogContent className="sm:max-w-[600px]">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                            <FileText className="h-5 w-5" />
+                            Dettaglio Ordine {viewingOrderDetail?.displayCode}
+                        </DialogTitle>
+                        <DialogDescription>
+                            Visualizza i dettagli completi dell'ordine
+                        </DialogDescription>
+                    </DialogHeader>
+                    {loadingOrderDetail ? (
+                        <div className="flex items-center justify-center py-8">
+                            <div className="text-muted-foreground">Caricamento...</div>
+                        </div>
+                    ) : viewingOrderDetail ? (
+                        <div className="space-y-4">
+                            {/* Order Info */}
+                            <div className="grid grid-cols-2 gap-4 p-4 bg-muted/30 rounded-lg">
+                                <div>
+                                    <p className="text-sm text-muted-foreground">Cliente</p>
+                                    <p className="font-medium">{viewingOrderDetail.customer}</p>
+                                </div>
+                                <div>
+                                    <p className="text-sm text-muted-foreground">Tavolo</p>
+                                    <p className="font-medium">{viewingOrderDetail.table}</p>
+                                </div>
+                                <div>
+                                    <p className="text-sm text-muted-foreground">Codice</p>
+                                    <p className="font-mono font-bold text-amber-600">{viewingOrderDetail.displayCode}</p>
+                                </div>
+                                <div>
+                                    <p className="text-sm text-muted-foreground">Data</p>
+                                    <p className="text-sm">
+                                        {new Date(viewingOrderDetail.createdAt).toLocaleString('it-IT', {
+                                            day: '2-digit',
+                                            month: '2-digit',
+                                            year: 'numeric',
+                                            hour: '2-digit',
+                                            minute: '2-digit'
+                                        })}
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* Order Items */}
+                            <div className="space-y-2">
+                                <h4 className="font-semibold">Prodotti</h4>
+                                <ScrollArea className="max-h-[300px]">
+                                    <div className="space-y-3">
+                                        {viewingOrderDetail.categorizedItems.map((catItem: any, catIndex: number) => (
+                                            <div key={catIndex}>
+                                                <h5 className="text-sm font-semibold text-amber-600 mb-2">
+                                                    {catItem.category.name}
+                                                </h5>
+                                                <div className="space-y-2">
+                                                    {catItem.items.map((item: any, itemIndex: number) => (
+                                                        <div key={itemIndex} className="flex items-start justify-between p-2 bg-muted/20 rounded">
+                                                            <div className="flex-1">
+                                                                <p className="font-medium">{item.food.name}</p>
+                                                                {item.notes && (
+                                                                    <p className="text-xs text-muted-foreground mt-1">
+                                                                        Note: {item.notes}
+                                                                    </p>
+                                                                )}
+                                                                <p className="text-sm text-muted-foreground mt-1">
+                                                                    Quantità: {item.quantity} × {parseFloat(item.food.price).toFixed(2)} €
+                                                                </p>
+                                                            </div>
+                                                            <div className="text-right">
+                                                                <p className="font-semibold">
+                                                                    {(item.quantity * parseFloat(item.food.price)).toFixed(2)} €
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </ScrollArea>
+                            </div>
+
+                            {/* Total */}
+                            <div className="flex items-center justify-between p-4 bg-amber-500/10 rounded-lg border border-amber-500/20">
+                                <span className="text-lg font-semibold">Totale</span>
+                                <span className="text-2xl font-bold text-amber-600">
+                                    {parseFloat(viewingOrderDetail.subTotal).toFixed(2)} €
+                                </span>
+                            </div>
+                        </div>
+                    ) : null}
+                    <DialogFooter>
+                        <Button
+                            variant="outline"
+                            onClick={() => setViewingOrderDetail(null)}
+                        >
+                            Chiudi
                         </Button>
                     </DialogFooter>
                 </DialogContent>
