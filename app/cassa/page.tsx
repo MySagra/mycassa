@@ -522,7 +522,7 @@ export default function CassaPage() {
                                                         onClick={() => addToCart(food)}
                                                     >
                                                         <CardContent className="flex flex-col items-center justify-center h-10">
-                                                            <h4 className="line-clamp-2 text-center font-medium text-sm">
+                                                            <h4 className="mb-2 text-center font-medium text-sm">
                                                                 {food.name}
                                                             </h4>
                                                             <p className="text-lg font-bold text-amber-500">
