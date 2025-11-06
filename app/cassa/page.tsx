@@ -35,7 +35,9 @@ import {
     CreditCard,
     Banknote,
     Pencil,
-    X
+    X,
+    Percent,
+    Download
 } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import {
@@ -58,6 +60,31 @@ import {
 } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { ButtonGroup } from '@/components/ui/button-group';
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from '@/components/ui/tooltip';
+import { z } from 'zod';
+
+// Validation schema
+const orderSchema = z.object({
+    customer: z.string().min(2, 'Il nome del cliente deve contenere almeno 2 caratteri'),
+    table: z.string().min(1, 'Il numero del tavolo è obbligatorio'),
+});
+
+const paidAmountSchema = z.string()
+    .regex(/^[0-9]+([.,][0-9]{0,2})?$/, 'Importo non valido (solo numeri, max 2 decimali)')
+    .transform((val) => parseFloat(val.replace(',', '.')))
+    .refine((val) => val >= 0, 'L\'importo deve essere maggiore o uguale a 0')
+    .refine((val) => val <= 9999.99, 'L\'importo massimo è 9999.99');
+
+const discountAmountSchema = z.string()
+    .regex(/^[0-9]+([.,][0-9]{0,2})?$/, 'Importo sconto non valido (solo numeri, max 2 decimali)')
+    .transform((val) => parseFloat(val.replace(',', '.')))
+    .refine((val) => val >= 0, 'Lo sconto deve essere maggiore o uguale a 0')
+    .refine((val) => val <= 9999.99, 'L\'importo massimo è 9999.99');
 
 // Extended CartItem to include ingredient quantities and unique ID
 interface ExtendedCartItem extends CartItem {
@@ -90,6 +117,43 @@ export default function CassaPage() {
     const [editQuantity, setEditQuantity] = useState(1);
     const [editNotes, setEditNotes] = useState('');
     const [ingredientQuantities, setIngredientQuantities] = useState<Record<string, number>>({});
+    const [validationErrors, setValidationErrors] = useState<{ customer?: string; table?: string; paidAmount?: string; discount?: string }>({});
+    const [searchQuery, setSearchQuery] = useState('');
+    const [openDiscountDialog, setOpenDiscountDialog] = useState(false);
+    const [discountAmount, setDiscountAmount] = useState<string>('');
+    const [appliedDiscountAmount, setAppliedDiscountAmount] = useState<number>(0);
+
+    // Get validation message for order button
+    const getOrderValidationMessage = () => {
+        const errors: string[] = [];
+
+        if (cart.length === 0) {
+            errors.push('Il carrello è vuoto');
+        }
+
+        if (!customer.trim()) {
+            errors.push('Inserisci il nome del cliente');
+        } else {
+            const result = orderSchema.shape.customer.safeParse(customer);
+            if (!result.success) {
+                errors.push(result.error.issues[0].message);
+            }
+        }
+
+        if (!table.trim()) {
+            errors.push('Inserisci il numero del tavolo');
+        }
+
+        if (errors.length === 0) return null;
+
+        return (
+            <ul className="list-disc list-inside space-y-1">
+                {errors.map((error, index) => (
+                    <li key={index}>{error}</li>
+                ))}
+            </ul>
+        );
+    };
 
     // Redirect if not authenticated
     useEffect(() => {
@@ -178,12 +242,16 @@ export default function CassaPage() {
 
     // Calculate total
     const calculateTotal = () => {
-        return cart.reduce((total, item) => {
+        const subtotal = cart.reduce((total, item) => {
             const price = typeof item.food.price === 'number'
                 ? item.food.price
                 : parseFloat(item.food.price as unknown as string);
             return total + (price * item.quantity);
         }, 0);
+        
+    // Apply discount (fixed amount)
+    const discountToApply = appliedDiscountAmount || 0;
+    return Math.max(0, subtotal - discountToApply);
     };
 
     // Calculate change
@@ -307,6 +375,8 @@ export default function CassaPage() {
         setCustomer('');
         setTable('');
         setPaidAmount('');
+        setAppliedDiscountAmount(0);
+        setDiscountAmount('');
     };
 
     // Load order by display code
@@ -363,35 +433,76 @@ export default function CassaPage() {
         }
     };
 
-    // Confirm order
-    const confirmOrder = async () => {
-        if (!customer.trim()) {
-            toast.error('Inserisci il nome del cliente');
+    // Apply discount
+    const applyDiscount = () => {
+        if (!discountAmount.trim()) {
+            setAppliedDiscountAmount(0);
+            setOpenDiscountDialog(false);
+            setDiscountAmount('');
             return;
         }
 
-        if (!table.trim()) {
-            toast.error('Inserisci il numero del tavolo');
+        const result = discountAmountSchema.safeParse(discountAmount);
+        
+        if (!result.success) {
+            setValidationErrors(prev => ({ ...prev, discount: result.error.issues[0].message }));
+            toast.error(result.error.issues[0].message);
             return;
         }
+
+        setValidationErrors(prev => ({ ...prev, discount: undefined }));
+        setAppliedDiscountAmount(result.data);
+        setOpenDiscountDialog(false);
+        toast.success(`Sconto di ${result.data.toFixed(2)} € applicato`);
+    };
+
+    // Confirm order
+    const confirmOrder = async () => {
+        // Validate inputs with Zod
+        const result = orderSchema.safeParse({ customer, table });
+
+        if (!result.success) {
+            const errors = result.error.issues.reduce((acc, issue) => {
+                acc[issue.path[0] as 'customer' | 'table'] = issue.message;
+                return acc;
+            }, {} as { customer?: string; table?: string });
+
+            setValidationErrors(errors);
+
+            // Show first error
+            const firstError = result.error.issues[0];
+            toast.error(firstError.message);
+            return;
+        }
+
+        // Validate paidAmount if payment method is CASH and paidAmount is provided
+        if (paymentMethod === 'CASH' && paidAmount.trim()) {
+            const paidResult = paidAmountSchema.safeParse(paidAmount);
+            if (!paidResult.success) {
+                setValidationErrors(prev => ({ ...prev, paidAmount: paidResult.error.issues[0].message }));
+                toast.error(paidResult.error.issues[0].message);
+                return;
+            }
+        }
+
+        setValidationErrors({});
 
         if (cart.length === 0) {
             toast.error('Il carrello è vuoto');
             return;
         }
 
-        if (!displayCode.trim()) {
-            toast.error('Carica un ordine esistente prima di confermarlo');
-            return;
-        }
-
         try {
-            // Extract order ID from display code - need to load order first
-            const orderResponse = await apiClient.get<OrderDetailResponse>(`/v1/orders/${displayCode.toUpperCase()}`);
-            const orderId = parseInt(orderResponse.data.id);
+            let orderId: number | undefined;
+
+            // If displayCode exists, load the order to confirm it
+            if (displayCode.trim()) {
+                const orderResponse = await apiClient.get<OrderDetailResponse>(`/v1/orders/${displayCode.toUpperCase()}`);
+                orderId = parseInt(orderResponse.data.id);
+            }
 
             const confirmRequest: ConfirmOrderRequest = {
-                orderId,
+                orderId: orderId!,
                 paymentMethod,
                 orderItems: cart.map((item) => ({
                     foodId: item.food.id,
@@ -557,7 +668,7 @@ export default function CassaPage() {
                         Carrello
                     </h2>
 
-                    <Button 
+                    <Button
                         variant={showDailyOrders ? 'default' : 'outline'}
                         onClick={() => setShowDailyOrders(!showDailyOrders)}
                     >
@@ -593,8 +704,15 @@ export default function CassaPage() {
                                 id="customer"
                                 placeholder="Es. Mario Rossi"
                                 value={customer}
-                                onChange={(e) => setCustomer(e.target.value)}
+                                onChange={(e) => {
+                                    setCustomer(e.target.value);
+                                    setValidationErrors(prev => ({ ...prev, customer: undefined }));
+                                }}
+                                className={validationErrors.customer ? 'border-red-500' : ''}
                             />
+                            {validationErrors.customer && (
+                                <p className="text-xs text-red-500 mt-1">{validationErrors.customer}</p>
+                            )}
                         </div>
 
                         {/* Table */}
@@ -605,8 +723,15 @@ export default function CassaPage() {
                                 id="table"
                                 placeholder="Es. 12 o Tavolo A5"
                                 value={table}
-                                onChange={(e) => setTable(e.target.value)}
+                                onChange={(e) => {
+                                    setTable(e.target.value);
+                                    setValidationErrors(prev => ({ ...prev, table: undefined }));
+                                }}
+                                className={validationErrors.table ? 'border-red-500' : ''}
                             />
+                            {validationErrors.table && (
+                                <p className="text-xs text-red-500 mt-1">{validationErrors.table}</p>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -706,11 +831,21 @@ export default function CassaPage() {
                 {/* Footer - Total & Payment */}
                 <div className="space-y-4 p-4">
                     {/* Total */}
-                    <div className="flex items-center justify-between">
-                        <span className="text-lg font-semibold">TOTALE:</span>
-                        <span className="text-2xl font-bold text-amber-500">
-                            {calculateTotal().toFixed(2)} €
-                        </span>
+                    <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                            <span className="text-lg font-semibold">TOTALE:</span>
+                            <span className="text-2xl font-bold text-amber-500">
+                                {calculateTotal().toFixed(2)} €
+                            </span>
+                        </div>
+                        {appliedDiscountAmount > 0 && (
+                            <div className="flex items-center justify-between text-sm text-green-600 dark:text-green-500">
+                                <span>Sconto applicato:</span>
+                                <span className="font-semibold">
+                                    -{appliedDiscountAmount.toFixed(2)} €
+                                </span>
+                            </div>
+                        )}
                     </div>
 
                     {/* Payment Method */}
@@ -745,17 +880,29 @@ export default function CassaPage() {
                                     <div className="relative mt-3">
                                         <Input
                                             id="paidAmount"
-                                            type="number"
-                                            step="0.01"
+                                            type="text"
                                             placeholder="0.00"
                                             value={paidAmount}
-                                            onChange={(e) => setPaidAmount(e.target.value)}
-                                            className="text-right pr-8"
+                                            onChange={(e) => {
+                                                const value = e.target.value;
+                                                // Allow only numbers, dot, and comma
+                                                if (value === '' || /^[0-9.,]*$/.test(value)) {
+                                                    // Check if it matches the pattern for valid amount
+                                                    if (value === '' || /^[0-9]{0,4}([.,][0-9]{0,2})?$/.test(value)) {
+                                                        setPaidAmount(value);
+                                                        setValidationErrors(prev => ({ ...prev, paidAmount: undefined }));
+                                                    }
+                                                }
+                                            }}
+                                            className={`text-right pr-8 ${validationErrors.paidAmount ? 'border-red-500' : ''}`}
                                         />
                                         <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
                                             €
                                         </span>
                                     </div>
+                                    {validationErrors.paidAmount && (
+                                        <p className="text-xs text-red-500 mt-1">{validationErrors.paidAmount}</p>
+                                    )}
                                 </div>
                                 <div className="flex flex-col items-end space-y-1">
                                     <span className="text-base font-medium">Resto</span>
@@ -810,14 +957,40 @@ export default function CassaPage() {
                             </AlertDialog>
                         </>
 
+                        <TooltipProvider>
+                            <Tooltip open={cart.length === 0 || !customer || !table ? undefined : false}>
+                                <TooltipTrigger asChild>
+                                    <div className="flex-1">
+                                        <Button
+                                            className="w-full bg-amber-500 text-lg font-semibold hover:bg-amber-600"
+                                            size="lg"
+                                            onClick={confirmOrder}
+                                            disabled={cart.length === 0 || !customer || !table}
+                                        >
+                                            Crea Ordine
+                                        </Button>
+                                    </div>
+                                </TooltipTrigger>
+                                {(cart.length === 0 || !customer || !table) && (
+                                    <TooltipContent side="top" className="max-w-xs">
+                                        <div className="text-sm">{getOrderValidationMessage()}</div>
+                                    </TooltipContent>
+                                )}
+                            </Tooltip>
+                        </TooltipProvider>
+
                         <Button
-                            className="flex-1 bg-amber-500 text-lg font-semibold hover:bg-amber-600"
-                            size="lg"
-                            onClick={confirmOrder}
-                            disabled={cart.length === 0 || !customer || !table || !displayCode}
+                            variant="secondary"
+                            size="icon"
+                            className="h-10 w-10 disabled:cursor-not-allowed"
+                            onClick={() => setOpenDiscountDialog(true)}
+                            disabled={cart.length === 0}
+                            aria-label="Applica sconto"
+                            title="Applica sconto"
                         >
-                            Crea Ordine
+                            <Percent className="h-4 w-4 text-white" />
                         </Button>
+
                     </div>
                 </div>
             </aside>
@@ -825,15 +998,38 @@ export default function CassaPage() {
             {/* Daily Orders Sidebar - Sliding Panel */}
             {showDailyOrders && (
                 <aside className="w-96 border-l flex flex-col bg-card h-screen animate-in">
-                    <div className="flex items-center justify-between p-4">
-                        <h2 className="text-lg font-semibold">Ordini Giornalieri</h2>
+                    <div className="p-4 border-b">
+                        <h2 className="text-lg font-semibold mb-4">Ordini Giornalieri</h2>
+
+                        {/* Search Section */}
+                        <div>
+                            <Label htmlFor="searchQuery" className="mb-2">Cerca Ordine</Label>
+                            <div className="mt-1 space-y-2">
+                                <Input
+                                    id="searchQuery"
+                                    placeholder="Cerca per codice, tavolo o cliente..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                />
+                                <Button
+                                    onClick={() => {
+                                        // TODO: Implement fetch daily orders
+                                        toast.info('Funzionalità in arrivo');
+                                    }}
+                                    className="w-full"
+                                >
+                                    <Download className="mr-2 h-4 w-4" />
+                                    Recupera ordini di oggi
+                                </Button>
+                            </div>
+                        </div>
                     </div>
-                    
+
                     <ScrollArea className="flex-1">
                         <div className="p-4 space-y-3">
                             {/* Placeholder content - qui andranno gli ordini */}
                             <div className="text-center text-muted-foreground py-8">
-                                Nessun ordine per oggi
+                                Nessun ordine trovato per oggi
                             </div>
                         </div>
                     </ScrollArea>
@@ -847,9 +1043,9 @@ export default function CassaPage() {
                     <DialogHeader>
                         <DialogTitle>Modifica Prodotto</DialogTitle>
                         <DialogDescription>
-                            <div className="text-sm text-muted-foreground">
+                            <span className="text-sm text-muted-foreground">
                                 {editingItem?.food.name}
-                            </div>
+                            </span>
                         </DialogDescription>
                     </DialogHeader>
                     {editingItem && (
@@ -963,6 +1159,88 @@ export default function CassaPage() {
                     </DialogFooter>
                 </DialogContent>
             </Dialog >
+
+            {/* Discount Dialog */}
+            <Dialog open={openDiscountDialog} onOpenChange={setOpenDiscountDialog}>
+                <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                        <DialogTitle>Applica Sconto</DialogTitle>
+                        <DialogDescription>
+                            Inserisci l'importo dello sconto da applicare al totale dell'ordine
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="discountAmount">Sconto (€)</Label>
+                            <div className="relative">
+                                <Input
+                                    id="discountAmount"
+                                    type="text"
+                                    placeholder="0.00"
+                                    value={discountAmount}
+                                        onChange={(e) => {
+                                            const value = e.target.value;
+                                            // Allow only numbers, dot, and comma
+                                            if (value === '' || /^[0-9.,]*$/.test(value)) {
+                                                // Check if it matches the pattern for valid amount
+                                                if (value === '' || /^[0-9]{0,4}([.,][0-9]{0,2})?$/.test(value)) {
+                                                    setDiscountAmount(value);
+                                                    setValidationErrors(prev => ({ ...prev, discount: undefined }));
+                                                }
+                                            }
+                                        }}
+                                    className={`text-right pr-8 ${validationErrors.discount ? 'border-red-500' : ''}`}
+                                />
+                                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                                    €
+                                </span>
+                            </div>
+                            {validationErrors.discount && (
+                                <p className="text-xs text-red-500 mt-1">{validationErrors.discount}</p>
+                            )}
+                            <p className="text-xs text-muted-foreground">
+                                Sconto massimo: 9999.99 €
+                            </p>
+                        </div>
+                        
+                        {appliedDiscountAmount > 0 && (
+                            <div className="rounded-lg border bg-muted/50 p-3">
+                                <p className="text-sm text-muted-foreground mb-1">Sconto attualmente applicato:</p>
+                                <p className="text-lg font-semibold text-amber-600">{appliedDiscountAmount.toFixed(2)} €</p>
+                            </div>
+                        )}
+                    </div>
+                    <DialogFooter>
+                        <Button
+                            variant="outline"
+                            onClick={() => {
+                                setOpenDiscountDialog(false);
+                                setDiscountAmount('');
+                                setValidationErrors(prev => ({ ...prev, discount: undefined }));
+                            }}
+                        >
+                            Annulla
+                        </Button>
+                        <Button
+                            variant="destructive"
+                            onClick={() => {
+                                setAppliedDiscountAmount(0);
+                                setDiscountAmount('');
+                                setOpenDiscountDialog(false);
+                                toast.success('Sconto rimosso');
+                            }}
+                        >
+                            Rimuovi Sconto
+                        </Button>
+                        <Button
+                            className="bg-amber-500 hover:bg-amber-600"
+                            onClick={applyDiscount}
+                        >
+                            Applica
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div >
     );
 }

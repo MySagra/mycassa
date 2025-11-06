@@ -15,11 +15,6 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "MyCassa - MySagra",
-  description: "Sistema di gestione cassa per eventi",
-};
-
 export default function RootLayout({
   children,
 }: Readonly<{
