@@ -73,7 +73,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     async session({ session, token }) {
       // Add access token to session
       if (token && session.user) {
-        console.log('Session callback - adding token to session');
         session.user.id = token.id as string;
         session.accessToken = token.accessToken as string;
       }
@@ -84,14 +83,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       const isOnCassa = nextUrl.pathname.startsWith('/cassa');
       const isOnImpostazioni = nextUrl.pathname.startsWith('/impostazioni');
       const isOnLogin = nextUrl.pathname.startsWith('/login');
-
-      console.log('Authorized callback:', { 
-        isLoggedIn, 
-        isOnCassa, 
-        isOnImpostazioni, 
-        isOnLogin,
-        pathname: nextUrl.pathname 
-      });
 
       if (isOnCassa || isOnImpostazioni) {
         if (isLoggedIn) return true;
@@ -123,5 +114,5 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       },
     },
   },
-  debug: process.env.NODE_ENV === 'development',
+  debug: false,
 });

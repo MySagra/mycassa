@@ -84,6 +84,13 @@ export default function SettingsPage() {
         await saveSetting('enableTableInput', checked);
     };
 
+    // Redirect to login if not authenticated
+    useEffect(() => {
+        if (!isLoading && !isAuthenticated) {
+            router.push('/login');
+        }
+    }, [isLoading, isAuthenticated, router]);
+
     if (isLoading) {
         return (
             <div className="flex min-h-screen items-center justify-center">
@@ -93,7 +100,6 @@ export default function SettingsPage() {
     }
 
     if (!isAuthenticated) {
-        router.push('/login');
         return null;
     }
 
