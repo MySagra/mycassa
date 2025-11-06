@@ -1,12 +1,13 @@
 "use client"
 
-import React from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
+import { login as loginAction } from "@/actions/auth";
 
 import {
   Form,
@@ -25,11 +26,10 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/logo";
-import { useAuth } from "@/lib/auth-context";
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
 
   const formSchema = z.object({
     username: z.string().min(1, "Username obbligatorio"),
@@ -44,14 +44,30 @@ export default function LoginPage() {
     }
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    login(values.username, values.password, false).then(() => {
-      router.push("/cassa");
-    }).catch((error) => {
-      console.log(error);
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    setIsLoading(true);
+    try {
+      console.log('Starting login process...');
+      const result = await loginAction(values.username, values.password);
+      
+      console.log('Login result:', result);
+      
+      if (result.success) {
+        console.log('Login successful, redirecting to /cassa');
+        // Wait a bit for session to be fully set
+        await new Promise(resolve => setTimeout(resolve, 100));
+        window.location.href = '/cassa'; // Force full page reload to ensure session is loaded
+      } else {
+        toast.error(result.error || "Credenziali non valide");
+        form.reset();
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      toast.error("Errore durante il login");
       form.reset();
-      toast.error("Credenziali non valide");
-    });
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (
@@ -98,10 +114,13 @@ export default function LoginPage() {
                   variant="outline"
                   type="button"
                   onClick={() => form.reset()}
+                  disabled={isLoading}
                 >
                   Cancella
                 </Button>
-                <Button type="submit">Accedi</Button>
+                <Button type="submit" disabled={isLoading}>
+                  {isLoading ? "Accesso..." : "Accedi"}
+                </Button>
               </CardFooter>
             </Card>
           </div>

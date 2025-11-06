@@ -2,9 +2,10 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/lib/auth-context';
-import apiClient from '@/lib/api-client';
-import { Category, Food, CartItem, PaymentMethod, ConfirmOrderRequest, OrderDetailResponse } from '@/lib/api-types';
+import { useSession } from 'next-auth/react';
+import { getCategories, getFoods, getOrderByCode, confirmOrder as confirmOrderAction, createOrder } from '@/actions/cassa';
+import { logout as logoutAction } from '@/actions/auth';
+import { Category, Food, CartItem, PaymentMethod, OrderDetailResponse } from '@/lib/api-types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -94,9 +95,12 @@ interface ExtendedCartItem extends CartItem {
 
 export default function CassaPage() {
     const router = useRouter();
-    const { isAuthenticated, isLoading, logout } = useAuth();
+    const { data: session, status } = useSession();
     const { theme, setTheme } = useTheme();
     const cartScrollRef = useRef<HTMLDivElement>(null);
+
+    const isAuthenticated = status === 'authenticated';
+    const isLoading = status === 'loading';
 
     // State
     const [categories, setCategories] = useState<Category[]>([]);
@@ -166,10 +170,10 @@ export default function CassaPage() {
     useEffect(() => {
         const fetchCategories = async () => {
             try {
-                const response = await apiClient.get('/v1/categories/available');
+                const data = await getCategories();
 
                 // Sort categories by position before setting them
-                const sortedCategories = response.data.sort((a: Category, b: Category) => a.position - b.position);
+                const sortedCategories = data.sort((a: Category, b: Category) => a.position - b.position);
                 setCategories(sortedCategories);
             } catch (error) {
                 console.error('Error loading categories:', error);
@@ -188,8 +192,8 @@ export default function CassaPage() {
     useEffect(() => {
         const fetchFoods = async () => {
             try {
-                const response = await apiClient.get('/v1/foods/available?include=ingredients');
-                setFoods(response.data);
+                const data = await getFoods();
+                setFoods(data);
             } catch (error) {
                 console.error('Error loading foods:', error);
                 toast.error('Impossibile caricare i cibi');
@@ -246,7 +250,9 @@ export default function CassaPage() {
             const price = typeof item.food.price === 'number'
                 ? item.food.price
                 : parseFloat(item.food.price as unknown as string);
-            return total + (price * item.quantity);
+            const itemTotal = price * item.quantity;
+            const surcharge = calculateIngredientSurcharge(item);
+            return total + itemTotal + surcharge;
         }, 0);
         
     // Apply discount (fixed amount)
@@ -388,8 +394,7 @@ export default function CassaPage() {
 
         setLoadingOrder(true);
         try {
-            const response = await apiClient.get<OrderDetailResponse>(`/v1/orders/${displayCode.toUpperCase()}`);
-            const order = response.data;
+            const order = await getOrderByCode(displayCode);
 
             // Set customer and table
             setCustomer(order.customer);
@@ -397,8 +402,8 @@ export default function CassaPage() {
 
             // Build cart from order items
             const cartItems: ExtendedCartItem[] = [];
-            order.categorizedItems.forEach((catItem) => {
-                catItem.items.forEach((item) => {
+            order.categorizedItems.forEach((catItem: any) => {
+                catItem.items.forEach((item: any) => {
                     const food: Food = {
                         id: item.food.id,
                         name: item.food.name,
@@ -427,7 +432,7 @@ export default function CassaPage() {
             toast.success(`Ordine ${displayCode.toUpperCase()} caricato con successo`);
         } catch (error: any) {
             console.error('Error loading order:', error);
-            toast.error(error.response?.data?.message || 'Impossibile caricare l\'ordine');
+            toast.error(error.message || 'Impossibile caricare l\'ordine');
         } finally {
             setLoadingOrder(false);
         }
@@ -454,6 +459,50 @@ export default function CassaPage() {
         setAppliedDiscountAmount(result.data);
         setOpenDiscountDialog(false);
         toast.success(`Sconto di ${result.data.toFixed(2)} € applicato`);
+    };
+
+    // Generate notes from ingredient modifications
+    const generateIngredientNotes = (item: ExtendedCartItem): string => {
+        if (!item.ingredientQuantities || !item.food.ingredients) {
+            return '';
+        }
+
+        const notes: string[] = [];
+        
+        item.food.ingredients.forEach((ingredient) => {
+            const qty = item.ingredientQuantities?.[ingredient.id] ?? 1;
+            
+            if (qty === 0) {
+                // Ingredient removed
+                notes.push(`No ${ingredient.name}`);
+            } else if (qty > 1) {
+                // Multiple ingredients
+                notes.push(`${ingredient.name} x${qty}`);
+            }
+            // qty === 1 is standard, no note needed
+        });
+
+        return notes.join(', ');
+    };
+
+    // Calculate extra ingredient surcharge
+    const calculateIngredientSurcharge = (item: ExtendedCartItem): number => {
+        if (!item.ingredientQuantities || !item.food.ingredients) {
+            return 0;
+        }
+
+        let surcharge = 0;
+        
+        item.food.ingredients.forEach((ingredient) => {
+            const qty = item.ingredientQuantities?.[ingredient.id] ?? 1;
+            
+            if (qty > 1) {
+                // Add 0.5 for each extra piece
+                surcharge += (qty - 1) * 0.5;
+            }
+        });
+
+        return surcharge * item.quantity; // Multiply by item quantity
     };
 
     // Confirm order
@@ -493,39 +542,102 @@ export default function CassaPage() {
         }
 
         try {
-            let orderId: number | undefined;
-
             // If displayCode exists, load the order to confirm it
             if (displayCode.trim()) {
-                const orderResponse = await apiClient.get<OrderDetailResponse>(`/v1/orders/${displayCode.toUpperCase()}`);
-                orderId = parseInt(orderResponse.data.id);
+                const orderResponse = await getOrderByCode(displayCode.toUpperCase());
+                const orderId = parseInt(orderResponse.id);
+                
+                // Prepare order items with notes from ingredient modifications
+                const orderItems = cart.map((item) => {
+                    const ingredientNotes = generateIngredientNotes(item);
+                    const customNotes = item.notes || '';
+                    
+                    // Concatenate custom notes with ingredient notes
+                    let finalNotes = '';
+                    if (customNotes && ingredientNotes) {
+                        finalNotes = `${customNotes}, ${ingredientNotes}`;
+                    } else if (customNotes) {
+                        finalNotes = customNotes;
+                    } else if (ingredientNotes) {
+                        finalNotes = ingredientNotes;
+                    }
+
+                    return {
+                        foodId: item.food.id,
+                        quantity: item.quantity,
+                        ...(finalNotes && { notes: finalNotes }),
+                    };
+                });
+
+                await confirmOrderAction({
+                    orderId,
+                    paymentMethod,
+                    discount: appliedDiscountAmount,
+                    orderItems,
+                });
+            } else {
+                // Create new order (without notes)
+                const createOrderResponse = await createOrder({
+                    table: parseInt(table),
+                    customer,
+                    orderItems: cart.map((item) => ({
+                        foodId: item.food.id,
+                        quantity: item.quantity,
+                    })),
+                });
+
+                // Get the created order ID
+                const createdOrderId = parseInt(createOrderResponse.id);
+
+                // Prepare order items with notes from ingredient modifications
+                const orderItems = cart.map((item) => {
+                    const ingredientNotes = generateIngredientNotes(item);
+                    const customNotes = item.notes || '';
+                    
+                    // Concatenate custom notes with ingredient notes
+                    let finalNotes = '';
+                    if (customNotes && ingredientNotes) {
+                        finalNotes = `${customNotes}, ${ingredientNotes}`;
+                    } else if (customNotes) {
+                        finalNotes = customNotes;
+                    } else if (ingredientNotes) {
+                        finalNotes = ingredientNotes;
+                    }
+
+                    return {
+                        foodId: item.food.id,
+                        quantity: item.quantity,
+                        ...(finalNotes && { notes: finalNotes }),
+                    };
+                });
+
+                // Calculate total surcharge from all items
+                const totalSurcharge = cart.reduce((sum, item) => sum + calculateIngredientSurcharge(item), 0);
+
+                // Confirm the created order with notes, discount, and surcharge
+                await confirmOrderAction({
+                    orderId: createdOrderId,
+                    paymentMethod,
+                    discount: appliedDiscountAmount,
+                    surcharge: totalSurcharge,
+                    orderItems,
+                });
             }
-
-            const confirmRequest: ConfirmOrderRequest = {
-                orderId: orderId!,
-                paymentMethod,
-                orderItems: cart.map((item) => ({
-                    foodId: item.food.id,
-                    quantity: item.quantity,
-                    notes: item.notes,
-                })),
-            };
-
-            await apiClient.post('/v1/confirm-order', confirmRequest);
 
             toast.success('L\'ordine è stato confermato con successo');
 
             clearCart();
         } catch (error: any) {
             console.error('Error confirming order:', error);
-            toast.error(error.response?.data?.message || 'Impossibile confermare l\'ordine');
+            toast.error(error.message || 'Impossibile confermare l\'ordine');
         }
     };
 
     // Handle logout
     const handleLogout = async () => {
-        await logout();
+        await logoutAction();
         router.push('/login');
+        router.refresh();
     };
 
     if (isLoading || !isAuthenticated) {
@@ -683,6 +795,7 @@ export default function CassaPage() {
                         <Label htmlFor="displayCode" className='mb-2'>Carica Ordine</Label>
                         <div className="mt-1 flex gap-2">
                             <Input
+                                autoComplete='off'
                                 id="displayCode"
                                 placeholder="CODICE ORDINE (ES. ABC)"
                                 value={displayCode}
@@ -1006,6 +1119,7 @@ export default function CassaPage() {
                             <Label htmlFor="searchQuery" className="mb-2">Cerca Ordine</Label>
                             <div className="mt-1 space-y-2">
                                 <Input
+                                    autoComplete='off'
                                     id="searchQuery"
                                     placeholder="Cerca per codice, tavolo o cliente..."
                                     value={searchQuery}
@@ -1174,6 +1288,7 @@ export default function CassaPage() {
                             <Label htmlFor="discountAmount">Sconto (€)</Label>
                             <div className="relative">
                                 <Input
+                                    autoComplete='off'
                                     id="discountAmount"
                                     type="text"
                                     placeholder="0.00"
