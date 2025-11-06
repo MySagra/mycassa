@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 import apiClient from '@/lib/api-client';
@@ -11,6 +11,16 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
+import {
+    Sheet,
+    SheetClose,
+    SheetContent,
+    SheetDescription,
+    SheetFooter,
+    SheetHeader,
+    SheetTitle,
+    SheetTrigger,
+} from "@/components/ui/sheet";
 import {
     Filter,
     Settings,
@@ -40,6 +50,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import {
     Dialog,
+    DialogDescription,
     DialogContent,
     DialogHeader,
     DialogTitle,
@@ -48,27 +59,37 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { ButtonGroup } from '@/components/ui/button-group';
 
+// Extended CartItem to include ingredient quantities and unique ID
+interface ExtendedCartItem extends CartItem {
+    cartItemId: string; // Unique identifier for each cart item
+    ingredientQuantities?: Record<string, number>; // ingredientId -> quantity
+}
+
 export default function CassaPage() {
     const router = useRouter();
     const { isAuthenticated, isLoading, logout } = useAuth();
     const { theme, setTheme } = useTheme();
+    const cartScrollRef = useRef<HTMLDivElement>(null);
 
     // State
     const [categories, setCategories] = useState<Category[]>([]);
     const [foods, setFoods] = useState<Food[]>([]);
     const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
-    const [cart, setCart] = useState<CartItem[]>([]);
+    const [cart, setCart] = useState<ExtendedCartItem[]>([]);
     const [displayCode, setDisplayCode] = useState('');
     const [customer, setCustomer] = useState('');
     const [table, setTable] = useState('');
     const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('CASH');
+    const [paidAmount, setPaidAmount] = useState<string>('');
+    const [showDailyOrders, setShowDailyOrders] = useState(false);
     const [loadingOrder, setLoadingOrder] = useState(false);
     const [loadingCategories, setLoadingCategories] = useState(true);
     const [loadingFoods, setLoadingFoods] = useState(true);
     const [openClearDialog, setOpenClearDialog] = useState(false);
-    const [editingItem, setEditingItem] = useState<CartItem | null>(null);
+    const [editingItem, setEditingItem] = useState<ExtendedCartItem | null>(null);
     const [editQuantity, setEditQuantity] = useState(1);
     const [editNotes, setEditNotes] = useState('');
+    const [ingredientQuantities, setIngredientQuantities] = useState<Record<string, number>>({});
 
     // Redirect if not authenticated
     useEffect(() => {
@@ -103,7 +124,7 @@ export default function CassaPage() {
     useEffect(() => {
         const fetchFoods = async () => {
             try {
-                const response = await apiClient.get('/v1/foods/available');
+                const response = await apiClient.get('/v1/foods/available?include=ingredients');
                 setFoods(response.data);
             } catch (error) {
                 console.error('Error loading foods:', error);
@@ -117,6 +138,16 @@ export default function CassaPage() {
             fetchFoods();
         }
     }, [isAuthenticated]);
+
+    // Auto-scroll cart to bottom when items are added
+    useEffect(() => {
+        if (cartScrollRef.current && cart.length > 0) {
+            const scrollElement = cartScrollRef.current.querySelector('[data-radix-scroll-area-viewport]');
+            if (scrollElement) {
+                scrollElement.scrollTop = scrollElement.scrollHeight;
+            }
+        }
+    }, [cart]);
 
     // Filter foods by category
     const filteredFoods = selectedCategoryId
@@ -155,27 +186,42 @@ export default function CassaPage() {
         }, 0);
     };
 
+    // Calculate change
+    const calculateChange = () => {
+        const total = calculateTotal();
+        const paid = parseFloat(paidAmount) || 0;
+        return paid - total;
+    };
+
     // Add food to cart
     const addToCart = (food: Food) => {
         setCart((prev) => {
-            const existingItem = prev.find((item) => item.food.id === food.id);
+            const existingItem = prev.find((item) =>
+                item.food.id === food.id &&
+                !item.notes &&
+                !item.ingredientQuantities
+            );
             if (existingItem) {
                 return prev.map((item) =>
-                    item.food.id === food.id
+                    item.cartItemId === existingItem.cartItemId
                         ? { ...item, quantity: item.quantity + 1 }
                         : item
                 );
             }
-            return [...prev, { food, quantity: 1 }];
+            return [...prev, {
+                cartItemId: `${food.id}-${Date.now()}-${Math.random()}`,
+                food,
+                quantity: 1
+            }];
         });
     };
 
     // Update quantity
-    const updateQuantity = (foodId: string, delta: number) => {
+    const updateQuantity = (cartItemId: string, delta: number) => {
         setCart((prev) =>
             prev
                 .map((item) =>
-                    item.food.id === foodId
+                    item.cartItemId === cartItemId
                         ? { ...item, quantity: Math.max(0, item.quantity + delta) }
                         : item
                 )
@@ -184,32 +230,74 @@ export default function CassaPage() {
     };
 
     // Remove from cart
-    const removeFromCart = (foodId: string) => {
-        setCart((prev) => prev.filter((item) => item.food.id !== foodId));
+    const removeFromCart = (cartItemId: string) => {
+        setCart((prev) => prev.filter((item) => item.cartItemId !== cartItemId));
     };
 
     // Open edit dialog
-    const openEditDialog = (item: CartItem) => {
+    const openEditDialog = (item: ExtendedCartItem) => {
         setEditingItem(item);
-        setEditQuantity(item.quantity);
+        setEditQuantity(1); // Start with 1 as default
         setEditNotes(item.notes || '');
+        // Initialize ingredient quantities: default to 1 for all ingredients
+        const initialQuantities: Record<string, number> = {};
+        item.food.ingredients?.forEach((ingredient) => {
+            initialQuantities[ingredient.id] = item.ingredientQuantities?.[ingredient.id] ?? 1;
+        });
+        setIngredientQuantities(initialQuantities);
+    };
+
+    // Update ingredient quantity
+    const updateIngredientQuantity = (ingredientId: string, delta: number) => {
+        setIngredientQuantities((prev) => {
+            const currentQty = prev[ingredientId] ?? 1;
+            const newQty = Math.max(0, currentQty + delta);
+            return { ...prev, [ingredientId]: newQty };
+        });
     };
 
     // Save edited item
     const saveEditedItem = () => {
         if (!editingItem) return;
 
-        setCart((prev) =>
-            prev.map((item) =>
-                item.food.id === editingItem.food.id
-                    ? { ...item, quantity: editQuantity, notes: editNotes }
-                    : item
-            ).filter((item) => item.quantity > 0)
-        );
+        setCart((prev) => {
+            const newCart: ExtendedCartItem[] = [];
+
+            prev.forEach((item) => {
+                if (item.cartItemId === editingItem.cartItemId) {
+                    // If edit quantity is less than total, split into separate cards
+                    const remainingQty = item.quantity - editQuantity;
+
+                    if (remainingQty > 0) {
+                        // Keep the unmodified portion with the original cartItemId
+                        newCart.push({
+                            ...item,
+                            quantity: remainingQty
+                        });
+                    }
+
+                    // Add the modified portion as a NEW separate card with new ID
+                    if (editQuantity > 0) {
+                        newCart.push({
+                            cartItemId: `${item.food.id}-${Date.now()}-${Math.random()}`,
+                            food: item.food,
+                            quantity: editQuantity,
+                            notes: editNotes,
+                            ingredientQuantities
+                        });
+                    }
+                } else {
+                    newCart.push(item);
+                }
+            });
+
+            return newCart;
+        });
 
         setEditingItem(null);
         setEditQuantity(1);
         setEditNotes('');
+        setIngredientQuantities({});
     };
 
     // Clear cart
@@ -218,6 +306,7 @@ export default function CassaPage() {
         setDisplayCode('');
         setCustomer('');
         setTable('');
+        setPaidAmount('');
     };
 
     // Load order by display code
@@ -237,7 +326,7 @@ export default function CassaPage() {
             setTable(order.table);
 
             // Build cart from order items
-            const cartItems: CartItem[] = [];
+            const cartItems: ExtendedCartItem[] = [];
             order.categorizedItems.forEach((catItem) => {
                 catItem.items.forEach((item) => {
                     const food: Food = {
@@ -255,7 +344,11 @@ export default function CassaPage() {
                         },
                         ingredients: item.food.ingredients,
                     };
-                    cartItems.push({ food, quantity: item.quantity });
+                    cartItems.push({
+                        cartItemId: `${food.id}-${Date.now()}-${Math.random()}`,
+                        food,
+                        quantity: item.quantity
+                    });
                 });
             });
 
@@ -421,18 +514,15 @@ export default function CassaPage() {
                                                 </h3>
                                             </div>
 
-                                            <div className="grid grid-cols-3 gap-4 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+                                            <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))' }}>
                                                 {categoryFoods.map((food) => (
                                                     <Card
                                                         key={food.id}
-                                                        className="cursor-pointer transition-all hover:scale-105 hover:border-amber-500 hover:shadow-lgh-32"
+                                                        className="cursor-pointer transition-all hover:scale-105 hover:border-amber-500 hover:shadow-lg"
                                                         onClick={() => addToCart(food)}
                                                     >
-                                                        <CardContent className="flex flex-col items-center justify-center">
-                                                            <h4
-                                                                className="mb-2 line-clamp-2 text-center font-medium text-sm sm:text-base"
-                                                                style={{ fontSize: food.name.length > 20 ? '0.8rem' : '1rem' }}
-                                                            >
+                                                        <CardContent className="flex flex-col items-center justify-center h-10">
+                                                            <h4 className="line-clamp-2 text-center font-medium text-sm">
                                                                 {food.name}
                                                             </h4>
                                                             <p className="text-lg font-bold text-amber-500">
@@ -460,12 +550,20 @@ export default function CassaPage() {
             </div>
 
             {/* Right Sidebar - Cart (Full Height) */}
-            <aside className="w-96 border-l bg-card flex flex-col h-screen">
-                <div className="border-b p-4">
+            <aside className="w-96 border-l flex flex-col bg-card h-screen">
+                <div className="flex place-content-between p-4">
                     <h2 className="flex items-center gap-2 text-lg font-semibold">
                         <ShoppingCart className="h-5 w-5" />
                         Carrello
                     </h2>
+
+                    <Button 
+                        variant={showDailyOrders ? 'default' : 'outline'}
+                        onClick={() => setShowDailyOrders(!showDailyOrders)}
+                    >
+                        Ordini Giornalieri
+                    </Button>
+
                 </div>
 
                 <div className="space-y-4 p-4">
@@ -515,7 +613,7 @@ export default function CassaPage() {
 
                 {/* Cart Items */}
                 <div className="flex-1 border-y overflow-hidden">
-                    <ScrollArea className="h-full">
+                    <ScrollArea className="h-full" ref={cartScrollRef}>
                         <div className="p-4">
                             {cart.length === 0 ? (
                                 <div className="flex h-32 items-center justify-center text-sm text-muted-foreground">
@@ -529,10 +627,26 @@ export default function CassaPage() {
                                             : parseFloat(item.food.price as unknown as string)) * item.quantity;
 
                                         return (
-                                            <div key={item.food.id} className="bg-card border rounded-lg p-3">
+                                            <div key={item.cartItemId} className="bg-card border rounded-lg p-3">
                                                 <div className="flex items-start justify-between gap-2 mb-2">
                                                     <div className="flex-1">
                                                         <h4 className="font-medium text-sm">{item.food.name}</h4>
+                                                        {item.ingredientQuantities && item.food.ingredients && (
+                                                            <p className="text-xs text-amber-600 dark:text-amber-500 mt-1">
+                                                                {item.food.ingredients
+                                                                    .map((ing) => {
+                                                                        const qty = item.ingredientQuantities?.[ing.id] ?? 1;
+                                                                        if (qty === 0) {
+                                                                            return `NO ${ing.name}`;
+                                                                        } else if (qty > 1) {
+                                                                            return `${qty}x ${ing.name}`;
+                                                                        }
+                                                                        return null;
+                                                                    })
+                                                                    .filter(Boolean)
+                                                                    .join(', ')}
+                                                            </p>
+                                                        )}
                                                         {item.notes && (
                                                             <p className="text-xs text-muted-foreground mt-1">{item.notes}</p>
                                                         )}
@@ -550,7 +664,7 @@ export default function CassaPage() {
                                                             variant="ghost"
                                                             size="icon"
                                                             className="h-8 w-8 text-destructive"
-                                                            onClick={() => removeFromCart(item.food.id)}
+                                                            onClick={() => removeFromCart(item.cartItemId)}
                                                         >
                                                             <X className="h-4 w-4" />
                                                         </Button>
@@ -562,7 +676,7 @@ export default function CassaPage() {
                                                             variant="outline"
                                                             size="icon"
                                                             className="h-8 w-8"
-                                                            onClick={() => updateQuantity(item.food.id, -1)}
+                                                            onClick={() => updateQuantity(item.cartItemId, -1)}
                                                         >
                                                             <Minus className="h-4 w-4" />
                                                         </Button>
@@ -571,7 +685,7 @@ export default function CassaPage() {
                                                             variant="outline"
                                                             size="icon"
                                                             className="h-8 w-8"
-                                                            onClick={() => updateQuantity(item.food.id, 1)}
+                                                            onClick={() => updateQuantity(item.cartItemId, 1)}
                                                         >
                                                             <Plus className="h-4 w-4" />
                                                         </Button>
@@ -621,6 +735,39 @@ export default function CassaPage() {
                             </Button>
                         </ButtonGroup>
                     </div>
+
+                    {/* Cash Payment Details */}
+                    {paymentMethod === 'CASH' && (
+                        <div className="space-y-3 border rounded-lg p-3 bg-muted/30">
+                            <div className="grid grid-cols-2 gap-4 item">
+                                <div>
+                                    <Label htmlFor="paidAmount" className='text-base'>Pagato dal cliente</Label>
+                                    <div className="relative mt-3">
+                                        <Input
+                                            id="paidAmount"
+                                            type="number"
+                                            step="0.01"
+                                            placeholder="0.00"
+                                            value={paidAmount}
+                                            onChange={(e) => setPaidAmount(e.target.value)}
+                                            className="text-right pr-8"
+                                        />
+                                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                                            €
+                                        </span>
+                                    </div>
+                                </div>
+                                <div className="flex flex-col items-end space-y-1">
+                                    <span className="text-base font-medium">Resto</span>
+                                    <div className='w-full h-full flex place-content-end items-center'>
+                                        <span className={`text-2xl font-bold ${calculateChange() >= 0 ? 'text-green-600 dark:text-green-500' : 'text-red-600 dark:text-red-500'}`}>
+                                            {calculateChange().toFixed(2)} €
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
                     {/* Actions row: empty cart (icon) + confirm order */}
                     <div className="flex items-center gap-2">
@@ -673,21 +820,40 @@ export default function CassaPage() {
                         </Button>
                     </div>
                 </div>
-            </aside >
+            </aside>
+
+            {/* Daily Orders Sidebar - Sliding Panel */}
+            {showDailyOrders && (
+                <aside className="w-96 border-l flex flex-col bg-card h-screen animate-in">
+                    <div className="flex items-center justify-between p-4">
+                        <h2 className="text-lg font-semibold">Ordini Giornalieri</h2>
+                    </div>
+                    
+                    <ScrollArea className="flex-1">
+                        <div className="p-4 space-y-3">
+                            {/* Placeholder content - qui andranno gli ordini */}
+                            <div className="text-center text-muted-foreground py-8">
+                                Nessun ordine per oggi
+                            </div>
+                        </div>
+                    </ScrollArea>
+                </aside>
+            )}
 
             {/* Edit Item Dialog */}
-            < Dialog open={editingItem !== null
+            <Dialog open={editingItem !== null
             } onOpenChange={(open) => !open && setEditingItem(null)}>
                 <DialogContent className="sm:max-w-[425px]">
                     <DialogHeader>
                         <DialogTitle>Modifica Prodotto</DialogTitle>
+                        <DialogDescription>
+                            <div className="text-sm text-muted-foreground">
+                                {editingItem?.food.name}
+                            </div>
+                        </DialogDescription>
                     </DialogHeader>
                     {editingItem && (
-                        <div className="space-y-4 py-4">
-                            <div className="text-sm text-muted-foreground">
-                                {editingItem.food.name}
-                            </div>
-
+                        <div className="space-y-4">
                             {/* Quantity */}
                             <div className="space-y-2">
                                 <Label>Quantità con questa modifica</Label>
@@ -702,22 +868,70 @@ export default function CassaPage() {
                                     <Input
                                         type="number"
                                         value={editQuantity}
-                                        onChange={(e) => setEditQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                                        onChange={(e) => {
+                                            const value = parseInt(e.target.value) || 1;
+                                            setEditQuantity(Math.min(editingItem.quantity, Math.max(1, value)));
+                                        }}
                                         className="text-center w-20"
                                         min="1"
+                                        max={editingItem.quantity}
                                     />
                                     <Button
                                         variant="outline"
                                         size="icon"
-                                        onClick={() => setEditQuantity(editQuantity + 1)}
+                                        onClick={() => setEditQuantity(Math.min(editingItem.quantity, editQuantity + 1))}
+                                        disabled={editQuantity >= editingItem.quantity}
                                     >
                                         <Plus className="h-4 w-4" />
                                     </Button>
                                 </div>
                                 <p className="text-xs text-muted-foreground">
-                                    Indica quante unità devono avere questa personalizzazione
+                                    Indica quante unità devono avere questa personalizzazione (max: {editingItem.quantity})
                                 </p>
                             </div>
+
+                            {/* Ingredients */}
+                            {editingItem.food.ingredients && editingItem.food.ingredients.length > 0 && (
+                                <div className="space-y-2">
+                                    <Label>Ingredienti</Label>
+                                    <div className="space-y-3 max-h-60 overflow-y-auto border rounded-md p-3">
+                                        {editingItem.food.ingredients.map((ingredient) => {
+                                            const qty = ingredientQuantities[ingredient.id] ?? 1;
+                                            return (
+                                                <div key={ingredient.id} className="flex items-center justify-between">
+                                                    <label className="text-sm font-medium">
+                                                        {ingredient.name}
+                                                    </label>
+                                                    <div className="flex items-center gap-2">
+                                                        <Button
+                                                            type="button"
+                                                            variant="outline"
+                                                            size="icon"
+                                                            className="h-8 w-8"
+                                                            onClick={() => updateIngredientQuantity(ingredient.id, -1)}
+                                                        >
+                                                            <Minus className="h-4 w-4" />
+                                                        </Button>
+                                                        <span className="w-8 text-center font-medium">{qty}</span>
+                                                        <Button
+                                                            type="button"
+                                                            variant="outline"
+                                                            size="icon"
+                                                            className="h-8 w-8"
+                                                            onClick={() => updateIngredientQuantity(ingredient.id, 1)}
+                                                        >
+                                                            <Plus className="h-4 w-4" />
+                                                        </Button>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                    <p className="text-xs text-muted-foreground">
+                                        Imposta la quantità degli ingredienti (0 = nessuno)
+                                    </p>
+                                </div>
+                            )}
 
                             {/* Notes */}
                             <div className="space-y-2">
@@ -728,6 +942,7 @@ export default function CassaPage() {
                                     value={editNotes}
                                     onChange={(e) => setEditNotes(e.target.value)}
                                     rows={4}
+                                    className="resize-none"
                                 />
                             </div>
                         </div>
