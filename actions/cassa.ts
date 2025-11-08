@@ -185,7 +185,7 @@ export async function confirmOrder(orderData: {
   }
 
   try {
-    const response = await fetch(`${process.env.API_URL}/v1/confirm-order`, {
+    const response = await fetch(`${process.env.API_URL}/v1/confirmed-orders`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${session.accessToken}`,

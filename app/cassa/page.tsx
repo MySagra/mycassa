@@ -1244,7 +1244,7 @@ export default function CassaPage() {
                         </div>
                     </div>
 
-                    <ScrollArea className="flex-1">
+                    <ScrollArea className="flex-1 h-full overflow-y-auto">
                         <div className="p-4 space-y-3">
                             {dailyOrders.length === 0 ? (
                                 <div className="text-center text-muted-foreground py-8">
@@ -1374,7 +1374,7 @@ export default function CassaPage() {
                             {editingItem.food.ingredients && editingItem.food.ingredients.length > 0 && (
                                 <div className="space-y-2">
                                     <Label>Ingredienti</Label>
-                                    <div className="space-y-3 max-h-60 overflow-y-auto border rounded-md p-3">
+                                    <div className="space-y-3 max-h-75 overflow-y-auto border rounded-md p-3">
                                         {editingItem.food.ingredients.map((ingredient) => {
                                             const qty = ingredientQuantities[ingredient.id] ?? 1;
                                             return (
@@ -1576,7 +1576,7 @@ export default function CassaPage() {
                             {/* Order Items */}
                             <div className="space-y-2">
                                 <h4 className="font-semibold">Prodotti</h4>
-                                <ScrollArea className="max-h-[300px]">
+                                <ScrollArea className='overflow-y-auto max-h-[500px]'>
                                     <div className="space-y-3">
                                         {viewingOrderDetail.categorizedItems.map((catItem: any, catIndex: number) => (
                                             <div key={catIndex}>
