@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
+import { fetchEventSource } from '@microsoft/fetch-event-source';
 import { getCategories, getFoods, getOrderByCode, confirmOrder as confirmOrderAction, createOrder, getTodayOrders } from '@/actions/cassa';
 import { logout as logoutAction } from '@/actions/auth';
 import { Category, Food, CartItem, PaymentMethod, OrderDetailResponse } from '@/lib/api-types';
@@ -28,7 +29,6 @@ import {
     Pencil,
     X,
     Percent,
-    Download,
     Eye,
     FileText
 } from 'lucide-react';
@@ -243,6 +243,112 @@ export default function CassaPage() {
         }
     }, [cart]);
 
+    // SSE connection for daily orders - Load initial orders and listen for updates
+    useEffect(() => {
+        if (!session?.accessToken || !showDailyOrders) {
+            console.log('[SSE] In attesa di accessToken o sezione ordini chiusa...');
+            return;
+        }
+
+        console.log('[SSE] Sezione ordini aperta. Caricamento ordini iniziali...');
+
+        // Load initial orders
+        const loadInitialOrders = async () => {
+            setLoadingDailyOrders(true);
+            try {
+                const orders = await getTodayOrders();
+                setDailyOrders(orders);
+                console.log(`[SSE] Caricati ${orders.length} ordini iniziali`);
+            } catch (error: any) {
+                console.error('[SSE] Errore caricamento ordini iniziali:', error);
+                toast.error(error.message || 'Impossibile caricare gli ordini di oggi');
+            } finally {
+                setLoadingDailyOrders(false);
+            }
+        };
+
+        loadInitialOrders();
+
+        // Setup SSE connection
+        console.log('[SSE] useEffect attivato. Tentativo di connessione...');
+
+        const abortController = new AbortController();
+
+        const connectSSE = async () => {
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+            await fetchEventSource(`${apiUrl}/events/order`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${session.accessToken}`,
+                    'Accept': 'text/event-stream',
+                },
+                signal: abortController.signal,
+
+                async onopen(response) {
+                    if (response.ok) {
+                        console.log('[SSE] Connessione APERTA (Status 200). In ascolto...');
+                    } else {
+                        console.error(`[SSE] Errore di connessione (onopen): Status ${response.status}`, response);
+                        abortController.abort();
+                    }
+                },
+
+                async onmessage(event) {
+                    if (!event.data) {
+                        console.log('[SSE] Ricevuto heartbeat (keep-alive)');
+                        return;
+                    }
+
+                    console.log('[SSE] Messaggio GREZZO ricevuto:', event.data);
+
+                    try {
+                        const order: DailyOrder = JSON.parse(event.data);
+                        console.log('[SSE] Dati PARSIFICATI:', order);
+
+                        setDailyOrders((prevOrders) => {
+                            console.log('[SSE] Aggiornamento stato React: Ordini precedenti:', prevOrders.length);
+
+                            const existingIndex = prevOrders.findIndex(o => o.id === order.id);
+
+                            if (existingIndex !== -1) {
+                                console.log(`[SSE] Trovato ordine esistente. Aggiornamento indice ${existingIndex}`);
+                                const newOrders = [...prevOrders];
+                                newOrders[existingIndex] = order;
+                                return newOrders;
+                            } else {
+                                console.log('[SSE] Aggiunta nuovo ordine in cima');
+                                toast.success(`Nuovo ordine: ${order.displayCode}`);
+                                return [order, ...prevOrders];
+                            }
+                        });
+
+                    } catch (error) {
+                        console.error('[SSE] Errore PARSANDO il JSON:', error, 'Dati grezzi:', event.data);
+                    }
+                },
+
+                onclose() {
+                    console.log('[SSE] Connessione CHIUSA dal server.');
+                },
+
+                onerror(err) {
+                    console.error('[SSE] Errore di rete (onerror). La libreria tenterà di riconnettersi.', err);
+                    if ((err as any).status === 401) {
+                        console.error("[SSE] Errore 401. L'AccessToken potrebbe essere scaduto.");
+                        throw err;
+                    }
+                }
+            });
+        };
+
+        connectSSE();
+
+        return () => {
+            console.log('[SSE] Pulizia useEffect: chiusura connessione.');
+            abortController.abort();
+        };
+    }, [session?.accessToken, showDailyOrders]);
+
     // Filter foods by category
     const filteredFoods = selectedCategoryId
         ? foods.filter((food) => food.categoryId === selectedCategoryId)
@@ -284,6 +390,13 @@ export default function CassaPage() {
     // Apply discount (fixed amount)
     const discountToApply = appliedDiscountAmount || 0;
     return Math.max(0, subtotal - discountToApply);
+    };
+
+    // Calculate total surcharges
+    const calculateTotalSurcharges = () => {
+        return cart.reduce((total, item) => {
+            return total + calculateIngredientSurcharge(item);
+        }, 0);
     };
 
     // Calculate change
@@ -967,9 +1080,11 @@ export default function CassaPage() {
                             ) : (
                                 <div className="space-y-2">
                                     {cart.map((item) => {
-                                        const itemTotal = (typeof item.food.price === 'number'
+                                        const itemPrice = (typeof item.food.price === 'number'
                                             ? item.food.price
-                                            : parseFloat(item.food.price as unknown as string)) * item.quantity;
+                                            : parseFloat(item.food.price as unknown as string));
+                                        const itemSurcharge = calculateIngredientSurcharge(item);
+                                        const itemTotal = (itemPrice * item.quantity) + itemSurcharge;
 
                                         return (
                                             <div key={item.cartItemId} className="bg-card border rounded-lg p-3">
@@ -1036,6 +1151,11 @@ export default function CassaPage() {
                                                         </Button>
                                                     </div>
                                                     <div className="text-right">
+                                                        {itemSurcharge > 0 && (
+                                                            <p className="text-xs text-amber-600 dark:text-amber-500">
+                                                                (+{(itemSurcharge / item.quantity).toFixed(2)}€)
+                                                            </p>
+                                                        )}
                                                         <p className="text-lg font-bold">{itemTotal.toFixed(2)} €</p>
                                                     </div>
                                                 </div>
@@ -1058,6 +1178,14 @@ export default function CassaPage() {
                                 {calculateTotal().toFixed(2)} €
                             </span>
                         </div>
+                        {calculateTotalSurcharges() > 0 && (
+                            <div className="flex items-center justify-between text-sm text-amber-600 dark:text-amber-500">
+                                <span>Sovrapprezzi totali:</span>
+                                <span className="font-semibold">
+                                    +{calculateTotalSurcharges().toFixed(2)} €
+                                </span>
+                            </div>
+                        )}
                         {appliedDiscountAmount > 0 && (
                             <div className="flex items-center justify-between text-sm text-green-600 dark:text-green-500">
                                 <span>Sconto applicato:</span>
@@ -1224,7 +1352,7 @@ export default function CassaPage() {
                         {/* Search Section */}
                         <div>
                             <Label htmlFor="searchQuery" className="mb-2">Cerca Ordine</Label>
-                            <div className="mt-1 space-y-2">
+                            <div className="mt-1">
                                 <Input
                                     autoComplete='off'
                                     id="searchQuery"
@@ -1232,14 +1360,6 @@ export default function CassaPage() {
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                 />
-                                <Button
-                                    onClick={loadTodayOrders}
-                                    className="w-full"
-                                    disabled={loadingDailyOrders}
-                                >
-                                    <Download className="mr-2 h-4 w-4" />
-                                    {loadingDailyOrders ? 'Caricamento...' : 'Recupera ordini di oggi'}
-                                </Button>
                             </div>
                         </div>
                     </div>
