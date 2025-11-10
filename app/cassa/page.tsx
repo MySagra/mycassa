@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { fetchEventSource } from '@microsoft/fetch-event-source';
-import { getCategories, getFoods, getOrderByCode, confirmOrder as confirmOrderAction, createOrder, getTodayOrders } from '@/actions/cassa';
+import { getCategories, getFoods, getOrderByCode, confirmOrder as confirmOrderAction, createOrder, getTodayOrders, getFoodById, searchDailyOrders } from '@/actions/cassa';
 import { logout as logoutAction } from '@/actions/auth';
 import { Category, Food, CartItem, PaymentMethod, OrderDetailResponse } from '@/lib/api-types';
 import { Button } from '@/components/ui/button';
@@ -100,6 +100,8 @@ export default function CassaPage() {
     const { data: session, status } = useSession();
     const { theme, setTheme } = useTheme();
     const cartScrollRef = useRef<HTMLDivElement>(null);
+    const sseConnectionRef = useRef(false);
+    const lastEventRef = useRef<string | null>(null);
 
     const isAuthenticated = status === 'authenticated';
     const isLoading = status === 'loading';
@@ -243,10 +245,203 @@ export default function CassaPage() {
         }
     }, [cart]);
 
-    // SSE connection for daily orders - Load initial orders and listen for updates
+    // SSE connection - Always connected when authenticated (for food availability and order updates)
+    useEffect(() => {
+        if (!session?.accessToken) {
+            return;
+        }
+
+        // Prevent multiple connections
+        if (sseConnectionRef.current) {
+            return;
+        }
+        sseConnectionRef.current = true;
+
+        const abortController = new AbortController();
+
+        const connectSSE = async () => {
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+            await fetchEventSource(`${apiUrl}/events/cashier`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${session.accessToken}`,
+                    'Accept': 'text/event-stream',
+                },
+                signal: abortController.signal,
+
+                async onopen(response) {
+                    if (response.ok) {
+                        console.log('[SSE] Connessione stabilita');
+                    } else {
+                        console.error(`[SSE] Errore di connessione: Status ${response.status}`);
+                        abortController.abort();
+                    }
+                },
+
+                async onmessage(event) {
+                    if (!event.data) {
+                        return;
+                    }
+
+                    // Prevent duplicate events
+                    const eventKey = `${event.event}-${event.data}`;
+                    if (lastEventRef.current === eventKey) {
+                        return;
+                    }
+                    lastEventRef.current = eventKey;
+
+                    // Handle new-order event
+                    if (event.event === 'new-order') {
+                        try {
+                            const order: DailyOrder = JSON.parse(event.data);
+                            let isNew = false;
+
+                            setDailyOrders((prevOrders) => {
+                                const existingIndex = prevOrders.findIndex(o => o.id === order.id);
+
+                                if (existingIndex !== -1) {
+                                    const newOrders = [...prevOrders];
+                                    newOrders[existingIndex] = order;
+                                    return newOrders;
+                                } else {
+                                    isNew = true;
+                                    return [order, ...prevOrders];
+                                }
+                            });
+
+                            if (isNew) {
+                                toast.success(`Nuovo ordine: ${order.displayCode}`);
+                            }
+                        } catch (error) {
+                            console.error('[SSE] Errore parsando new-order:', error);
+                        }
+                    }
+                    // Handle confirmed-order event
+                    else if (event.event === 'confirmed-order') {
+                        try {
+                            const { orderId, ticketNumber } = JSON.parse(event.data);
+
+                            setDailyOrders((prevOrders) => {
+                                return prevOrders.filter(o => o.id !== orderId);
+                            });
+
+                            toast.info(`Ordine confermato (Ticket: ${ticketNumber})`);
+                        } catch (error) {
+                            console.error('[SSE] Errore parsando confirmed-order:', error);
+                        }
+                    }
+                    // Handle food-availability-changed event
+                    else if (event.event === 'food-availability-changed') {
+                        try {
+                            const { id: foodId, available } = JSON.parse(event.data);
+                            let shouldShowToast = false;
+
+                            if (!available) {
+                                // Food is no longer available - remove it from the foods list
+                                setFoods((prevFoods) => {
+                                    const filteredFoods = prevFoods.filter(f => f.id !== foodId);
+                                    if (filteredFoods.length < prevFoods.length) {
+                                        shouldShowToast = true;
+                                    }
+                                    return filteredFoods;
+                                });
+
+                                if (shouldShowToast) {
+                                    toast.info('Cibo non disponibile');
+                                }
+                            } else {
+                                // Food is now available - fetch it and add to the foods list
+                                const fetchUpdatedFood = async () => {
+                                    try {
+                                        const updatedFood = await getFoodById(foodId);
+                                        let isNew = false;
+
+                                        setFoods((prevFoods) => {
+                                            const existingIndex = prevFoods.findIndex(f => f.id === foodId);
+
+                                            if (existingIndex !== -1) {
+                                                // Update existing food
+                                                const newFoods = [...prevFoods];
+                                                newFoods[existingIndex] = updatedFood;
+                                                return newFoods;
+                                            } else {
+                                                // Add new food
+                                                isNew = true;
+                                                return [...prevFoods, updatedFood];
+                                            }
+                                        });
+
+                                        if (isNew) {
+                                            toast.success(`Nuovo cibo disponibile: ${updatedFood.name}`);
+                                        }
+                                    } catch (error) {
+                                        console.error('[SSE] Errore fetchando cibo:', error);
+                                    }
+                                };
+
+                                fetchUpdatedFood();
+                            }
+                        } catch (error) {
+                            console.error('[SSE] Errore parsando food-availability-changed:', error);
+                        }
+                    }
+                    // Handle default/legacy message event
+                    else {
+                        try {
+                            const order: DailyOrder = JSON.parse(event.data);
+                            let isNew = false;
+
+                            setDailyOrders((prevOrders) => {
+                                const existingIndex = prevOrders.findIndex(o => o.id === order.id);
+
+                                if (existingIndex !== -1) {
+                                    const newOrders = [...prevOrders];
+                                    newOrders[existingIndex] = order;
+                                    return newOrders;
+                                } else {
+                                    isNew = true;
+                                    return [order, ...prevOrders];
+                                }
+                            });
+
+                            if (isNew) {
+                                toast.success(`Nuovo ordine: ${order.displayCode}`);
+                            }
+                        } catch (error) {
+                            console.error('[SSE] Errore parsando messaggio:', error);
+                        }
+                    }
+                },
+
+                onclose() {
+                    console.log('[SSE] Connessione chiusa');
+                    sseConnectionRef.current = false;
+                },
+
+                onerror(err) {
+                    console.error('[SSE] Errore di rete:', err);
+                    if ((err as any).status === 401) {
+                        console.error("[SSE] Errore 401 - Token scaduto");
+                        throw err;
+                    }
+                    sseConnectionRef.current = false;
+                }
+            });
+        };
+
+        connectSSE();
+
+        return () => {
+            console.log('[SSE] Cleanup');
+            abortController.abort();
+            sseConnectionRef.current = false;
+        };
+    }, [session?.accessToken]);
+
+    // Load daily orders when the section is opened
     useEffect(() => {
         if (!session?.accessToken || !showDailyOrders) {
-            console.log('[SSE] In attesa di accessToken o sezione ordini chiusa...');
+            console.log('[SSE] Sezione ordini chiusa o accessToken non disponibile');
             return;
         }
 
@@ -268,127 +463,46 @@ export default function CassaPage() {
         };
 
         loadInitialOrders();
-
-        // Setup SSE connection
-        console.log('[SSE] useEffect attivato. Tentativo di connessione...');
-
-        const abortController = new AbortController();
-
-        const connectSSE = async () => {
-            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-            await fetchEventSource(`${apiUrl}/events/cashier`, {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${session.accessToken}`,
-                    'Accept': 'text/event-stream',
-                },
-                signal: abortController.signal,
-
-                async onopen(response) {
-                    if (response.ok) {
-                        console.log('[SSE] Connessione APERTA (Status 200). In ascolto...');
-                    } else {
-                        console.error(`[SSE] Errore di connessione (onopen): Status ${response.status}`, response);
-                        abortController.abort();
-                    }
-                },
-
-                async onmessage(event) {
-                    if (!event.data) {
-                        console.log('[SSE] Ricevuto heartbeat (keep-alive)');
-                        return;
-                    }
-
-                    console.log('[SSE] Messaggio ricevuto - Event:', event.event, 'Data:', event.data);
-
-                    // Handle new-order event
-                    if (event.event === 'new-order') {
-                        try {
-                            const order: DailyOrder = JSON.parse(event.data);
-                            console.log('[SSE] Nuovo ordine ricevuto:', order);
-
-                            setDailyOrders((prevOrders) => {
-                                console.log('[SSE] Aggiornamento stato React: Ordini precedenti:', prevOrders.length);
-
-                                const existingIndex = prevOrders.findIndex(o => o.id === order.id);
-
-                                if (existingIndex !== -1) {
-                                    console.log(`[SSE] Trovato ordine esistente. Aggiornamento indice ${existingIndex}`);
-                                    const newOrders = [...prevOrders];
-                                    newOrders[existingIndex] = order;
-                                    return newOrders;
-                                } else {
-                                    console.log('[SSE] Aggiunta nuovo ordine in cima');
-                                    toast.success(`Nuovo ordine: ${order.displayCode}`);
-                                    return [order, ...prevOrders];
-                                }
-                            });
-                        } catch (error) {
-                            console.error('[SSE] Errore parsando new-order:', error);
-                        }
-                    }
-                    // Handle confirmed-order event
-                    else if (event.event === 'confirmed-order') {
-                        try {
-                            const { orderId, ticketNumber } = JSON.parse(event.data);
-                            console.log('[SSE] Ordine confermato ricevuto:', { orderId, ticketNumber });
-
-                            setDailyOrders((prevOrders) => {
-                                const filteredOrders = prevOrders.filter(o => o.id !== orderId);
-                                console.log(`[SSE] Ordine ${orderId} rimosso dalla lista. Ordini rimanenti:`, filteredOrders.length);
-                                return filteredOrders;
-                            });
-
-                            toast.info(`Ordine confermato (Ticket: ${ticketNumber})`);
-                        } catch (error) {
-                            console.error('[SSE] Errore parsando confirmed-order:', error);
-                        }
-                    }
-                    // Handle default/legacy message event
-                    else {
-                        try {
-                            const order: DailyOrder = JSON.parse(event.data);
-                            console.log('[SSE] Ordine (formato legacy) ricevuto:', order);
-
-                            setDailyOrders((prevOrders) => {
-                                const existingIndex = prevOrders.findIndex(o => o.id === order.id);
-
-                                if (existingIndex !== -1) {
-                                    const newOrders = [...prevOrders];
-                                    newOrders[existingIndex] = order;
-                                    return newOrders;
-                                } else {
-                                    toast.success(`Nuovo ordine: ${order.displayCode}`);
-                                    return [order, ...prevOrders];
-                                }
-                            });
-                        } catch (error) {
-                            console.error('[SSE] Errore parsando messaggio:', error);
-                        }
-                    }
-                },
-
-                onclose() {
-                    console.log('[SSE] Connessione CHIUSA dal server.');
-                },
-
-                onerror(err) {
-                    console.error('[SSE] Errore di rete (onerror). La libreria tenterà di riconnettersi.', err);
-                    if ((err as any).status === 401) {
-                        console.error("[SSE] Errore 401. L'AccessToken potrebbe essere scaduto.");
-                        throw err;
-                    }
-                }
-            });
-        };
-
-        connectSSE();
-
-        return () => {
-            console.log('[SSE] Pulizia useEffect: chiusura connessione.');
-            abortController.abort();
-        };
     }, [session?.accessToken, showDailyOrders]);
+
+    // Search daily orders based on query
+    useEffect(() => {
+        if (!session?.accessToken || !showDailyOrders) {
+            return;
+        }
+
+        // If search query is empty, reload all today's orders
+        if (!searchQuery.trim()) {
+            const loadInitialOrders = async () => {
+                try {
+                    const orders = await getTodayOrders();
+                    setDailyOrders(orders);
+                } catch (error: any) {
+                    console.error('Errore caricamento ordini:', error);
+                }
+            };
+
+            loadInitialOrders();
+            return;
+        }
+
+        // Search with query
+        const searchOrders = async () => {
+            try {
+                const results = await searchDailyOrders(searchQuery);
+                setDailyOrders(results);
+            } catch (error: any) {
+                console.error('Errore nella ricerca:', error);
+                toast.error(error.message || 'Errore nella ricerca degli ordini');
+            }
+        };
+
+        const debounceTimer = setTimeout(() => {
+            searchOrders();
+        }, 300); // Debounce 300ms
+
+        return () => clearTimeout(debounceTimer);
+    }, [session?.accessToken, showDailyOrders, searchQuery]);
 
     // Filter foods by category
     const filteredFoods = selectedCategoryId
@@ -602,7 +716,8 @@ export default function CassaPage() {
                     cartItems.push({
                         cartItemId: `${food.id}-${Date.now()}-${Math.random()}`,
                         food,
-                        quantity: item.quantity
+                        quantity: item.quantity,
+                        notes: item.notes || undefined
                     });
                 });
             });
@@ -679,7 +794,8 @@ export default function CassaPage() {
                     cartItems.push({
                         cartItemId: `${food.id}-${Date.now()}-${Math.random()}`,
                         food,
-                        quantity: item.quantity
+                        quantity: item.quantity,
+                        notes: item.notes || undefined
                     });
                 });
             });

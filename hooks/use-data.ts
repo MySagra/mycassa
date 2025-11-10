@@ -2,19 +2,25 @@
 
 import { useState, useEffect } from 'react';
 import apiClient from '@/lib/api-client';
-import type { Category, Food } from '@/lib/api-types';
+import type { CategoryWithFoods } from '@/lib/api-types';
 
-// Hook per ottenere tutte le categorie disponibili
-export function useCategories() {
-  const [data, setData] = useState<Category[]>([]);
+/**
+ * Hook per ottenere tutte le categorie con i cibi raggruppati
+ * Esegue una singola query: GET /v1/foods?include=ingredients&group_by=category
+ * Restituisce le categorie con i cibi già raggruppati dentro
+ */
+export function useCategoriesWithFoods() {
+  const [data, setData] = useState<CategoryWithFoods[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    async function fetchCategories() {
+    async function fetchData() {
       try {
         setIsLoading(true);
-        const response = await apiClient.get<Category[]>('/v1/categories/available');
+        const response = await apiClient.get<CategoryWithFoods[]>(
+          '/v1/foods?include=ingredients&group_by=category'
+        );
         setData(response.data);
         setError(null);
       } catch (err) {
@@ -23,40 +29,9 @@ export function useCategories() {
         setIsLoading(false);
       }
     }
-    fetchCategories();
+
+    fetchData();
   }, []);
-
-  return { data, isLoading, error };
-}
-
-// Hook per ottenere cibi per categoria (null = tutti i cibi)
-export function useFoodsByCategory(categoryId: number | null) {
-  const [data, setData] = useState<Food[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
-
-  useEffect(() => {
-    async function fetchFoods() {
-      try {
-        setIsLoading(true);
-        let response;
-        if (categoryId === null) {
-          response = await apiClient.get<Food[]>('/v1/foods/available');
-        } else {
-          response = await apiClient.get<Food[]>(
-            `/v1/foods/available/categories/${categoryId}`
-          );
-        }
-        setData(response.data);
-        setError(null);
-      } catch (err) {
-        setError(err as Error);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-    fetchFoods();
-  }, [categoryId]);
 
   return { data, isLoading, error };
 }

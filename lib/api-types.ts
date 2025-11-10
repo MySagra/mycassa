@@ -38,6 +38,11 @@ export interface Category {
   position: number;
 }
 
+// Category with Foods (grouped response)
+export interface CategoryWithFoods extends Category {
+  foods: Food[];
+}
+
 // Food Types
 export interface Food {
   id: string;
