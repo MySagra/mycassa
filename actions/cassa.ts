@@ -103,6 +103,10 @@ export async function getOrderByCode(displayCode: string) {
     throw new Error('Non autenticato');
   }
 
+  if (!displayCode || typeof displayCode !== 'string') {
+    throw new Error('Codice ordine non valido');
+  }
+
   try {
     const response = await fetch(`${process.env.API_URL}/v1/orders/${displayCode.toUpperCase()}`, {
       headers: {
@@ -128,7 +132,7 @@ export async function getOrderByCode(displayCode: string) {
  * Create a new order
  */
 export async function createOrder(orderData: {
-  table: number;
+  table: string;
   customer: string;
   orderItems: Array<{
     foodId: string;

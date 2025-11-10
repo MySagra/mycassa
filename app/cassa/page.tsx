@@ -276,7 +276,7 @@ export default function CassaPage() {
 
         const connectSSE = async () => {
             const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-            await fetchEventSource(`${apiUrl}/events/order`, {
+            await fetchEventSource(`${apiUrl}/events/cashier`, {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${session.accessToken}`,
@@ -299,31 +299,72 @@ export default function CassaPage() {
                         return;
                     }
 
-                    console.log('[SSE] Messaggio GREZZO ricevuto:', event.data);
+                    console.log('[SSE] Messaggio ricevuto - Event:', event.event, 'Data:', event.data);
 
-                    try {
-                        const order: DailyOrder = JSON.parse(event.data);
-                        console.log('[SSE] Dati PARSIFICATI:', order);
+                    // Handle new-order event
+                    if (event.event === 'new-order') {
+                        try {
+                            const order: DailyOrder = JSON.parse(event.data);
+                            console.log('[SSE] Nuovo ordine ricevuto:', order);
 
-                        setDailyOrders((prevOrders) => {
-                            console.log('[SSE] Aggiornamento stato React: Ordini precedenti:', prevOrders.length);
+                            setDailyOrders((prevOrders) => {
+                                console.log('[SSE] Aggiornamento stato React: Ordini precedenti:', prevOrders.length);
 
-                            const existingIndex = prevOrders.findIndex(o => o.id === order.id);
+                                const existingIndex = prevOrders.findIndex(o => o.id === order.id);
 
-                            if (existingIndex !== -1) {
-                                console.log(`[SSE] Trovato ordine esistente. Aggiornamento indice ${existingIndex}`);
-                                const newOrders = [...prevOrders];
-                                newOrders[existingIndex] = order;
-                                return newOrders;
-                            } else {
-                                console.log('[SSE] Aggiunta nuovo ordine in cima');
-                                toast.success(`Nuovo ordine: ${order.displayCode}`);
-                                return [order, ...prevOrders];
-                            }
-                        });
+                                if (existingIndex !== -1) {
+                                    console.log(`[SSE] Trovato ordine esistente. Aggiornamento indice ${existingIndex}`);
+                                    const newOrders = [...prevOrders];
+                                    newOrders[existingIndex] = order;
+                                    return newOrders;
+                                } else {
+                                    console.log('[SSE] Aggiunta nuovo ordine in cima');
+                                    toast.success(`Nuovo ordine: ${order.displayCode}`);
+                                    return [order, ...prevOrders];
+                                }
+                            });
+                        } catch (error) {
+                            console.error('[SSE] Errore parsando new-order:', error);
+                        }
+                    }
+                    // Handle confirmed-order event
+                    else if (event.event === 'confirmed-order') {
+                        try {
+                            const { orderId, ticketNumber } = JSON.parse(event.data);
+                            console.log('[SSE] Ordine confermato ricevuto:', { orderId, ticketNumber });
 
-                    } catch (error) {
-                        console.error('[SSE] Errore PARSANDO il JSON:', error, 'Dati grezzi:', event.data);
+                            setDailyOrders((prevOrders) => {
+                                const filteredOrders = prevOrders.filter(o => o.id !== orderId);
+                                console.log(`[SSE] Ordine ${orderId} rimosso dalla lista. Ordini rimanenti:`, filteredOrders.length);
+                                return filteredOrders;
+                            });
+
+                            toast.info(`Ordine confermato (Ticket: ${ticketNumber})`);
+                        } catch (error) {
+                            console.error('[SSE] Errore parsando confirmed-order:', error);
+                        }
+                    }
+                    // Handle default/legacy message event
+                    else {
+                        try {
+                            const order: DailyOrder = JSON.parse(event.data);
+                            console.log('[SSE] Ordine (formato legacy) ricevuto:', order);
+
+                            setDailyOrders((prevOrders) => {
+                                const existingIndex = prevOrders.findIndex(o => o.id === order.id);
+
+                                if (existingIndex !== -1) {
+                                    const newOrders = [...prevOrders];
+                                    newOrders[existingIndex] = order;
+                                    return newOrders;
+                                } else {
+                                    toast.success(`Nuovo ordine: ${order.displayCode}`);
+                                    return [order, ...prevOrders];
+                                }
+                            });
+                        } catch (error) {
+                            console.error('[SSE] Errore parsando messaggio:', error);
+                        }
                     }
                 },
 
@@ -386,10 +427,10 @@ export default function CassaPage() {
             const surcharge = calculateIngredientSurcharge(item);
             return total + itemTotal + surcharge;
         }, 0);
-        
-    // Apply discount (fixed amount)
-    const discountToApply = appliedDiscountAmount || 0;
-    return Math.max(0, subtotal - discountToApply);
+
+        // Apply discount (fixed amount)
+        const discountToApply = appliedDiscountAmount || 0;
+        return Math.max(0, subtotal - discountToApply);
     };
 
     // Calculate total surcharges
@@ -662,7 +703,7 @@ export default function CassaPage() {
         }
 
         const result = discountAmountSchema.safeParse(discountAmount);
-        
+
         if (!result.success) {
             setValidationErrors(prev => ({ ...prev, discount: result.error.issues[0].message }));
             toast.error(result.error.issues[0].message);
@@ -682,10 +723,10 @@ export default function CassaPage() {
         }
 
         const notes: string[] = [];
-        
+
         item.food.ingredients.forEach((ingredient) => {
             const qty = item.ingredientQuantities?.[ingredient.id] ?? 1;
-            
+
             if (qty === 0) {
                 // Ingredient removed
                 notes.push(`No ${ingredient.name}`);
@@ -706,10 +747,10 @@ export default function CassaPage() {
         }
 
         let surcharge = 0;
-        
+
         item.food.ingredients.forEach((ingredient) => {
             const qty = item.ingredientQuantities?.[ingredient.id] ?? 1;
-            
+
             if (qty > 1) {
                 // Add 0.5 for each extra piece
                 surcharge += (qty - 1) * 0.5;
@@ -730,7 +771,7 @@ export default function CassaPage() {
         items.forEach((item) => {
             const ingredientNotes = generateIngredientNotes(item);
             const customNotes = item.notes || '';
-            
+
             // Concatenate custom notes with ingredient notes
             let finalNotes = '';
             if (customNotes && ingredientNotes) {
@@ -765,7 +806,7 @@ export default function CassaPage() {
     const confirmOrder = async () => {
         // Validate customer
         const customerValidation = orderSchema.shape.customer.safeParse(customer);
-        
+
         if (!customerValidation.success) {
             const error = customerValidation.error.issues[0].message;
             setValidationErrors({ customer: error });
@@ -776,7 +817,7 @@ export default function CassaPage() {
         // Validate table only if enabled
         if (enableTableInput) {
             const tableValidation = z.string().min(1, 'Il numero del tavolo è obbligatorio').safeParse(table);
-            
+
             if (!tableValidation.success) {
                 const error = tableValidation.error.issues[0].message;
                 setValidationErrors({ table: error });
@@ -821,7 +862,7 @@ export default function CassaPage() {
             } else {
                 // Create new order with notes
                 const createOrderResponse = await createOrder({
-                    table: enableTableInput && table.trim() ? parseInt(table) : 0,
+                    table: enableTableInput && table.trim() ? table : "no table",
                     customer,
                     orderItems: mergedOrderItems,
                 });
@@ -1583,17 +1624,17 @@ export default function CassaPage() {
                                     type="text"
                                     placeholder="0.00"
                                     value={discountAmount}
-                                        onChange={(e) => {
-                                            const value = e.target.value;
-                                            // Allow only numbers, dot, and comma
-                                            if (value === '' || /^[0-9.,]*$/.test(value)) {
-                                                // Check if it matches the pattern for valid amount
-                                                if (value === '' || /^[0-9]{0,4}([.,][0-9]{0,2})?$/.test(value)) {
-                                                    setDiscountAmount(value);
-                                                    setValidationErrors(prev => ({ ...prev, discount: undefined }));
-                                                }
+                                    onChange={(e) => {
+                                        const value = e.target.value;
+                                        // Allow only numbers, dot, and comma
+                                        if (value === '' || /^[0-9.,]*$/.test(value)) {
+                                            // Check if it matches the pattern for valid amount
+                                            if (value === '' || /^[0-9]{0,4}([.,][0-9]{0,2})?$/.test(value)) {
+                                                setDiscountAmount(value);
+                                                setValidationErrors(prev => ({ ...prev, discount: undefined }));
                                             }
-                                        }}
+                                        }
+                                    }}
                                     className={`text-right pr-8 ${validationErrors.discount ? 'border-red-500' : ''}`}
                                 />
                                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
@@ -1607,7 +1648,7 @@ export default function CassaPage() {
                                 Sconto massimo: 9999.99 €
                             </p>
                         </div>
-                        
+
                         {appliedDiscountAmount > 0 && (
                             <div className="rounded-lg border bg-muted/50 p-3">
                                 <p className="text-sm text-muted-foreground mb-1">Sconto attualmente applicato:</p>
