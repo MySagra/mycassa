@@ -1,5 +1,8 @@
 services:
   mycassa:
+    networks:
+      - mysagra
+      - default
     build: .
     env_file: .env
     ports:
@@ -10,3 +13,8 @@ services:
       - AUTH_SECRET=${AUTH_SECRET}
       - AUTH_URL=${AUTH_URL}
     restart: unless-stopped
+
+networks:
+  mysagra:
+    name: mysagra_network
+    external: true
