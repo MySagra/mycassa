@@ -1056,25 +1056,20 @@ export default function CassaPage() {
                 <div className="flex flex-1 overflow-hidden">
                     {/* Left Sidebar - Categories */}
                     <aside className="w-64 border-r bg-card">
-                        <div className="p-4">
-                            <h2 className="flex items-center gap-2 text-lg font-semibold">
-                                <Filter className="h-5 w-5" />
-                                Categorie
-                            </h2>
+                        <div className="p-2">
+                            <Button
+                                variant={selectedCategoryId === null ? 'default' : 'outline'}
+                                className="w-full justify-start h-20"
+                                onClick={() => setSelectedCategoryId(null)}
+                            >
+                                <div className='text-lg'>
+                                    Tutte le categorie
+                                </div>
+                            </Button>
                         </div>
 
                         <ScrollArea className="h-[calc(100vh-8rem)]">
                             <div className="space-y-2.5 p-2">
-                                <Button
-                                    variant={selectedCategoryId === null ? 'default' : 'outline'}
-                                    className="w-full justify-start h-20"
-                                    onClick={() => setSelectedCategoryId(null)}
-                                >
-                                    <div className='text-lg'>
-                                        Tutte le categorie
-                                    </div>
-                                </Button>
-
                                 {loadingCategories ? (
                                     <div className="p-4 text-center text-sm text-muted-foreground">
                                         Caricamento...

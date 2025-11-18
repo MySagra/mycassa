@@ -107,7 +107,7 @@ export async function getTodayOrders() {
   }
 
   try {
-    const response = await fetch(`${process.env.API_URL}/v1/orders/day/today`, {
+    const response = await fetch(`${process.env.API_URL}/v1/orders/day/today?exclude=confirmed`, {
       headers: {
         'Authorization': `Bearer ${session.accessToken}`,
         'Content-Type': 'application/json',
