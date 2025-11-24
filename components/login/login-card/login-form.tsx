@@ -82,7 +82,7 @@ export function LoginForm() {
                                 <img
                                     src="/logo.svg"
                                     alt="Logo"
-                                    className="mx-auto mt-10 mb-4 h-24 w-auto"
+                                    className="mx-auto h-36 w-auto"
                                 />
                                 <div className="flex flex-col items-center gap-2 text-center">
                                     <h1 className="text-2xl font-bold">Benvenuto!</h1>
@@ -112,7 +112,7 @@ export function LoginForm() {
                                         render={({ field }) => (
                                             <FormItem>
                                                 <FormControl>
-                                                    <Input autoComplete="off" type="password" {...field} />
+                                                    <Input autoComplete="off" placeholder="Your password" type="password" {...field} />
                                                 </FormControl>
                                             </FormItem>
                                         )}

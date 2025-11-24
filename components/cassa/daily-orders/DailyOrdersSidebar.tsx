@@ -9,7 +9,7 @@ interface DailyOrdersSidebarProps {
     searchQuery: string;
     loading: boolean;
     onSearchChange: (query: string) => void;
-    onViewDetail: (displayCode: string) => void;
+    onViewDetail: (orderId: number) => void;
     onLoadToCart: (order: DailyOrder) => void;
 }
 
@@ -52,7 +52,7 @@ export function DailyOrdersSidebar({
                             <DailyOrderCard
                                 key={order.id}
                                 order={order}
-                                onViewDetail={() => onViewDetail(order.displayCode)}
+                                onViewDetail={() => onViewDetail(order.id)}
                                 onLoadToCart={() => onLoadToCart(order)}
                             />
                         ))

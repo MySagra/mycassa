@@ -6,7 +6,7 @@ import { useSession } from 'next-auth/react';
 import { useTheme } from 'next-themes';
 import { fetchEventSource } from '@microsoft/fetch-event-source';
 import { toast } from 'sonner';
-import { getCategories, getOrderByCode, confirmOrder as confirmOrderAction, createOrder, getTodayOrders, getFoodById, searchDailyOrders } from '@/actions/cassa';
+import { getCategories, getOrderByOrderId, confirmOrder as confirmOrderAction, createOrder, getTodayOrders, getFoodById, searchDailyOrders, getOrderByCode } from '@/actions/cassa';
 import { logout as logoutAction } from '@/actions/auth';
 import { Category, Food, PaymentMethod, OrderDetailResponse, ExtendedCartItem } from '@/lib/api-types';
 import { DailyOrder } from '@/lib/cassa/types';
@@ -30,11 +30,8 @@ export default function CassaPage() {
     const cartScrollRef = useRef<HTMLDivElement>(null);
     const sseConnectionRef = useRef(false);
     const lastEventRef = useRef<string | null>(null);
-
     const isAuthenticated = status === 'authenticated';
     const isLoading = status === 'loading';
-
-    // State
     const [categories, setCategories] = useState<Category[]>([]);
     const [foods, setFoods] = useState<Food[]>([]);
     const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
@@ -206,13 +203,12 @@ export default function CassaPage() {
                         // Handle confirmed-order event
                         else if (event.event === 'confirmed-order') {
                             try {
-                                const { orderId, ticketNumber } = JSON.parse(event.data);
-
+                                const { orderId, displayCode } = JSON.parse(event.data);
                                 setDailyOrders((prevOrders) => {
                                     return prevOrders.filter(o => o.id !== orderId);
                                 });
 
-                                toast.info(`Ordine confermato (Ticket: ${ticketNumber})`);
+                                toast.info(`Ordine confermato ${displayCode}`);
                             } catch (error) {
                                 console.error('[SSE] Errore parsando confirmed-order:', error);
                             }
@@ -497,7 +493,7 @@ export default function CassaPage() {
 
         setLoadingOrder(true);
         try {
-            const order = await getOrderByCode(displayCode);
+            const order = await getOrderByCode(displayCode.toUpperCase());
 
             // Set customer and table
             setCustomer(order.customer);
@@ -545,7 +541,7 @@ export default function CassaPage() {
     // Load order to cart from daily orders
     const loadOrderToCart = async (order: DailyOrder) => {
         try {
-            const orderDetail = await getOrderByCode(order.displayCode);
+            const orderDetail = await getOrderByOrderId(order.id);
 
             // Set customer and table
             setCustomer(orderDetail.customer);
@@ -590,10 +586,10 @@ export default function CassaPage() {
     };
 
     // View order detail
-    const viewOrderDetail = async (displayCode: string) => {
+    const viewOrderDetail = async (orderId: number) => {
         setLoadingOrderDetail(true);
         try {
-            const order = await getOrderByCode(displayCode);
+            const order = await getOrderByOrderId(orderId);
             setViewingOrderDetail(order);
         } catch (error: any) {
             console.error('Error loading order detail:', error);
@@ -677,8 +673,6 @@ export default function CassaPage() {
                     }
                 });
             }
-
-            toast.success('L\'ordine è stato confermato con successo');
 
             clearCart();
         } catch (error: any) {

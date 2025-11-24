@@ -1,6 +1,7 @@
 'use server';
 
 import { auth } from '@/lib/auth';
+import { get } from 'http';
 
 /**
  * Get categories available for current user
@@ -80,7 +81,14 @@ export async function getTodayOrders() {
   }
 
   try {
-    const response = await fetch(`${process.env.API_URL}/v1/orders/day/today?exclude=confirmed`, {
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(today.getDate() + 1);
+
+    const dateFrom = `${today.toISOString().split('T')[0]}T07%3A59%3A00Z`;
+    const dateTo = `${tomorrow.toISOString().split('T')[0]}T08%3A00%3A00Z`;
+
+    const response = await fetch(`${process.env.API_URL}/v1/orders?page=1&limit=20&sortBy=createdAt&status=PENDING&dateFrom=${dateFrom}&dateTo=${dateTo}`, {
       headers: {
         'Authorization': `Bearer ${session.accessToken}`,
         'Content-Type': 'application/json',
@@ -93,7 +101,8 @@ export async function getTodayOrders() {
       throw new Error(errorData.message || 'Impossibile caricare gli ordini di oggi');
     }
 
-    return await response.json();
+    const orders = (await response.json()).data;
+    return orders;
   } catch (error) {
     console.error('getTodayOrders error:', error);
     throw error;
@@ -103,19 +112,60 @@ export async function getTodayOrders() {
 /**
  * Get order by display code
  */
-export async function getOrderByCode(displayCode: string) {
+export async function getOrderByCode(code: string) {
   const session = await auth();
 
   if (!session?.accessToken) {
     throw new Error('Non autenticato');
   }
 
-  if (!displayCode || typeof displayCode !== 'string') {
+  if (!code || typeof code !== 'string') {
     throw new Error('Codice ordine non valido');
   }
 
+  const today = new Date();
+  const tomorrow = new Date(today);
+  tomorrow.setDate(today.getDate() + 1);
+
+  const dateFrom = `${today.toISOString().split('T')[0]}T07%3A59%3A00Z`;
+  const dateTo = `${tomorrow.toISOString().split('T')[0]}T08%3A00%3A00Z`;
+
   try {
-    const response = await fetch(`${process.env.API_URL}/v1/orders/${displayCode.toUpperCase()}`, {
+    const response = await fetch(`${process.env.API_URL}/v1/orders?displayCode=${encodeURIComponent(code)}&page=1&limit=20&sortBy=createdAt&dateFrom=${dateFrom}&dateTo=${dateTo}`, {
+      headers: {
+        'Authorization': `Bearer ${session.accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      cache: 'no-store',
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || 'Impossibile caricare l\'ordine');
+    }
+
+  const order = (await response.json()).data[0];
+
+    return await getOrderByOrderId(order.id);
+  } catch (error) {
+    console.error('getOrderByCode error:', error);
+    throw error;
+  }
+}
+
+export async function getOrderByOrderId(orderId: number) {
+  const session = await auth();
+
+  if (!session?.accessToken) {
+    throw new Error('Non autenticato');
+  }
+
+  if (!orderId || typeof orderId !== 'number') {
+    throw new Error('ID ordine non valido');
+  }
+
+  try {
+    const response = await fetch(`${process.env.API_URL}/v1/orders/${orderId}`, {
       headers: {
         'Authorization': `Bearer ${session.accessToken}`,
         'Content-Type': 'application/json',

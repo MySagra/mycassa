@@ -74,7 +74,7 @@ export function PaymentSection({
                         onClick={() => onUpdatePaymentMethod('CARD')}
                     >
                         <CreditCard className="mr-2 h-4 w-4" />
-                        POS
+                        Carta
                     </Button>
                 </ButtonGroup>
             </div>
