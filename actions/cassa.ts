@@ -5,15 +5,18 @@ import { auth } from '@/lib/auth';
 /**
  * Get categories available for current user
  */
+/**
+ * Get categories available for current user
+ */
 export async function getCategories() {
   const session = await auth();
-  
+
   if (!session?.accessToken) {
     throw new Error('Non autenticato');
   }
 
   try {
-    const response = await fetch(`${process.env.API_URL}/v1/categories/available`, {
+    const response = await fetch(`${process.env.API_URL}/v1/categories?available=true&include=foods`, {
       headers: {
         'Authorization': `Bearer ${session.accessToken}`,
         'Content-Type': 'application/json',
@@ -33,41 +36,11 @@ export async function getCategories() {
 }
 
 /**
- * Get foods available for current user
- */
-export async function getFoods() {
-  const session = await auth();
-  
-  if (!session?.accessToken) {
-    throw new Error('Non autenticato');
-  }
-
-  try {
-    const response = await fetch(`${process.env.API_URL}/v1/foods/available?include=ingredients`, {
-      headers: {
-        'Authorization': `Bearer ${session.accessToken}`,
-        'Content-Type': 'application/json',
-      },
-      cache: 'no-store',
-    });
-
-    if (!response.ok) {
-      throw new Error('Errore nel caricamento dei cibi');
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error('getFoods error:', error);
-    throw error;
-  }
-}
-
-/**
  * Get a single food by ID
  */
 export async function getFoodById(foodId: string) {
   const session = await auth();
-  
+
   if (!session?.accessToken) {
     throw new Error('Non autenticato');
   }
@@ -101,7 +74,7 @@ export async function getFoodById(foodId: string) {
  */
 export async function getTodayOrders() {
   const session = await auth();
-  
+
   if (!session?.accessToken) {
     throw new Error('Non autenticato');
   }
@@ -132,7 +105,7 @@ export async function getTodayOrders() {
  */
 export async function getOrderByCode(displayCode: string) {
   const session = await auth();
-  
+
   if (!session?.accessToken) {
     throw new Error('Non autenticato');
   }
@@ -167,7 +140,7 @@ export async function getOrderByCode(displayCode: string) {
  */
 export async function searchDailyOrders(searchValue: string) {
   const session = await auth();
-  
+
   if (!session?.accessToken) {
     throw new Error('Non autenticato');
   }
@@ -200,6 +173,9 @@ export async function searchDailyOrders(searchValue: string) {
 /**
  * Create a new order
  */
+/**
+ * Create a new order (optionally confirmed)
+ */
 export async function createOrder(orderData: {
   table: string;
   customer: string;
@@ -208,9 +184,14 @@ export async function createOrder(orderData: {
     quantity: number;
     notes?: string;
   }>;
+  confirm?: {
+    paymentMethod: string;
+    discount: number;
+    surcharge: number;
+  };
 }) {
   const session = await auth();
-  
+
   if (!session?.accessToken) {
     throw new Error('Non autenticato');
   }
@@ -238,13 +219,13 @@ export async function createOrder(orderData: {
 }
 
 /**
- * Confirm order
+ * Confirm existing order
  */
 export async function confirmOrder(orderData: {
   orderId: number;
   paymentMethod: string;
-  discount?: number;
-  surcharge?: number;
+  discount: number;
+  surcharge: number;
   orderItems: Array<{
     foodId: string;
     quantity: number;
@@ -252,19 +233,23 @@ export async function confirmOrder(orderData: {
   }>;
 }) {
   const session = await auth();
-  
+
   if (!session?.accessToken) {
     throw new Error('Non autenticato');
   }
 
   try {
-    const response = await fetch(`${process.env.API_URL}/v1/confirmed-orders`, {
+    // Extract orderId and prepare body without it
+    const { orderId, ...bodyData } = orderData;
+
+    // Use orderId in URL path: /v1/orders/:id/confirm
+    const response = await fetch(`${process.env.API_URL}/v1/orders/${orderId}/confirm`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${session.accessToken}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(orderData),
+      body: JSON.stringify(bodyData),
     });
 
     if (!response.ok) {

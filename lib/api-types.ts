@@ -36,6 +36,7 @@ export interface Category {
   name: string;
   available: boolean;
   position: number;
+  foods?: Food[];
 }
 
 // Category with Foods (grouped response)
@@ -76,6 +77,12 @@ export interface CartItem {
   food: Food;
   quantity: number;
   notes?: string;
+}
+
+// Extended CartItem to include ingredient quantities and unique ID
+export interface ExtendedCartItem extends CartItem {
+  cartItemId: string; // Unique identifier for each cart item
+  ingredientQuantities?: Record<string, number>; // ingredientId -> quantity
 }
 
 export interface OrderRequest {
