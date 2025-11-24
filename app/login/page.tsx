@@ -1,136 +1,17 @@
 "use client"
 
-import React, { useState } from "react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { toast } from "sonner";
-import { login as loginAction } from "@/actions/auth";
-
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Logo } from "@/components/logo";
+import { LoginForm } from "@/components/login/login-card/login-form";
 
 export default function LoginPage() {
-  const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
-
-  const formSchema = z.object({
-    username: z.string().min(1, "Username obbligatorio"),
-    password: z.string().min(1, "Password obbligatoria")
-  });
-
-  const form = useForm<z.input<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      username: "",
-      password: ""
-    }
-  });
-
-  async function onSubmit(values: z.infer<typeof formSchema>) {
-    setIsLoading(true);
-    try {
-      console.log('Starting login process...');
-      const result = await loginAction(values.username, values.password);
-
-      console.log('Login result:', result);
-
-      if (result.success) {
-        console.log('Login successful, redirecting to /cassa');
-        // Wait a bit for session to be fully set
-        await new Promise(resolve => setTimeout(resolve, 100));
-        window.location.href = '/cassa'; // Force full page reload to ensure session is loaded
-      } else {
-        toast.error(result.error || "Credenziali non valide");
-        form.reset();
-      }
-    } catch (error) {
-      console.error('Login error:', error);
-      toast.error("Errore durante il login");
-      form.reset();
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
-  // Handle validation errors from react-hook-form (zod)
-  function onError(errors: any) {
-    // If both username and password are missing, show a combined message
-    const usernameError = (errors.username as any)?.message;
-    const passwordError = (errors.password as any)?.message;
-
-    if (usernameError && passwordError) {
-      toast.error(`Username e Password sono obbligatori`);
-      return;
-    }
-
-    const first = Object.values(errors)[0];
-    const message = (first as any)?.message || 'Errore di validazione';
-    toast.error(message);
-  }
 
   return (
-    <div className="h-screen w-full flex place-content-center items-center bg-background text-foreground">
-      <Form {...form}>
-  <form onSubmit={form.handleSubmit(onSubmit, onError)} className="space-y-8">
-          <div className="h-screen w-full flex flex-col items-center place-content-center">
-            <Card className="w-[350px] bg-card text-card-foreground">
-              <CardHeader>
-                <div className="relative flex w-full place-content-center pb-6">
-                  <Logo className="h-28" />
-                </div>
-                <CardTitle className="text-center">Accedi - MyCassa</CardTitle>
-              </CardHeader>
-              <CardContent className="flex flex-col gap-2">
-                <FormField
-                  control={form.control}
-                  name="username"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <Input autoComplete="off" placeholder="Username" {...field} />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
+    <div className="bg-muted flex min-h-svh flex-col items-center justify-center p-6 md:p-10">
+      <div className="w-full max-w-sm md:max-w-4xl">
+        <LoginForm />
+      </div>
 
-                <FormField
-                  control={form.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <Input autoComplete="off" placeholder="Password" type="password" {...field} />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-              </CardContent>
-              <CardFooter>
-                <Button type="submit" disabled={isLoading} className="w-full">
-                  {isLoading ? "Accesso..." : "Accedi"}
-                </Button>
-              </CardFooter>
-            </Card>
-          </div>
-        </form>
-      </Form>
       <div className="absolute bottom-0 text-sm text-muted-foreground">
         <Link href={"https://www.mysagra.com/"} target="_blank" rel="noopener noreferrer">
           {"Powered by"}

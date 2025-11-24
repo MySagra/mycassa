@@ -83,8 +83,8 @@ export function CartSidebar({
 
     return (
         <aside className="w-96 border-l bg-card flex flex-col">
-            <div className="p-4 border-b">
-                <h2 className="text-xl font-semibold mb-4">Carrello</h2>
+            <div className="flex items-center justify-between p-4">
+                <h2 className="text-xl font-semibold">Carrello</h2>
 
                 <Button
                     variant={showDailyOrders ? 'default' : 'outline'}
