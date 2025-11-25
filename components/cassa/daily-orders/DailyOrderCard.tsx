@@ -14,7 +14,7 @@ export function DailyOrderCard({ order, onViewDetail, onLoadToCart, searchQuery 
     const highlightText = (text: string) => {
         if (!searchQuery) return text;
         const regex = new RegExp(`(${searchQuery})`, 'gi');
-        return text.replace(regex, '<span class="bg-amber-500 rounded px-0.25 ">$1</span>');
+        return text.replace(regex, '<span class="bg-amber-500 rounded px-0.5 ">$1</span>');
     };
 
     return (
