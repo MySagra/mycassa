@@ -82,11 +82,11 @@ export function LoginForm() {
                                 <img
                                     src="/logo.svg"
                                     alt="Logo"
-                                    className="mx-auto h-36 w-auto"
+                                    className="mx-auto h-36 w-auto select-none"
                                 />
                                 <div className="flex flex-col items-center gap-2 text-center">
-                                    <h1 className="text-2xl font-bold">Benvenuto!</h1>
-                                    <p className="text-muted-foreground text-balance">
+                                    <h1 className="text-2xl font-bold select-none">Benvenuto!</h1>
+                                    <p className="text-muted-foreground text-balance select-none">
                                         Esegui il login al tuo account MyCassa
                                     </p>
                                 </div>
@@ -119,7 +119,7 @@ export function LoginForm() {
                                     />
                                 </Field>
                                 <Field>
-                                    <Button type="submit" disabled={isLoading} className="w-full">
+                                    <Button type="submit" disabled={isLoading} className="w-full select-none">
                                         {isLoading ? "Accesso..." : "Accedi"}
                                     </Button>
                                 </Field>
@@ -129,7 +129,7 @@ export function LoginForm() {
                             <img
                                 src="/placeholder.png"
                                 alt="Logo"
-                                className="object-contain"
+                                className="object-contain select-none"
                             />
                         </div>
                     </CardContent>

@@ -84,11 +84,12 @@ export function CartSidebar({
     return (
         <aside className="w-96 border-l bg-card flex flex-col">
             <div className="flex items-center justify-between p-4">
-                <h2 className="text-xl font-semibold">Carrello</h2>
+                <h2 className="text-xl font-semibold select-none">Carrello</h2>
 
                 <Button
                     variant={showDailyOrders ? 'default' : 'outline'}
                     onClick={onToggleDailyOrders}
+                    className='select-none'
                 >
                     Ordini Giornalieri
                 </Button>
@@ -112,7 +113,7 @@ export function CartSidebar({
                 <ScrollArea className="h-full" ref={cartScrollRef}>
                     <div className="p-4">
                         {cart.length === 0 ? (
-                            <div className="flex h-32 items-center justify-center text-sm text-muted-foreground">
+                            <div className="flex h-32 items-center justify-center text-sm text-muted-foreground select-none">
                                 Carrello vuoto
                             </div>
                         ) : (
@@ -185,7 +186,7 @@ export function CartSidebar({
                         <TooltipTrigger asChild>
                             <div className="flex-1">
                                 <Button
-                                    className="w-full bg-amber-500 text-lg font-semibold hover:bg-amber-600"
+                                    className="w-full bg-amber-500 text-lg font-semibold hover:bg-amber-600 select-none"
                                     size="lg"
                                     onClick={onConfirmOrder}
                                     disabled={cart.length === 0 || !customer || (enableTableInput && !table)}
@@ -195,7 +196,7 @@ export function CartSidebar({
                             </div>
                         </TooltipTrigger>
                         {(cart.length === 0 || !customer || (enableTableInput && !table)) && validationMessage && (
-                            <TooltipContent side="top" className="max-w-xs">
+                            <TooltipContent side="top" className="max-w-xs select-none">
                                 <ul className="list-disc list-inside space-y-1 text-sm">
                                     {validationMessage.map((error, index) => (
                                         <li key={index}>{error}</li>
@@ -211,11 +212,10 @@ export function CartSidebar({
                     size="icon"
                     className="h-10 w-10 disabled:cursor-not-allowed"
                     onClick={onOpenDiscount}
-                    disabled={cart.length === 0}
                     aria-label="Applica sconto"
                     title="Applica sconto"
                 >
-                    <Percent className="h-4 w-4 text-white" />
+                    <Percent className="h-6 w-6" strokeWidth={3} />
                 </Button>
             </div>
         </aside>

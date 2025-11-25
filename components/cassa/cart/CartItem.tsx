@@ -21,7 +21,7 @@ export function CartItem({ item, onUpdateQuantity, onRemove, onEdit }: CartItemP
         <div className="bg-card border rounded-lg p-3">
             <div className="flex items-start justify-between gap-2 mb-2">
                 <div className="flex-1">
-                    <h4 className="font-medium text-sm">{item.food.name}</h4>
+                    <h4 className="font-medium text-sm select-none">{item.food.name}</h4>
                     {item.ingredientQuantities && item.food.ingredients && (
                         <p className="text-xs text-amber-600 dark:text-amber-500 mt-1">
                             {item.food.ingredients
@@ -71,7 +71,7 @@ export function CartItem({ item, onUpdateQuantity, onRemove, onEdit }: CartItemP
                     >
                         <Minus className="h-4 w-4" />
                     </Button>
-                    <span className="w-8 text-center font-medium">{item.quantity}</span>
+                    <span className="w-8 text-center font-medium select-none">{item.quantity}</span>
                     <Button
                         variant="outline"
                         size="icon"
@@ -87,7 +87,7 @@ export function CartItem({ item, onUpdateQuantity, onRemove, onEdit }: CartItemP
                             (+{(itemSurcharge / item.quantity).toFixed(2)}€)
                         </p>
                     )}
-                    <p className="text-lg font-bold">{itemTotal.toFixed(2)} €</p>
+                    <p className="text-lg font-bold select-none">{itemTotal.toFixed(2)} €</p>
                 </div>
             </div>
         </div>

@@ -60,12 +60,12 @@ export function FoodGrid({ foods, categories, selectedCategoryId, onAddToCart, l
                                 className="w-full bg-card rounded-lg border"
                                 defaultValue={categoryName}
                             >
-                                <AccordionItem value={categoryName} className="border-none">
+                                <AccordionItem value={categoryName} className="border-nonel select-none">
                                     <AccordionTrigger className="px-4 py-3 hover:no-underline">
-                                        <h2 className="text-lg font-semibold">{categoryName}</h2>
+                                        <h2 className="text-xl font-semibold">{categoryName.toUpperCase()}</h2>
                                     </AccordionTrigger>
                                     <AccordionContent className="px-4 pb-4">
-                                        <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+                                        <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 gap-3">
                                             {categoryFoods.map((food) => (
                                                 <FoodCard
                                                     key={food.id}

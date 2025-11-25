@@ -24,7 +24,7 @@ export function DailyOrdersSidebar({
     return (
         <aside className="w-96 border-l flex flex-col bg-card h-screen animate-in">
             <div className="p-4 border-b">
-                <h2 className="text-lg font-semibold mb-4">Ordini Giornalieri</h2>
+                <h2 className="text-lg font-semibold mb-4 select-none">Ordini Giornalieri</h2>
 
                 {/* Search Section */}
                 <div>
@@ -44,7 +44,7 @@ export function DailyOrdersSidebar({
             <ScrollArea className="flex-1 h-full overflow-y-auto">
                 <div className="p-4 space-y-3">
                     {orders.length === 0 ? (
-                        <div className="text-center text-muted-foreground py-8">
+                        <div className="text-center text-muted-foreground py-8 select-none">
                             {loading ? 'Caricamento ordini...' : 'Nessun ordine trovato per oggi'}
                         </div>
                     ) : (
@@ -52,6 +52,7 @@ export function DailyOrdersSidebar({
                             <DailyOrderCard
                                 key={order.id}
                                 order={order}
+                                searchQuery={searchQuery} // Pass searchQuery to DailyOrderCard
                                 onViewDetail={() => onViewDetail(order.id)}
                                 onLoadToCart={() => onLoadToCart(order)}
                             />

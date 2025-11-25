@@ -20,7 +20,7 @@ export function FoodCard({ food, onClick }: FoodCardProps) {
             <CardContent className="">
                 <h3
                     className={cn(
-                        "font-semibold text-sm mb-1 truncate",
+                        "font-semibold text-sm mb-1 truncate select-none",
                         food.name.length < 15 ? "text-xl" : ""
                     )}
                     title={food.name}
@@ -28,7 +28,7 @@ export function FoodCard({ food, onClick }: FoodCardProps) {
                     {food.name}
                 </h3>
                 <div className="flex items-center justify-between">
-                    <span className="text-base font-bold text-amber-500">
+                    <span className="text-base font-bold text-amber-500 select-none">
                         {price.toFixed(2)} €
                     </span>
                     {!food.available && (

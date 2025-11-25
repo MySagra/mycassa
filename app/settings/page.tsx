@@ -18,16 +18,6 @@ import {
     Palette,
     Settings
 } from 'lucide-react';
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
 
 export default function SettingsPage() {
     const router = useRouter();
@@ -108,11 +98,19 @@ export default function SettingsPage() {
             {/* Header */}
             <header className="border-b bg-card sticky top-0 z-10">
                 <div className="flex h-16 items-center justify-between px-6">
-                    <h1 className="text-2xl font-bold">Impostazioni</h1>
+                    <div className="flex items-center gap-2">
+                        <img
+                            src="/logo.svg"
+                            alt="Logo"
+                            className="mx-auto h-10 w-auto select-none"
+                        />
+                        <h1 className="text-2xl font-bold select-none">Impostazioni</h1>
+                    </div>
 
                     <Button
                         variant="outline"
                         size="lg"
+                        className='select-none'
                         onClick={() => router.push('/cassa')}
                     >
                         <ArrowLeft className="mr-2 h-4 w-4" />
@@ -126,11 +124,11 @@ export default function SettingsPage() {
                 {/* General Settings Section */}
                 <Card>
                     <CardHeader>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 select-none">
                             <Settings className="h-5 w-5 text-amber-600" />
                             <CardTitle>Generali</CardTitle>
                         </div>
-                        <CardDescription>
+                        <CardDescription className='select-none'>
                             Configura le impostazioni generali dell'interfaccia cassa
                         </CardDescription>
                     </CardHeader>
@@ -138,7 +136,7 @@ export default function SettingsPage() {
                         <div className="flex items-center justify-between">
                             <div className="space-y-0.5">
                                 <Label>Abilita input tavolo</Label>
-                                <div className="text-sm text-muted-foreground">
+                                <div className="text-sm text-muted-foreground select-none">
                                     Mostra il campo per inserire il numero del tavolo nell'interfaccia cassa
                                 </div>
                             </div>
@@ -156,9 +154,9 @@ export default function SettingsPage() {
                     <CardHeader>
                         <div className="flex items-center gap-2">
                             <Palette className="h-5 w-5 text-amber-600" />
-                            <CardTitle>Aspetto</CardTitle>
+                            <CardTitle className='select-none'>Aspetto</CardTitle>
                         </div>
-                        <CardDescription>
+                        <CardDescription className='select-none'>
                             Personalizza l'aspetto dell'applicazione
                         </CardDescription>
                     </CardHeader>
@@ -166,7 +164,7 @@ export default function SettingsPage() {
                         <div className="flex items-center justify-between">
                             <div className="space-y-0.5">
                                 <Label>Tema</Label>
-                                <div className="text-sm text-muted-foreground">
+                                <div className="text-sm text-muted-foreground select-none">
                                     Scegli tra tema chiaro e scuro
                                 </div>
                             </div>
@@ -174,6 +172,7 @@ export default function SettingsPage() {
                                 <Button
                                     variant={theme === 'light' ? 'default' : 'outline'}
                                     size="sm"
+                                    className='select-none'
                                     onClick={() => setTheme('light')}
                                 >
                                     <Sun className="h-4 w-4 mr-2" />
@@ -182,6 +181,7 @@ export default function SettingsPage() {
                                 <Button
                                     variant={theme === 'dark' ? 'default' : 'outline'}
                                     size="sm"
+                                    className='select-none'
                                     onClick={() => setTheme('dark')}
                                 >
                                     <Moon className="h-4 w-4 mr-2" />
@@ -197,9 +197,9 @@ export default function SettingsPage() {
                     <CardHeader>
                         <div className="flex items-center gap-2">
                             <Info className="h-5 w-5 text-amber-600" />
-                            <CardTitle>Informazioni</CardTitle>
+                            <CardTitle className='select-none'>Informazioni</CardTitle>
                         </div>
-                        <CardDescription>
+                        <CardDescription className='select-none'>
                             Dettagli sull'applicazione
                         </CardDescription>
                     </CardHeader>
@@ -211,7 +211,7 @@ export default function SettingsPage() {
                             </div>
                             <div className="space-y-2">
                                 <Label>Build</Label>
-                                <div className="text-sm text-muted-foreground">2025.01.01</div>
+                                <div className="text-sm text-muted-foreground">2025.11</div>
                             </div>
                         </div>
                         <Separator />

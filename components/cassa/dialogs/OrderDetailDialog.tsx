@@ -31,7 +31,7 @@ export function OrderDetailDialog({ order, open, loading, onClose }: OrderDetail
                 ) : order ? (
                     <div className="space-y-4">
                         {/* Order Info */}
-                        <div className="grid grid-cols-2 gap-4 p-4 bg-muted/30 rounded-lg">
+                        <div className="grid grid-cols-4 gap-4 p-4 bg-muted/30 rounded-lg">
                             <div>
                                 <p className="text-sm text-muted-foreground">Cliente</p>
                                 <p className="font-medium">{order.customer}</p>
@@ -55,6 +55,22 @@ export function OrderDetailDialog({ order, open, loading, onClose }: OrderDetail
                                         minute: '2-digit'
                                     })}
                                 </p>
+                            </div>
+                            <div>
+                                <p className="text-sm text-muted-foreground">Pagamento</p>
+                                <p className="font-mono font-bold text-amber-600">{order.paymentMethod}</p>
+                            </div>
+                            <div>
+                                <p className="text-sm text-muted-foreground">Stato</p>
+                                <p className="font-mono font-bold text-amber-600">{order.status}</p>
+                            </div>
+                            <div>
+                                <p className="text-sm text-muted-foreground">Comanda</p>
+                                <p className="font-mono font-bold text-amber-600">{order.ticketNumber}</p>
+                            </div>
+                            <div>
+                                <p className="text-sm text-muted-foreground">Sconto</p>
+                                <p className="font-mono font-bold text-amber-600">{order.discount}</p>
                             </div>
                         </div>
 

@@ -18,7 +18,7 @@ export function CategorySidebar({ categories, selectedCategoryId, onSelectCatego
                     className="w-full justify-start h-20"
                     onClick={() => onSelectCategory(null)}
                 >
-                    <div className='text-lg'>
+                    <div className='text-lg select-none'>
                         Tutte le categorie
                     </div>
                 </Button>
@@ -35,7 +35,7 @@ export function CategorySidebar({ categories, selectedCategoryId, onSelectCatego
                             <Button
                                 key={category.id}
                                 variant={selectedCategoryId === category.id ? 'default' : 'outline'}
-                                className="w-full justify-start"
+                                className="w-full justify-start select-none"
                                 onClick={() => onSelectCategory(category.id)}
                             >
                                 {category.name}

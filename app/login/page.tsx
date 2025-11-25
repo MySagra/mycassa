@@ -15,7 +15,7 @@ export default function LoginPage() {
         <LoginForm />
       </div>
 
-      <div className="absolute bottom-0 text-sm text-muted-foreground">
+      <div className="absolute bottom-0 text-sm text-muted-foreground select-none">
         <Link href={"https://www.mysagra.com/"} target="_blank" rel="noopener noreferrer">
           {"Powered by"}
           <Button variant={"link"} className="text-primary p-1.5">

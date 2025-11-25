@@ -33,8 +33,8 @@ export function PaymentSection({
             {/* Total */}
             <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                    <span className="text-lg font-semibold">TOTALE:</span>
-                    <span className="text-2xl font-bold text-amber-500">
+                    <span className="text-lg font-semibold select-none">TOTALE:</span>
+                    <span className="text-2xl font-bold text-amber-500 select-none">
                         {total.toFixed(2)} €
                     </span>
                 </div>
@@ -62,7 +62,7 @@ export function PaymentSection({
                 <ButtonGroup className="mt-2 w-full">
                     <Button
                         variant={paymentMethod === 'CASH' ? 'default' : 'outline'}
-                        className="flex-1"
+                        className="flex-1 select-none"
                         onClick={() => onUpdatePaymentMethod('CASH')}
                     >
                         <Banknote className="mr-2 h-4 w-4" />
@@ -70,7 +70,7 @@ export function PaymentSection({
                     </Button>
                     <Button
                         variant={paymentMethod === 'CARD' ? 'default' : 'outline'}
-                        className="flex-1"
+                        className="flex-1 select-none"
                         onClick={() => onUpdatePaymentMethod('CARD')}
                     >
                         <CreditCard className="mr-2 h-4 w-4" />
@@ -112,8 +112,8 @@ export function PaymentSection({
                             )}
                         </div>
                         <div className="flex flex-col items-end space-y-1">
-                            <span className="text-base font-medium">Resto</span>
-                            <div className='w-full h-full flex place-content-end items-center'>
+                            <span className="text-base font-medium select-none">Resto</span>
+                            <div className='w-full h-full flex place-content-end items-center select-none'>
                                 <span className={`text-2xl font-bold ${change >= 0 ? 'text-green-600 dark:text-green-500' : 'text-red-600 dark:text-red-500'}`}>
                                     {change.toFixed(2)} €
                                 </span>

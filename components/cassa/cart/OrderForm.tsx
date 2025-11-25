@@ -29,7 +29,7 @@ export function OrderForm({
     loadingOrder
 }: OrderFormProps) {
     return (
-        <div className="space-y-4 p-4">
+        <div className="space-y-2 p-4">
             {/* Load Order */}
             <div>
                 <Label htmlFor="displayCode" className='mb-2'>Carica Ordine</Label>
@@ -41,6 +41,12 @@ export function OrderForm({
                         value={displayCode}
                         onChange={(e) => onUpdateDisplayCode(e.target.value.toUpperCase())}
                         maxLength={3}
+                        enterKeyHint="enter"
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                                onLoadOrder();
+                            }
+                        }}
                     />
                     <Button onClick={onLoadOrder} disabled={loadingOrder}>
                         <Search className="h-4 w-4" />

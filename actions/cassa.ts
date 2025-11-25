@@ -144,7 +144,7 @@ export async function getOrderByCode(code: string) {
       throw new Error(errorData.message || 'Impossibile caricare l\'ordine');
     }
 
-  const order = (await response.json()).data[0];
+    const order = (await response.json()).data[0];
 
     return await getOrderByOrderId(order.id);
   } catch (error) {
@@ -199,8 +199,15 @@ export async function searchDailyOrders(searchValue: string) {
     throw new Error('Valore di ricerca non valido');
   }
 
+  const today = new Date();
+  const tomorrow = new Date(today);
+  tomorrow.setDate(today.getDate() + 1);
+
+  const dateFrom = `${today.toISOString().split('T')[0]}T07%3A59%3A00Z`;
+  const dateTo = `${tomorrow.toISOString().split('T')[0]}T08%3A00%3A00Z`;
+
   try {
-    const response = await fetch(`${process.env.API_URL}/v1/orders/search/daily/${searchValue}`, {
+    const response = await fetch(`${process.env.API_URL}/v1/orders?search=${searchValue}&page=1&limit=20&sortBy=createdAt&dateFrom=${dateFrom}&dateTo=${dateTo}`, {
       headers: {
         'Authorization': `Bearer ${session.accessToken}`,
         'Content-Type': 'application/json',
@@ -213,7 +220,7 @@ export async function searchDailyOrders(searchValue: string) {
       throw new Error(errorData.message || 'Errore nella ricerca degli ordini');
     }
 
-    return await response.json();
+    return (await response.json()).data;
   } catch (error) {
     console.error('searchDailyOrders error:', error);
     throw error;
