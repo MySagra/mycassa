@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { FileText } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface OrderDetailDialogProps {
     order: OrderDetailResponse | null;
@@ -34,7 +35,9 @@ export function OrderDetailDialog({ order, open, loading, onClose }: OrderDetail
                         <div className="grid grid-cols-4 gap-4 p-4 bg-muted/30 rounded-lg">
                             <div>
                                 <p className="text-sm text-muted-foreground">Cliente</p>
-                                <p className="font-medium">{order.customer}</p>
+                                <h1 className={cn("font-semibold text-sm mb-1 truncate select-none", order.customer.length < 15 ? "text-xl" : "")} title={order.customer}>
+                                    {order.customer}
+                                </h1>
                             </div>
                             <div>
                                 <p className="text-sm text-muted-foreground">Tavolo</p>

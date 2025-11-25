@@ -243,6 +243,8 @@ export async function createOrder(orderData: {
   }>;
   confirm?: {
     paymentMethod: string;
+    userId: string;
+    cashRegisterId: string;
     discount: number;
     surcharge: number;
   };
@@ -281,6 +283,8 @@ export async function createOrder(orderData: {
 export async function confirmOrder(orderData: {
   orderId: number;
   paymentMethod: string;
+  userId: string;
+  cashRegisterId: string;
   discount: number;
   surcharge: number;
   orderItems: Array<{
@@ -317,6 +321,36 @@ export async function confirmOrder(orderData: {
     return await response.json();
   } catch (error) {
     console.error('confirmOrder error:', error);
+    throw error;
+  }
+}
+
+/**
+ * Get cash registers
+ */
+export async function getCashRegisters() {
+  const session = await auth();
+
+  if (!session?.accessToken) {
+    throw new Error('Non autenticato');
+  }
+
+  try {
+    const response = await fetch(`${process.env.API_URL}/v1/cash-registers`, {
+      headers: {
+        'Authorization': `Bearer ${session.accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      cache: 'no-store',
+    });
+
+    if (!response.ok) {
+      throw new Error('Errore nel caricamento delle casse');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('getCashRegisters error:', error);
     throw error;
   }
 }

@@ -16,7 +16,7 @@ export async function login(username: string, password: string) {
       redirect: false,
     });
     
-    console.log('SignIn result:', result);
+    console.log(result);
     
     // Check if login was successful
     if (result?.error) {

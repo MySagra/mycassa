@@ -56,31 +56,27 @@ export default function CassaPage() {
     const [viewingOrderDetail, setViewingOrderDetail] = useState<OrderDetailResponse | null>(null);
     const [loadingOrderDetail, setLoadingOrderDetail] = useState(false);
 
+    // Load enableTableInput from localStorage on mount
+    useEffect(() => {
+        const saved = localStorage.getItem('enableTableInput');
+        if (saved !== null) {
+            setEnableTableInput(JSON.parse(saved));
+        }
+    }, []);
+
+    // Save user ID to localStorage when session is available
+    useEffect(() => {
+        if (session?.user?.id) {
+            localStorage.setItem('userId', session.user.id);
+        }
+    }, [session]);
+
     // Redirect if not authenticated
     useEffect(() => {
         if (!isLoading && !isAuthenticated) {
             router.push('/login');
         }
     }, [isAuthenticated, isLoading, router]);
-
-    // Load table input setting
-    useEffect(() => {
-        const loadTableInputSetting = async () => {
-            try {
-                const response = await fetch('/api/settings?key=enableTableInput');
-                if (response.ok) {
-                    const data = await response.json();
-                    setEnableTableInput(data.enableTableInput ?? true);
-                }
-            } catch (error) {
-                console.error('Error loading table input setting:', error);
-            }
-        };
-
-        if (isAuthenticated) {
-            loadTableInputSetting();
-        }
-    }, [isAuthenticated]);
 
     // Load categories and foods
     useEffect(() => {
@@ -656,6 +652,8 @@ export default function CassaPage() {
                 await confirmOrderAction({
                     orderId,
                     paymentMethod,
+                    userId: localStorage.getItem('userId') || '',
+                    cashRegisterId: localStorage.getItem('selectedCashRegister') || '',
                     discount: appliedDiscountAmount,
                     surcharge: totalSurcharge,
                     orderItems: mergedOrderItems,
@@ -668,6 +666,8 @@ export default function CassaPage() {
                     orderItems: mergedOrderItems,
                     confirm: {
                         paymentMethod,
+                        userId: localStorage.getItem('userId') || '',
+                        cashRegisterId: localStorage.getItem('selectedCashRegister') || '',
                         discount: appliedDiscountAmount,
                         surcharge: totalSurcharge
                     }
