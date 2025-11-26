@@ -41,7 +41,7 @@ export function DailyOrdersSidebar({
                 </div>
             </div>
 
-            <ScrollArea className="flex-1 h-full overflow-y-auto">
+            <ScrollArea className="flex-1 h-full pb-16 overflow-y-auto">
                 <div className="p-4 space-y-3">
                     {orders.length === 0 ? (
                         <div className="text-center text-muted-foreground py-8 select-none">
