@@ -6,4 +6,5 @@ export interface DailyOrder {
     customer: string;
     createdAt: string;
     subTotal: string;
+    status: string;
 }

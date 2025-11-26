@@ -1,9 +1,12 @@
+import { useState, useEffect } from 'react';
 import { OrderDetailResponse } from '@/lib/api-types';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { FileText } from 'lucide-react';
+import { FileText, Printer } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { getCashRegisters } from '@/actions/cassa';
+import { toast } from 'sonner';
 
 interface OrderDetailDialogProps {
     order: OrderDetailResponse | null;
@@ -12,10 +15,43 @@ interface OrderDetailDialogProps {
     onClose: () => void;
 }
 
+interface CashRegister {
+    id: string;
+    name: string;
+    enabled: boolean;
+}
+
 export function OrderDetailDialog({ order, open, loading, onClose }: OrderDetailDialogProps) {
+    const [cashRegisterName, setCashRegisterName] = useState<string>('');
+
+    // Fetch cash register name when order changes
+    useEffect(() => {
+        const fetchCashRegisterName = async () => {
+            if (order?.cashRegisterId) {
+                try {
+                    const cashRegisters: CashRegister[] = await getCashRegisters();
+                    const cashRegister = cashRegisters.find(cr => cr.id === order.cashRegisterId);
+                    if (cashRegister) {
+                        setCashRegisterName(cashRegister.name);
+                    } else {
+                        setCashRegisterName('N/A');
+                    }
+                } catch (error) {
+                    console.error('Error fetching cash register:', error);
+                    setCashRegisterName('N/A');
+                }
+            } else {
+                setCashRegisterName('N/A');
+            }
+        };
+
+        if (order) {
+            fetchCashRegisterName();
+        }
+    }, [order]);
     return (
         <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
-            <DialogContent className="sm:max-w-[600px]">
+            <DialogContent className="sm:max-w-[600px] max-h-[90vh] flex flex-col">
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
                         <FileText className="h-5 w-5" />
@@ -30,58 +66,74 @@ export function OrderDetailDialog({ order, open, loading, onClose }: OrderDetail
                         <div className="text-muted-foreground">Caricamento...</div>
                     </div>
                 ) : order ? (
-                    <div className="space-y-4">
-                        {/* Order Info */}
-                        <div className="grid grid-cols-4 gap-4 p-4 bg-muted/30 rounded-lg">
-                            <div>
-                                <p className="text-sm text-muted-foreground">Cliente</p>
-                                <h1 className={cn("font-semibold text-sm mb-1 truncate select-none", order.customer.length < 15 ? "text-xl" : "")} title={order.customer}>
-                                    {order.customer}
-                                </h1>
+                    <ScrollArea className="overflow-y-auto pr-4">
+                        <div className="space-y-4">
+                            {/* Order Info */}
+                            <div className="grid grid-cols-4 gap-4 p-4 bg-muted/30 rounded-lg">
+                                <div>
+                                    <p className="text-sm text-muted-foreground">Cliente</p>
+                                    <h1 className={cn("font-semibold text-sm mb-1 truncate select-none", order.customer.length < 15 ? "text-xl" : "")} title={order.customer}>
+                                        {order.customer}
+                                    </h1>
+                                </div>
+                                <div>
+                                    <p className="text-sm text-muted-foreground">Tavolo</p>
+                                    <p className="font-medium">{order.table}</p>
+                                </div>
+                                <div>
+                                    <p className="text-sm text-muted-foreground">Codice</p>
+                                    <p className="font-mono font-bold text-amber-600">{order.displayCode}</p>
+                                </div>
+                                <div>
+                                    <p className="text-sm text-muted-foreground">Comanda</p>
+                                    <p className="font-mono font-bold text-amber-600">{order.ticketNumber ?? 'N/A'}</p>
+                                </div>
+                                <div>
+                                    <p className="text-sm text-muted-foreground">Data creazione</p>
+                                    <p className="text-sm">
+                                        {new Date(order.createdAt).toLocaleString('it-IT', {
+                                            day: '2-digit',
+                                            month: '2-digit',
+                                            year: 'numeric',
+                                            hour: '2-digit',
+                                            minute: '2-digit'
+                                        })}
+                                    </p>
+                                </div>
+                                <div>
+                                    <p className="text-sm text-muted-foreground">Data conferma</p>
+                                    <p className="text-sm">
+                                        {order.confirmedAt ? new Date(order.confirmedAt).toLocaleString('it-IT', {
+                                            day: '2-digit',
+                                            month: '2-digit',
+                                            year: 'numeric',
+                                            hour: '2-digit',
+                                            minute: '2-digit'
+                                        }) : 'N/A'}
+                                    </p>
+                                </div>
+                                <div>
+                                    <p className="text-sm text-muted-foreground">Pagamento</p>
+                                    <p className="font-mono font-bold text-amber-600">
+                                        {order.paymentMethod === 'CARD' ? 'CARTA' : order.paymentMethod === 'CASH' ? 'CONTANTI' : order.paymentMethod || 'N/A'}
+                                    </p>
+                                </div>
+                                <div>
+                                    <p className="text-sm text-muted-foreground">Stato</p>
+                                    <div className="font-mono font-bold text-amber-600">
+                                        {order.status === 'PENDING' ? 'IN ATTESA'
+                                            : order.status === 'CONFIRMED' ? 'CONFERMATO'
+                                                : order.status === 'COMPLETED' ? 'PRONTO'
+                                                    : order.status === 'PICKED_UP' ? 'RITIRATO'
+                                                        : order.status || 'N/A'}
+                                    </div>
+                                </div>
                             </div>
-                            <div>
-                                <p className="text-sm text-muted-foreground">Tavolo</p>
-                                <p className="font-medium">{order.table}</p>
-                            </div>
-                            <div>
-                                <p className="text-sm text-muted-foreground">Codice</p>
-                                <p className="font-mono font-bold text-amber-600">{order.displayCode}</p>
-                            </div>
-                            <div>
-                                <p className="text-sm text-muted-foreground">Data</p>
-                                <p className="text-sm">
-                                    {new Date(order.createdAt).toLocaleString('it-IT', {
-                                        day: '2-digit',
-                                        month: '2-digit',
-                                        year: 'numeric',
-                                        hour: '2-digit',
-                                        minute: '2-digit'
-                                    })}
-                                </p>
-                            </div>
-                            <div>
-                                <p className="text-sm text-muted-foreground">Pagamento</p>
-                                <p className="font-mono font-bold text-amber-600">{order.paymentMethod}</p>
-                            </div>
-                            <div>
-                                <p className="text-sm text-muted-foreground">Stato</p>
-                                <p className="font-mono font-bold text-amber-600">{order.status}</p>
-                            </div>
-                            <div>
-                                <p className="text-sm text-muted-foreground">Comanda</p>
-                                <p className="font-mono font-bold text-amber-600">{order.ticketNumber}</p>
-                            </div>
-                            <div>
-                                <p className="text-sm text-muted-foreground">Sconto</p>
-                                <p className="font-mono font-bold text-amber-600">{order.discount}</p>
-                            </div>
-                        </div>
 
-                        {/* Order Items */}
-                        <div className="space-y-2">
-                            <h4 className="font-semibold">Prodotti</h4>
-                            <ScrollArea className='overflow-y-auto max-h-[500px]'>
-                                <div className="space-y-3">
+                            {/* Order Items */}
+                            <div className="space-y-2">
+                                <h4 className="font-semibold">Prodotti</h4>
+                                <div className="space-y-3 max-h-[340px] overflow-y-auto pr-2">
                                     {order.categorizedItems.map((catItem, catIndex) => (
                                         <div key={catIndex}>
                                             <h5 className="text-sm font-semibold text-amber-600 mb-2">
@@ -112,27 +164,69 @@ export function OrderDetailDialog({ order, open, loading, onClose }: OrderDetail
                                         </div>
                                     ))}
                                 </div>
-                            </ScrollArea>
+                            </div>
+
+                            {/* Total */}
+                            <div className="p-3 bg-amber-500/10 rounded-lg border border-amber-500/20">
+                                <div>
+                                    <div className="items-center space-y-0 text-xs">
+                                        <div className="flex items-center justify-between">
+                                            <div className="font-semibold">Subtotale:</div>
+                                            <div className="font-bold text-amber-600">
+                                                {parseFloat(order.subTotal).toFixed(2)} €
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center justify-between">
+                                            <div className="font-semibold">Sovrapprezzi:</div>
+                                            <div className="font-bold text-green-600">
+                                                {parseFloat(order.surcharge?.toString() || '0').toFixed(2)} €
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center justify-between">
+                                            <div className="font-semibold">Sconto:</div>
+                                            <div className="font-bold text-red-600">
+                                                {parseFloat(order.discount?.toString() || '0').toFixed(2)} €
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                        <div className="text-2xl font-semibold">Totale:</div>
+                                        <div className="text-2xl font-bold text-amber-600">
+                                            {parseFloat(order.total).toFixed(2)} €
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </ScrollArea>
+                ) : null}
+
+
+                <DialogFooter>
+                    <div className="flex items-center justify-between w-full">
+                        <div className='flex items-center gap-2'>
+                            <div className="text-sm text-muted-foreground">Cassa:</div>
+                            <div className="text-sm font-bold text-amber-600">{cashRegisterName}</div>
                         </div>
 
-                        {/* Total */}
-                        <div className="flex items-center justify-between p-4 bg-amber-500/10 rounded-lg border border-amber-500/20">
-                            <span className="text-lg font-semibold">Totale</span>
-                            <span className="text-2xl font-bold text-amber-600">
-                                {parseFloat(order.subTotal).toFixed(2)} €
-                            </span>
+                        <div className="flex items-center gap-2">
+                            <Button
+                                variant="outline"
+                                onClick={() => toast.error('Funzionalità di stampa non ancora implementata')}
+                            >
+                                <Printer className="h-4 w-4" />
+                                Stampa
+                            </Button>
+                            <Button
+                                variant="outline"
+                                onClick={onClose}
+                            >
+                                Chiudi
+                            </Button>
                         </div>
                     </div>
-                ) : null}
-                <DialogFooter>
-                    <Button
-                        variant="outline"
-                        onClick={onClose}
-                    >
-                        Chiudi
-                    </Button>
                 </DialogFooter>
             </DialogContent>
-        </Dialog>
+        </Dialog >
     );
 }

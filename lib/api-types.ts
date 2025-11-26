@@ -109,10 +109,18 @@ export interface OrderDetailResponse {
   table: string;
   customer: string;
   subTotal: string;
+  total: string;
   notes?: string;
-  status: 'pending' | 'confirmed' | 'completed' | 'cancelled';
+  status: 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'PICKED_UP';
+  paymentMethod?: PaymentMethod;
+  discount?: number;
+  surcharge?: number;
+  ticketNumber?: number | null;
   createdAt: string;
   updatedAt: string;
+  confirmedAt?: string;
+  userId?: string;
+  cashRegisterId?: string; // This is just the ID, not the full object
   categorizedItems: CategorizedItems[];
 }
 
@@ -127,6 +135,7 @@ export interface CategorizedItems {
 export interface OrderItemDetailed {
   id: string;
   quantity: number;
+  notes?: string;
   food: FoodWithIngredients;
 }
 

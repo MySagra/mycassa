@@ -127,7 +127,7 @@ export function LoginForm() {
                         </form>
                         <div className="bg-white flex items-center justify-center h-150 w-full">
                             <img
-                                src="/placeholder.png"
+                                src="/placeholder.jpg"
                                 alt="Logo"
                                 className="object-contain select-none"
                             />

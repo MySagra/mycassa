@@ -6,7 +6,7 @@ import { useSession } from 'next-auth/react';
 import { useTheme } from 'next-themes';
 import { fetchEventSource } from '@microsoft/fetch-event-source';
 import { toast } from 'sonner';
-import { getCategories, getOrderByOrderId, confirmOrder as confirmOrderAction, createOrder, getTodayOrders, getFoodById, searchDailyOrders, getOrderByCode } from '@/actions/cassa';
+import { getCategories, getOrderByOrderId, confirmOrder as confirmOrderAction, createOrder, getTodayOrders, getFoodById, searchDailyOrders, getOrderByCode, getCashRegisters } from '@/actions/cassa';
 import { logout as logoutAction } from '@/actions/auth';
 import { Category, Food, PaymentMethod, OrderDetailResponse, ExtendedCartItem } from '@/lib/api-types';
 import { DailyOrder } from '@/lib/cassa/types';
@@ -21,6 +21,7 @@ import { DailyOrdersSidebar } from '@/components/cassa/daily-orders/DailyOrdersS
 import { EditItemDialog } from '@/components/cassa/dialogs/EditItemDialog';
 import { DiscountDialog } from '@/components/cassa/dialogs/DiscountDialog';
 import { OrderDetailDialog } from '@/components/cassa/dialogs/OrderDetailDialog';
+import { ConfigurationDialog } from '@/components/cassa/dialogs/ConfigurationDialog';
 import { z } from 'zod';
 
 export default function CassaPage() {
@@ -55,6 +56,8 @@ export default function CassaPage() {
     const [loadingDailyOrders, setLoadingDailyOrders] = useState(false);
     const [viewingOrderDetail, setViewingOrderDetail] = useState<OrderDetailResponse | null>(null);
     const [loadingOrderDetail, setLoadingOrderDetail] = useState(false);
+    const [cashRegisterName, setCashRegisterName] = useState<string>('');
+    const [showConfigDialog, setShowConfigDialog] = useState(false);
 
     // Load enableTableInput from localStorage on mount
     useEffect(() => {
@@ -70,6 +73,36 @@ export default function CassaPage() {
             localStorage.setItem('userId', session.user.id);
         }
     }, [session]);
+
+    // Load selected cash register name from localStorage
+    useEffect(() => {
+        const fetchCashRegisterName = async () => {
+            const selectedId = localStorage.getItem('selectedCashRegister');
+            if (selectedId) {
+                try {
+                    const cashRegisters = await getCashRegisters();
+                    const selected = cashRegisters.find((cr: any) => cr.id === selectedId);
+                    if (selected) {
+                        setCashRegisterName(selected.name);
+                    }
+                } catch (error) {
+                    console.error('Error loading cash register name:', error);
+                }
+            } else {
+                // No cash register selected, show configuration dialog
+                setShowConfigDialog(true);
+            }
+        };
+
+        if (isAuthenticated) {
+            fetchCashRegisterName();
+        }
+    }, [isAuthenticated]);
+
+    // Handle cash register selection from configuration dialog
+    const handleCashRegisterSelected = (cashRegisterId: string, cashRegisterName: string) => {
+        setCashRegisterName(cashRegisterName);
+    };
 
     // Redirect if not authenticated
     useEffect(() => {
@@ -711,6 +744,7 @@ export default function CassaPage() {
                     onSettingsClick={() => router.push('/settings')}
                     theme={theme}
                     onThemeToggle={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                    cashRegisterName={cashRegisterName}
                 />
 
                 <div className="flex flex-1 overflow-hidden">
@@ -812,6 +846,13 @@ export default function CassaPage() {
                 open={viewingOrderDetail !== null}
                 loading={loadingOrderDetail}
                 onClose={() => setViewingOrderDetail(null)}
+            />
+
+            {/* Configuration Dialog */}
+            <ConfigurationDialog
+                open={showConfigDialog}
+                onOpenChange={setShowConfigDialog}
+                onCashRegisterSelected={handleCashRegisterSelected}
             />
         </div>
     );

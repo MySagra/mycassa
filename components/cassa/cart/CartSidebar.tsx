@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogFooter, AlertDialogTitle, AlertDialogDescription, AlertDialogAction, AlertDialogCancel } from '@/components/ui/alert-dialog';
-import { Trash2, Percent } from 'lucide-react';
+import { Trash2, Percent, ShoppingBasket } from 'lucide-react';
 import { OrderForm } from './OrderForm';
 import { PaymentSection } from './PaymentSection';
 import { CartItem } from './CartItem';
@@ -113,8 +113,11 @@ export function CartSidebar({
                 <ScrollArea className="h-full" ref={cartScrollRef}>
                     <div className="p-4">
                         {cart.length === 0 ? (
-                            <div className="flex h-32 items-center justify-center text-sm text-muted-foreground select-none">
-                                Carrello vuoto
+                            <div>
+                                <ShoppingBasket className="h-20 w-20 mx-auto mt-10 text-muted-foreground" />
+                                <div className="flex items-center font-bold justify-center text-sm text-muted-foreground select-none">
+                                    Carrello vuoto
+                                </div>
                             </div>
                         ) : (
                             <div className="space-y-2">
@@ -215,7 +218,7 @@ export function CartSidebar({
                     aria-label="Applica sconto"
                     title="Applica sconto"
                 >
-                    <Percent className="h-6 w-6" strokeWidth={3} />
+                    <Percent className="h-6 w-6" strokeWidth={2.5} />
                 </Button>
             </div>
         </aside>

@@ -29,17 +29,19 @@ export function PaymentSection({
     onUpdatePaidAmount
 }: PaymentSectionProps) {
     return (
-        <div className="space-y-4 p-4">
+        <div className="space-y-2 p-4 pt-1.5">
             {/* Total */}
-            <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                    <span className="text-lg font-semibold select-none">TOTALE:</span>
-                    <span className="text-2xl font-bold text-amber-500 select-none">
-                        {total.toFixed(2)} €
-                    </span>
-                </div>
+            <div className="text-xs mb-0.5">
+                {total - surcharges + discount !== total && (
+                    <div className="flex items-center justify-between text-muted-foreground">
+                        <span>Subtotale:</span>
+                        <span className="font-semibold">
+                            {(total - surcharges + discount).toFixed(2)} €
+                        </span>
+                    </div>
+                )}
                 {surcharges > 0 && (
-                    <div className="flex items-center justify-between text-sm text-amber-600 dark:text-amber-500">
+                    <div className="flex items-center justify-between text-amber-600 dark:text-amber-500">
                         <span>Sovrapprezzi totali:</span>
                         <span className="font-semibold">
                             +{surcharges.toFixed(2)} €
@@ -47,7 +49,7 @@ export function PaymentSection({
                     </div>
                 )}
                 {discount > 0 && (
-                    <div className="flex items-center justify-between text-sm text-green-600 dark:text-green-500">
+                    <div className="flex items-center justify-between text-green-600 dark:text-green-500">
                         <span>Sconto applicato:</span>
                         <span className="font-semibold">
                             -{discount.toFixed(2)} €
@@ -55,6 +57,13 @@ export function PaymentSection({
                     </div>
                 )}
             </div>
+            <div className="flex items-center justify-between">
+                <span className="text-lg font-semibold select-none">TOTALE:</span>
+                <span className="text-2xl font-bold text-amber-500 select-none">
+                    {total.toFixed(2)} €
+                </span>
+            </div>
+
 
             {/* Payment Method */}
             <div>
@@ -80,48 +89,51 @@ export function PaymentSection({
             </div>
 
             {/* Cash Payment Details */}
-            {paymentMethod === 'CASH' && (
-                <div className="space-y-3 border rounded-lg p-3 bg-muted/30">
-                    <div className="grid grid-cols-2 gap-4 item">
-                        <div>
-                            <Label htmlFor="paidAmount" className='text-base'>Pagato dal cliente</Label>
-                            <div className="relative mt-3">
-                                <Input
-                                    id="paidAmount"
-                                    type="text"
-                                    placeholder="0.00"
-                                    value={paidAmount}
-                                    onChange={(e) => {
-                                        const value = e.target.value;
-                                        // Allow only numbers, dot, and comma
-                                        if (value === '' || /^[0-9.,]*$/.test(value)) {
-                                            // Check if it matches the pattern for valid amount
-                                            if (value === '' || /^[0-9]{0,4}([.,][0-9]{0,2})?$/.test(value)) {
-                                                onUpdatePaidAmount(value);
+            {
+                paymentMethod === 'CASH' && (
+                    <div className="space-y-3 border rounded-lg p-3 bg-muted/30">
+                        <div className="grid grid-cols-2 gap-4 item">
+                            <div>
+                                <Label htmlFor="paidAmount" className='text-base'>Pagato dal cliente</Label>
+                                <div className="relative mt-3">
+                                    <Input
+                                        autoComplete='off'
+                                        id="paidAmount"
+                                        type="text"
+                                        placeholder="0.00"
+                                        value={paidAmount}
+                                        onChange={(e) => {
+                                            const value = e.target.value;
+                                            // Allow only numbers, dot, and comma
+                                            if (value === '' || /^[0-9.,]*$/.test(value)) {
+                                                // Check if it matches the pattern for valid amount
+                                                if (value === '' || /^[0-9]{0,4}([.,][0-9]{0,2})?$/.test(value)) {
+                                                    onUpdatePaidAmount(value);
+                                                }
                                             }
-                                        }
-                                    }}
-                                    className={`text-right pr-8 ${validationErrors.paidAmount ? 'border-red-500' : ''}`}
-                                />
-                                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                                    €
-                                </span>
+                                        }}
+                                        className={`text-right pr-8 ${validationErrors.paidAmount ? 'border-red-500' : ''}`}
+                                    />
+                                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                                        €
+                                    </span>
+                                </div>
+                                {validationErrors.paidAmount && (
+                                    <p className="text-xs text-red-500 mt-1">{validationErrors.paidAmount}</p>
+                                )}
                             </div>
-                            {validationErrors.paidAmount && (
-                                <p className="text-xs text-red-500 mt-1">{validationErrors.paidAmount}</p>
-                            )}
-                        </div>
-                        <div className="flex flex-col items-end space-y-1">
-                            <span className="text-base font-medium select-none">Resto</span>
-                            <div className='w-full h-full flex place-content-end items-center select-none'>
-                                <span className={`text-2xl font-bold ${change >= 0 ? 'text-green-600 dark:text-green-500' : 'text-red-600 dark:text-red-500'}`}>
-                                    {change.toFixed(2)} €
-                                </span>
+                            <div className="flex flex-col items-end space-y-1">
+                                <span className="text-base font-medium select-none">Resto</span>
+                                <div className='w-full h-full flex place-content-end items-center select-none'>
+                                    <span className={`text-2xl font-bold ${change >= 0 ? 'text-green-600 dark:text-green-500' : 'text-red-600 dark:text-red-500'}`}>
+                                        {change.toFixed(2)} €
+                                    </span>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            )}
-        </div>
+                )
+            }
+        </div >
     );
 }

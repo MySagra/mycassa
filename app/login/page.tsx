@@ -1,5 +1,6 @@
 "use client"
 
+import { useState, useEffect } from 'react';
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { LoginForm } from "@/components/login/login-card/login-form";
@@ -8,6 +9,12 @@ import { Moon, Sun, } from 'lucide-react';
 
 export default function LoginPage() {
   const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  // Prevent hydration mismatch by only rendering theme toggle after mount
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   return (
     <div className="bg-muted flex min-h-svh flex-col items-center justify-center p-6 md:p-10">
@@ -29,7 +36,7 @@ export default function LoginPage() {
           size="icon"
           onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
         >
-          {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+          {mounted && (theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />)}
         </Button>
       </div>
     </div>
