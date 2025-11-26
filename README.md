@@ -1,98 +1,274 @@
-# MyCassa
+<div align="center">
 
-MyCassa is a modern cash register application built with Next.js. It provides a seamless interface for managing orders, tables, and payments in a restaurant or cafe environment.
+<p align="center">
+  <img src="public/banner.png" alt="Banner" width="100%" />
+</p>
 
-## Features
+# 🛒 MyCassa
 
-- **Order Management**: Create, confirm, and manage orders with ease.
-- **Ingredient Customization**: Modify ingredients for each order item, with automatic surcharge calculation.
-- **Discounts**: Apply fixed amount discounts to orders.
-- **Authentication**: Secure login and session management using NextAuth.
-- **Backend-for-Frontend (BFF)**: Server Actions for efficient API communication.
+**Modern Point of Sale System for Restaurants & Cafes**
 
-## Installation
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
+[![Next.js](https://img.shields.io/badge/Next.js-16.0-black)](https://nextjs.org/)
+[![React](https://img.shields.io/badge/React-19.2-blue)](https://reactjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)](https://www.typescriptlang.org/)
 
-1. Clone the repository:
+[Features](#-features) • [Installation](#-installation) • [Docker](#-docker-deployment) • [Tech Stack](#-tech-stack) • [Contributing](#-contributing)
+
+</div>
+
+---
+
+## 📖 About
+
+**MyCassa** is a modern, full-featured cash register application built with Next.js. Designed specifically for restaurants, cafes, and food service businesses, it provides an intuitive interface for managing orders, customizing ingredients, applying discounts, and processing payments efficiently.
+
+Part of the **MySagra** ecosystem, MyCassa seamlessly integrates with backend services to deliver a complete point-of-sale solution.
+
+## ✨ Features
+
+### 🎯 Core Functionality
+- **Order Management** - Create, modify, confirm, and track orders in real-time
+- **Ingredient Customization** - Modify ingredients for each order item with automatic surcharge calculation
+- **Discount System** - Apply fixed amount or percentage discounts to orders
+- **Daily Orders** - Search and load previous orders (pending orders only)
+- **Order Status Tracking** - Track orders through pending, confirmed, and picked-up states
+
+### 🔐 Security & Authentication
+- **Secure Authentication** - NextAuth v5 integration with session management
+- **Protected Routes** - Role-based access control for different user types
+- **User Management** - Multi-user support with individual cashier tracking
+
+### 🎨 User Experience
+- **Modern UI** - Built with shadcn/ui components and Radix UI primitives
+- **Dark/Light Mode** - Theme switching with next-themes
+- **Responsive Design** - Optimized for desktop and tablet devices
+- **Real-time Updates** - Server-Sent Events (SSE) for live order updates
+- **Toast Notifications** - User-friendly feedback with Sonner
+
+### 🛠️ Technical Features
+- **Backend-for-Frontend (BFF)** - Server Actions for efficient API communication
+- **Type Safety** - Full TypeScript implementation with Zod validation
+- **Form Management** - React Hook Form with validation
+- **Docker Support** - Containerized deployment with Docker Compose
+- **API Proxy** - Seamless backend integration
+
+## 🚀 Installation
+
+### Prerequisites
+
+- **Node.js** 20.x or higher
+- **npm** or **yarn**
+- Access to MySagra backend API
+
+### Local Development
+
+1. **Clone the repository**
    ```bash
    git clone https://github.com/MySagra/mycassa.git
-   ```
-
-2. Navigate to the project directory:
-   ```bash
    cd mycassa
    ```
 
-3. Install dependencies:
+2. **Install dependencies**
    ```bash
    npm install
    ```
 
-4. Create a `.env.local` file based on `.env.example` and configure the environment variables:
+3. **Configure environment variables**
+   
+   Create a `.env` file based on `.env.example`:
    ```bash
-   cp .env.example .env.local
+   cp .env.example .env
+   ```
+   
+   Update the following variables:
+   ```env
+   # API Configuration
+   NEXT_PUBLIC_API_URL=http://localhost:4300
+   API_URL=http://mysagra-mysagra-backend-1:4300
+   
+   # NextAuth Configuration
+   AUTH_SECRET=your_secure_random_secret_here
+   AUTH_URL=http://localhost:7000
    ```
 
-5. Run the development server:
+4. **Run the development server**
    ```bash
    npm run dev
    ```
 
-6. Open your browser and navigate to:
-   ```
-   http://localhost:3000
-   ```
+5. **Open your browser**
+   
+   Navigate to [http://localhost:7000](http://localhost:7000)
 
-## Environment Variables
+## 🐳 Docker Deployment
 
-The following environment variables are required:
+MyCassa includes full Docker support for production deployments.
 
-- `API_URL`: The base URL of the backend API.
-- `NEXTAUTH_SECRET`: A secret key for NextAuth.
-- `NEXTAUTH_URL`: The URL of your Next.js application.
+### Using Docker Compose
 
-## Scripts
+1. **Ensure you have a `.env` file configured** (see Installation section)
 
-- `npm run dev`: Start the development server.
-- `npm run build`: Build the application for production.
-- `npm start`: Start the production server.
-
-## Folder Structure
-
-- `app/`: Contains the Next.js pages and layouts.
-- `components/`: Reusable UI components.
-- `actions/`: Server Actions for API communication.
-- `lib/`: Utility functions and API types.
-- `public/`: Static assets.
-
-## Contributing
-
-Contributions are welcome! Please follow these steps:
-
-1. Fork the repository.
-2. Create a new branch:
+2. **Build and run the container**
    ```bash
-   git checkout -b feature/your-feature-name
+   docker-compose up -d
    ```
-3. Commit your changes:
+
+3. **Access the application**
+   
+   The application will be available at [http://localhost:7000](http://localhost:7000)
+
+### Docker Configuration
+
+The application uses a multi-stage Dockerfile for optimized builds:
+- **Dependencies stage** - Installs npm packages
+- **Builder stage** - Builds the Next.js application
+- **Runner stage** - Minimal production image
+
+The container connects to the `mysagra_default` network to communicate with the backend API.
+
+## 🛠️ Tech Stack
+
+### Frontend Framework
+- **[Next.js 16](https://nextjs.org/)** - React framework with App Router
+- **[React 19](https://reactjs.org/)** - UI library
+- **[TypeScript 5](https://www.typescriptlang.org/)** - Type safety
+
+### UI Components & Styling
+- **[shadcn/ui](https://ui.shadcn.com/)** - Re-usable component library
+- **[Radix UI](https://www.radix-ui.com/)** - Unstyled, accessible components
+- **[Tailwind CSS 4](https://tailwindcss.com/)** - Utility-first CSS framework
+- **[Lucide React](https://lucide.dev/)** - Icon library
+
+### Forms & Validation
+- **[React Hook Form](https://react-hook-form.com/)** - Form state management
+- **[Zod](https://zod.dev/)** - Schema validation
+- **[@hookform/resolvers](https://github.com/react-hook-form/resolvers)** - Form validation integration
+
+### Authentication
+- **[NextAuth v5](https://next-auth.js.org/)** - Authentication for Next.js
+- **[@auth/core](https://authjs.dev/)** - Core authentication library
+
+### Data Fetching & API
+- **[Axios](https://axios-http.com/)** - HTTP client
+- **[@microsoft/fetch-event-source](https://github.com/Azure/fetch-event-source)** - Server-Sent Events support
+
+### Utilities
+- **[date-fns](https://date-fns.org/)** - Date manipulation
+- **[clsx](https://github.com/lukeed/clsx)** - Conditional className utility
+- **[tailwind-merge](https://github.com/dcastil/tailwind-merge)** - Merge Tailwind classes
+- **[sonner](https://sonner.emilkowal.ski/)** - Toast notifications
+
+## 📁 Project Structure
+
+```
+mycassa/
+├── app/                    # Next.js App Router pages
+│   ├── api/               # API routes
+│   ├── cassa/             # Main cash register page
+│   ├── login/             # Authentication page
+│   └── settings/          # Settings page
+├── components/            # React components
+│   ├── cassa/            # Cash register specific components
+│   ├── login/            # Login components
+│   ├── settings/         # Settings components
+│   └── ui/               # shadcn/ui components
+├── actions/              # Server Actions (BFF layer)
+├── lib/                  # Utility functions and types
+│   ├── api-client.ts     # API client configuration
+│   ├── api-types.ts      # API type definitions
+│   ├── auth.ts           # Authentication configuration
+│   └── utils.ts          # Helper functions
+├── hooks/                # Custom React hooks
+├── types/                # TypeScript type definitions
+├── public/               # Static assets
+├── Dockerfile            # Docker configuration
+└── docker-compose.yml    # Docker Compose configuration
+```
+
+## 📜 Available Scripts
+
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Start development server on port 7000 |
+| `npm run build` | Build production bundle |
+| `npm start` | Start production server on port 7000 |
+| `npm run lint` | Run ESLint for code quality |
+
+## 🔧 Environment Variables
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `NEXT_PUBLIC_API_URL` | Public API URL (client-side) | `http://localhost:4300` |
+| `API_URL` | Internal API URL (server-side) | `http://mysagra-mysagra-backend-1:4300` |
+| `AUTH_SECRET` | Secret key for NextAuth sessions | Random string (generate with `openssl rand -base64 32`) |
+| `AUTH_URL` | Application URL for auth callbacks | `http://localhost:7000` |
+
+## 🤝 Contributing
+
+Contributions are welcome! Please follow these guidelines:
+
+1. **Fork the repository**
+   
+2. **Create a feature branch**
    ```bash
-   git commit -m "Add your message here"
+   git checkout -b feature/amazing-feature
    ```
-4. Push to the branch:
+
+3. **Commit your changes**
    ```bash
-   git push origin feature/your-feature-name
+   git commit -m 'Add some amazing feature'
    ```
-5. Open a pull request.
 
-## License
+4. **Push to the branch**
+   ```bash
+   git push origin feature/amazing-feature
+   ```
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+5. **Open a Pull Request**
 
-## Acknowledgments
+### Development Guidelines
 
-- Built with [Next.js](https://nextjs.org/).
-- Authentication powered by [NextAuth](https://next-auth.js.org/).
-- UI components inspired by modern design systems.
+- Follow the existing code style and conventions
+- Write meaningful commit messages
+- Update documentation for significant changes
+- Test your changes thoroughly before submitting
+- Ensure TypeScript types are properly defined
+
+## 📄 License
+
+This project is licensed under the **GNU Affero General Public License v3.0 (AGPL-3.0)**.
+
+This means:
+- ✅ You can use, modify, and distribute this software
+- ✅ You must disclose source code of any modifications
+- ✅ You must license derivative works under AGPL-3.0
+- ✅ Network use counts as distribution (must provide source)
+
+See the [LICENSE](LICENSE) file for full details.
+
+## 🙏 Acknowledgments
+
+- Built with [Next.js](https://nextjs.org/) by Vercel
+- UI components from [shadcn/ui](https://ui.shadcn.com/)
+- Authentication powered by [NextAuth](https://next-auth.js.org/)
+- Icons from [Lucide](https://lucide.dev/)
+- Part of the [MySagra](https://github.com/MySagra) ecosystem
+
+## 📞 Support
+
+If you encounter any issues or have questions:
+
+- 🐛 [Open an issue](https://github.com/MySagra/mycassa/issues)
+- 💬 Check existing issues for solutions
+- 📧 Contact the MySagra team
 
 ---
 
-Enjoy using MyCassa! If you encounter any issues, feel free to open an issue on GitHub.
+<div align="center">
+
+**Made with ❤️ by the MySagra Team**
+
+[⬆ Back to Top](#-mycassa)
+
+</div>

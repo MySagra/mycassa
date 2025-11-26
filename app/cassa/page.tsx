@@ -524,6 +524,12 @@ export default function CassaPage() {
         try {
             const order = await getOrderByCode(displayCode.toUpperCase());
 
+            // Check if order is pending
+            if (order.status !== 'PENDING') {
+                toast.error('L\'ordine è stato già confermato');
+                return;
+            }
+
             // Set customer and table
             setCustomer(order.customer);
             setTable(order.table);

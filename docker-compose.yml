@@ -1,20 +1,19 @@
 services:
-  mycassa:
-    networks:
-      - mysagra
-      - default
-    build: .
-    env_file: .env
+  cassa:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mycassa-cassa
+    restart: always
     ports:
       - "7000:7000"
+    env_file:
+      - .env
     environment:
-      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
-      - API_URL=${API_URL}
-      - AUTH_SECRET=${AUTH_SECRET}
-      - AUTH_URL=${AUTH_URL}
-    restart: unless-stopped
+      - NODE_ENV=production
+    networks:
+      - mysagra_default
 
 networks:
-  mysagra:
-    name: mysagra_network
+  mysagra_default:
     external: true
