@@ -697,6 +697,9 @@ export default function CassaPage() {
                     surcharge: totalSurcharge,
                     orderItems: mergedOrderItems,
                 });
+
+                // Remove the confirmed order from daily orders list
+                setDailyOrders((prevOrders) => prevOrders.filter(o => o.id !== orderId));
             } else {
                 // Create new order with confirmation details
                 await createOrder({

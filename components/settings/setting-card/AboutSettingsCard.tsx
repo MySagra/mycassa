@@ -16,15 +16,8 @@ export function AboutSettingsCard() {
                 </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                        <Label>Versione</Label>
-                        <div className="text-sm text-muted-foreground">1.0.0</div>
-                    </div>
-                    <div className="space-y-2">
-                        <Label>Build</Label>
-                        <div className="text-sm text-muted-foreground">2025.11</div>
-                    </div>
+                <div className="text-sm ">
+                    Per una migliore visualizzazione è consigliato usare la modalità fullscreen (F11)
                 </div>
                 <Separator />
                 <div className="space-y-2">

@@ -144,7 +144,13 @@ export async function getOrderByCode(code: string) {
       throw new Error(errorData.message || 'Impossibile caricare l\'ordine');
     }
 
-    const order = (await response.json()).data[0];
+    const data = await response.json();
+    const order = data.data[0];
+
+    // Check if order exists
+    if (!order) {
+      throw new Error('L\'ordine non esiste');
+    }
 
     return await getOrderByOrderId(order.id);
   } catch (error) {
