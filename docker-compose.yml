@@ -1,0 +1,19 @@
+services:
+  cassa:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mycassa-cassa
+    restart: always
+    ports:
+      - "7000:7000"
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+    networks:
+      - mysagra_default
+
+networks:
+  mysagra_default:
+    external: true
