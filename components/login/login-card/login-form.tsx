@@ -32,13 +32,8 @@ export function LoginForm() {
     async function onSubmit(values: z.infer<typeof formSchema>) {
         setIsLoading(true);
         try {
-            console.log('Starting login process...');
             const result = await loginAction(values.username, values.password);
-
-            console.log('Login result:', result);
-
             if (result.success) {
-                console.log('Login successful, redirecting to /cassa');
                 // Wait a bit for session to be fully set
                 await new Promise(resolve => setTimeout(resolve, 100));
                 window.location.href = '/cassa'; // Force full page reload to ensure session is loaded

@@ -1,7 +1,14 @@
 'use server';
 
-import { auth } from '@/lib/auth';
+import { auth, signOut } from '@/lib/auth';
 import { get } from 'http';
+
+function isRedirectError(error: any) {
+  return error && (
+    error.digest?.startsWith('NEXT_REDIRECT') ||
+    error.message === 'NEXT_REDIRECT'
+  );
+}
 
 /**
  * Get categories available for current user
@@ -13,7 +20,7 @@ export async function getCategories() {
   const session = await auth();
 
   if (!session?.accessToken) {
-    throw new Error('Non autenticato');
+    return { success: false, error: 'Non autenticato' };
   }
 
   try {
@@ -25,14 +32,22 @@ export async function getCategories() {
       cache: 'no-store',
     });
 
-    if (!response.ok) {
-      throw new Error('Errore nel caricamento delle categorie');
+    if (response.status === 401 || response.status === 403) {
+      await signOut({ redirectTo: '/login' });
     }
 
-    return await response.json();
-  } catch (error) {
+    if (!response.ok) {
+      return { success: false, error: 'Errore nel caricamento delle categorie' };
+    }
+
+    const data = await response.json();
+    return { success: true, data };
+  } catch (error: any) {
+    if (isRedirectError(error)) {
+      throw error;
+    }
     console.error('getCategories error:', error);
-    throw error;
+    return { success: false, error: error.message || 'Errore sconosciuto' };
   }
 }
 
@@ -43,11 +58,11 @@ export async function getFoodById(foodId: string) {
   const session = await auth();
 
   if (!session?.accessToken) {
-    throw new Error('Non autenticato');
+    return { success: false, error: 'Non autenticato' };
   }
 
   if (!foodId || typeof foodId !== 'string') {
-    throw new Error('ID cibo non valido');
+    return { success: false, error: 'ID cibo non valido' };
   }
 
   try {
@@ -59,14 +74,22 @@ export async function getFoodById(foodId: string) {
       cache: 'no-store',
     });
 
-    if (!response.ok) {
-      throw new Error('Errore nel caricamento del cibo');
+    if (response.status === 401 || response.status === 403) {
+      await signOut({ redirectTo: '/login' });
     }
 
-    return await response.json();
-  } catch (error) {
+    if (!response.ok) {
+      return { success: false, error: 'Errore nel caricamento del cibo' };
+    }
+
+    const data = await response.json();
+    return { success: true, data };
+  } catch (error: any) {
+    if (isRedirectError(error)) {
+      throw error;
+    }
     console.error('getFoodById error:', error);
-    throw error;
+    return { success: false, error: error.message || 'Errore sconosciuto' };
   }
 }
 
@@ -77,7 +100,7 @@ export async function getTodayOrders() {
   const session = await auth();
 
   if (!session?.accessToken) {
-    throw new Error('Non autenticato');
+    return { success: false, error: 'Non autenticato' };
   }
 
   try {
@@ -96,16 +119,23 @@ export async function getTodayOrders() {
       cache: 'no-store',
     });
 
+    if (response.status === 401 || response.status === 403) {
+      await signOut({ redirectTo: '/login' });
+    }
+
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || 'Impossibile caricare gli ordini di oggi');
+      return { success: false, error: errorData.message || 'Impossibile caricare gli ordini di oggi' };
     }
 
     const orders = (await response.json()).data;
-    return orders;
-  } catch (error) {
+    return { success: true, data: orders };
+  } catch (error: any) {
+    if (isRedirectError(error)) {
+      throw error;
+    }
     console.error('getTodayOrders error:', error);
-    throw error;
+    return { success: false, error: error.message || 'Errore sconosciuto' };
   }
 }
 
@@ -116,11 +146,11 @@ export async function getOrderByCode(code: string) {
   const session = await auth();
 
   if (!session?.accessToken) {
-    throw new Error('Non autenticato');
+    return { success: false, error: 'Non autenticato' };
   }
 
   if (!code || typeof code !== 'string') {
-    throw new Error('Codice ordine non valido');
+    return { success: false, error: 'Codice ordine non valido' };
   }
 
   const today = new Date();
@@ -139,9 +169,13 @@ export async function getOrderByCode(code: string) {
       cache: 'no-store',
     });
 
+    if (response.status === 401 || response.status === 403) {
+      await signOut({ redirectTo: '/login' });
+    }
+
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || 'Impossibile caricare l\'ordine');
+      return { success: false, error: errorData.message || 'Impossibile caricare l\'ordine' };
     }
 
     const data = await response.json();
@@ -149,13 +183,20 @@ export async function getOrderByCode(code: string) {
 
     // Check if order exists
     if (!order) {
-      throw new Error('L\'ordine non esiste');
+      return { success: false, error: 'L\'ordine non esiste' };
     }
 
-    return await getOrderByOrderId(order.id);
-  } catch (error) {
+    const orderDetailResult = await getOrderByOrderId(order.id);
+    if (!orderDetailResult.success) {
+      return orderDetailResult;
+    }
+    return { success: true, data: orderDetailResult.data };
+  } catch (error: any) {
+    if (isRedirectError(error)) {
+      throw error;
+    }
     console.error('getOrderByCode error:', error);
-    throw error;
+    return { success: false, error: error.message || 'Errore sconosciuto' };
   }
 }
 
@@ -163,11 +204,11 @@ export async function getOrderByOrderId(orderId: number) {
   const session = await auth();
 
   if (!session?.accessToken) {
-    throw new Error('Non autenticato');
+    return { success: false, error: 'Non autenticato' };
   }
 
   if (!orderId || typeof orderId !== 'number') {
-    throw new Error('ID ordine non valido');
+    return { success: false, error: 'ID ordine non valido' };
   }
 
   try {
@@ -179,15 +220,23 @@ export async function getOrderByOrderId(orderId: number) {
       cache: 'no-store',
     });
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || 'Impossibile caricare l\'ordine');
+    if (response.status === 401 || response.status === 403) {
+      await signOut({ redirectTo: '/login' });
     }
 
-    return await response.json();
-  } catch (error) {
-    console.error('getOrderByCode error:', error);
-    throw error;
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      return { success: false, error: errorData.message || 'Impossibile caricare l\'ordine' };
+    }
+
+    const data = await response.json();
+    return { success: true, data };
+  } catch (error: any) {
+    if (isRedirectError(error)) {
+      throw error;
+    }
+    console.error('getOrderByOrderId error:', error);
+    return { success: false, error: error.message || 'Errore sconosciuto' };
   }
 }
 
@@ -198,11 +247,11 @@ export async function searchDailyOrders(searchValue: string) {
   const session = await auth();
 
   if (!session?.accessToken) {
-    throw new Error('Non autenticato');
+    return { success: false, error: 'Non autenticato' };
   }
 
   if (!searchValue || typeof searchValue !== 'string') {
-    throw new Error('Valore di ricerca non valido');
+    return { success: false, error: 'Valore di ricerca non valido' };
   }
 
   const today = new Date();
@@ -221,15 +270,23 @@ export async function searchDailyOrders(searchValue: string) {
       cache: 'no-store',
     });
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || 'Errore nella ricerca degli ordini');
+    if (response.status === 401 || response.status === 403) {
+      await signOut({ redirectTo: '/login' });
     }
 
-    return (await response.json()).data;
-  } catch (error) {
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      return { success: false, error: errorData.message || 'Errore nella ricerca degli ordini' };
+    }
+
+    const data = (await response.json()).data;
+    return { success: true, data };
+  } catch (error: any) {
+    if (isRedirectError(error)) {
+      throw error;
+    }
     console.error('searchDailyOrders error:', error);
-    throw error;
+    return { success: false, error: error.message || 'Errore sconosciuto' };
   }
 }
 
@@ -258,7 +315,7 @@ export async function createOrder(orderData: {
   const session = await auth();
 
   if (!session?.accessToken) {
-    throw new Error('Non autenticato');
+    return { success: false, error: 'Non autenticato' };
   }
 
   try {
@@ -271,15 +328,23 @@ export async function createOrder(orderData: {
       body: JSON.stringify(orderData),
     });
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || 'Impossibile creare l\'ordine');
+    if (response.status === 401 || response.status === 403) {
+      await signOut({ redirectTo: '/login' });
     }
 
-    return await response.json();
-  } catch (error) {
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      return { success: false, error: errorData.message || 'Impossibile creare l\'ordine' };
+    }
+
+    const data = await response.json();
+    return { success: true, data };
+  } catch (error: any) {
+    if (isRedirectError(error)) {
+      throw error;
+    }
     console.error('createOrder error:', error);
-    throw error;
+    return { success: false, error: error.message || 'Errore sconosciuto' };
   }
 }
 
@@ -302,7 +367,7 @@ export async function confirmOrder(orderData: {
   const session = await auth();
 
   if (!session?.accessToken) {
-    throw new Error('Non autenticato');
+    return { success: false, error: 'Non autenticato' };
   }
 
   try {
@@ -319,15 +384,23 @@ export async function confirmOrder(orderData: {
       body: JSON.stringify(bodyData),
     });
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || 'Impossibile confermare l\'ordine');
+    if (response.status === 401 || response.status === 403) {
+      await signOut({ redirectTo: '/login' });
     }
 
-    return await response.json();
-  } catch (error) {
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      return { success: false, error: errorData.message || 'Impossibile confermare l\'ordine' };
+    }
+
+    const data = await response.json();
+    return { success: true, data };
+  } catch (error: any) {
+    if (isRedirectError(error)) {
+      throw error;
+    }
     console.error('confirmOrder error:', error);
-    throw error;
+    return { success: false, error: error.message || 'Errore sconosciuto' };
   }
 }
 
@@ -338,7 +411,7 @@ export async function getCashRegisters() {
   const session = await auth();
 
   if (!session?.accessToken) {
-    throw new Error('Non autenticato');
+    return { success: false, error: 'Non autenticato' };
   }
 
   try {
@@ -350,13 +423,21 @@ export async function getCashRegisters() {
       cache: 'no-store',
     });
 
-    if (!response.ok) {
-      throw new Error('Errore nel caricamento delle casse');
+    if (response.status === 401 || response.status === 403) {
+      await signOut({ redirectTo: '/login' });
     }
 
-    return await response.json();
-  } catch (error) {
+    if (!response.ok) {
+      return { success: false, error: 'Errore nel caricamento delle casse' };
+    }
+
+    const data = await response.json();
+    return { success: true, data };
+  } catch (error: any) {
+    if (isRedirectError(error)) {
+      throw error;
+    }
     console.error('getCashRegisters error:', error);
-    throw error;
+    return { success: false, error: error.message || 'Errore sconosciuto' };
   }
 }

@@ -80,10 +80,13 @@ export default function CassaPage() {
             const selectedId = localStorage.getItem('selectedCashRegister');
             if (selectedId) {
                 try {
-                    const cashRegisters = await getCashRegisters();
-                    const selected = cashRegisters.find((cr: any) => cr.id === selectedId);
-                    if (selected) {
-                        setCashRegisterName(selected.name);
+                    const result = await getCashRegisters();
+                    if (result.success) {
+                        const cashRegisters = result.data;
+                        const selected = cashRegisters.find((cr: any) => cr.id === selectedId);
+                        if (selected) {
+                            setCashRegisterName(selected.name);
+                        }
                     }
                 } catch (error) {
                     console.error('Error loading cash register name:', error);
@@ -115,7 +118,14 @@ export default function CassaPage() {
     useEffect(() => {
         const fetchCategories = async () => {
             try {
-                const data = await getCategories();
+                const result = await getCategories();
+
+                if (!result.success) {
+                    toast.error(result.error || 'Impossibile caricare le categorie');
+                    return;
+                }
+
+                const data = result.data;
 
                 // Sort categories by position before setting them
                 const sortedCategories = data.sort((a: Category, b: Category) => a.position - b.position);
@@ -184,7 +194,18 @@ export default function CassaPage() {
 
                     async onopen(response) {
                         if (response.ok) {
-                            console.log('[SSE] Connessione stabilita');
+
+                            // Fetch initial daily orders when SSE connection is established
+                            try {
+                                const result = await getTodayOrders();
+                                if (result.success) {
+                                    setDailyOrders(result.data);
+                                } else {
+                                    console.error('[SSE] Errore caricamento ordini iniziali:', result.error);
+                                }
+                            } catch (error: any) {
+                                console.error('[SSE] Errore caricamento ordini iniziali:', error);
+                            }
                         } else {
                             console.error(`[SSE] Errore di connessione: Status ${response.status}`);
                             abortController.abort();
@@ -265,7 +286,14 @@ export default function CassaPage() {
                                     // Food is now available - fetch it and add to the foods list
                                     const fetchUpdatedFood = async () => {
                                         try {
-                                            const updatedFood = await getFoodById(foodId);
+                                            const result = await getFoodById(foodId);
+
+                                            if (!result.success) {
+                                                console.error('[SSE] Errore fetchando cibo:', result.error);
+                                                return;
+                                            }
+
+                                            const updatedFood = result.data;
                                             let isNew = false;
 
                                             setFoods((prevFoods) => {
@@ -326,7 +354,6 @@ export default function CassaPage() {
                     },
 
                     onclose() {
-                        console.log('[SSE] Connessione chiusa');
                         sseConnectionRef.current = false;
                     },
 
@@ -334,14 +361,13 @@ export default function CassaPage() {
                         console.error('[SSE] Errore di rete:', err);
                         if ((err as any).status === 401) {
                             console.error("[SSE] Errore 401 - Token scaduto");
-                            throw err;
+                            toast.error("Token scaduto");
                         }
                         sseConnectionRef.current = false;
                     }
                 });
             } catch (err: any) {
                 if (err.name === 'AbortError' || err.message === 'BodyStreamBuffer was aborted') {
-                    console.log('[SSE] Connessione interrotta volontariamente');
                     return;
                 }
                 console.error('[SSE] Errore connessione:', err);
@@ -351,7 +377,6 @@ export default function CassaPage() {
         connectSSE();
 
         return () => {
-            console.log('[SSE] Cleanup');
             abortController.abort();
             sseConnectionRef.current = false;
         };
@@ -367,8 +392,12 @@ export default function CassaPage() {
         const loadInitialOrders = async () => {
             setLoadingDailyOrders(true);
             try {
-                const orders = await getTodayOrders();
-                setDailyOrders(orders);
+                const result = await getTodayOrders();
+                if (result.success) {
+                    setDailyOrders(result.data);
+                } else {
+                    toast.error(result.error || 'Impossibile caricare gli ordini di oggi');
+                }
             } catch (error: any) {
                 console.error('[SSE] Errore caricamento ordini iniziali:', error);
                 toast.error(error.message || 'Impossibile caricare gli ordini di oggi');
@@ -390,8 +419,10 @@ export default function CassaPage() {
         if (!searchQuery.trim()) {
             const loadInitialOrders = async () => {
                 try {
-                    const orders = await getTodayOrders();
-                    setDailyOrders(orders);
+                    const result = await getTodayOrders();
+                    if (result.success) {
+                        setDailyOrders(result.data);
+                    }
                 } catch (error: any) {
                     console.error('Errore caricamento ordini:', error);
                 }
@@ -404,8 +435,12 @@ export default function CassaPage() {
         // Search with query
         const searchOrders = async () => {
             try {
-                const results = await searchDailyOrders(searchQuery);
-                setDailyOrders(results);
+                const result = await searchDailyOrders(searchQuery);
+                if (result.success) {
+                    setDailyOrders(result.data);
+                } else {
+                    toast.error(result.error || 'Errore nella ricerca degli ordini');
+                }
             } catch (error: any) {
                 console.error('Errore nella ricerca:', error);
                 toast.error(error.message || 'Errore nella ricerca degli ordini');
@@ -522,7 +557,14 @@ export default function CassaPage() {
 
         setLoadingOrder(true);
         try {
-            const order = await getOrderByCode(displayCode.toUpperCase());
+            const result = await getOrderByCode(displayCode.toUpperCase());
+
+            if (!result.success) {
+                toast.error(result.error || 'Impossibile caricare l\'ordine');
+                return;
+            }
+
+            const order = (result as any).data;
 
             // Check if order is pending
             if (order.status !== 'PENDING') {
@@ -576,7 +618,14 @@ export default function CassaPage() {
     // Load order to cart from daily orders
     const loadOrderToCart = async (order: DailyOrder) => {
         try {
-            const orderDetail = await getOrderByOrderId(order.id);
+            const result = await getOrderByOrderId(order.id);
+
+            if (!result.success) {
+                toast.error(result.error || 'Impossibile caricare l\'ordine');
+                return;
+            }
+
+            const orderDetail = result.data;
 
             // Set customer and table
             setCustomer(orderDetail.customer);
@@ -624,8 +673,12 @@ export default function CassaPage() {
     const viewOrderDetail = async (orderId: number) => {
         setLoadingOrderDetail(true);
         try {
-            const order = await getOrderByOrderId(orderId);
-            setViewingOrderDetail(order);
+            const result = await getOrderByOrderId(orderId);
+            if (result.success) {
+                setViewingOrderDetail(result.data);
+            } else {
+                toast.error(result.error || 'Impossibile caricare i dettagli dell\'ordine');
+            }
         } catch (error: any) {
             console.error('Error loading order detail:', error);
             toast.error(error.message || 'Impossibile caricare i dettagli dell\'ordine');
@@ -685,10 +738,17 @@ export default function CassaPage() {
 
             // If displayCode exists, load the order to confirm it
             if (displayCode.trim()) {
-                const orderResponse = await getOrderByCode(displayCode.toUpperCase());
+                const result = await getOrderByCode(displayCode.toUpperCase());
+
+                if (!result.success) {
+                    toast.error(result.error || 'Impossibile trovare l\'ordine');
+                    return;
+                }
+
+                const orderResponse = (result as any).data;
                 const orderId = parseInt(orderResponse.id);
 
-                await confirmOrderAction({
+                const confirmResult = await confirmOrderAction({
                     orderId,
                     paymentMethod,
                     userId: localStorage.getItem('userId') || '',
@@ -698,11 +758,16 @@ export default function CassaPage() {
                     orderItems: mergedOrderItems,
                 });
 
+                if (!confirmResult.success) {
+                    toast.error(confirmResult.error || 'Impossibile confermare l\'ordine');
+                    return;
+                }
+
                 // Remove the confirmed order from daily orders list
                 setDailyOrders((prevOrders) => prevOrders.filter(o => o.id !== orderId));
             } else {
                 // Create new order with confirmation details
-                await createOrder({
+                const createResult = await createOrder({
                     table: enableTableInput && table.trim() ? table : "no table",
                     customer,
                     orderItems: mergedOrderItems,
@@ -714,6 +779,11 @@ export default function CassaPage() {
                         surcharge: totalSurcharge
                     }
                 });
+
+                if (!createResult.success) {
+                    toast.error(createResult.error || 'Impossibile creare l\'ordine');
+                    return;
+                }
             }
 
             clearCart();
