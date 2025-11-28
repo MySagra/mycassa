@@ -27,12 +27,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
     const storedToken = localStorage.getItem('accessToken');
-    
+
     if (storedUser && storedToken) {
       setUser(JSON.parse(storedUser));
       setAccessToken(storedToken);
     }
-    
+
     setIsLoading(false);
   }, []);
 
@@ -54,7 +54,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       const data = await response.json();
-      
+
       setUser(data.user);
       setAccessToken(data.accessToken);
 

@@ -30,8 +30,12 @@ export function PrintersSettingsCard() {
     useEffect(() => {
         const fetchCashRegisters = async () => {
             try {
-                const data: CashRegister[] = await getCashRegisters();
-                setCashRegisters(data.filter(cr => cr.enabled));
+                const result = await getCashRegisters();
+                if (result.success) {
+                    setCashRegisters((result.data as CashRegister[]).filter(cr => cr.enabled));
+                } else {
+                    toast.error(result.error || 'Errore nel caricamento delle casse');
+                }
             } catch (error: any) {
                 console.error('Error fetching cash registers:', error);
                 toast.error(error.message || 'Errore nel caricamento delle casse');

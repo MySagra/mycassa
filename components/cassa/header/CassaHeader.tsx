@@ -12,7 +12,7 @@ interface CassaHeaderProps {
 
 export function CassaHeader({ onLogout, onSettingsClick, theme, onThemeToggle, cashRegisterName }: CassaHeaderProps) {
     return (
-        <header className="border-b bg-card">
+        <header className="fixed top-0 w-full border-b bg-card">
             <div className="flex h-16 items-center justify-between px-6">
                 <div className="flex items-center gap-3">
                     <img

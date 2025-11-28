@@ -29,10 +29,15 @@ export function OrderDetailDialog({ order, open, loading, onClose }: OrderDetail
         const fetchCashRegisterName = async () => {
             if (order?.cashRegisterId) {
                 try {
-                    const cashRegisters: CashRegister[] = await getCashRegisters();
-                    const cashRegister = cashRegisters.find(cr => cr.id === order.cashRegisterId);
-                    if (cashRegister) {
-                        setCashRegisterName(cashRegister.name);
+                    const result = await getCashRegisters();
+                    if (result.success) {
+                        const cashRegisters = result.data as CashRegister[];
+                        const cashRegister = cashRegisters.find(cr => cr.id === order.cashRegisterId);
+                        if (cashRegister) {
+                            setCashRegisterName(cashRegister.name);
+                        } else {
+                            setCashRegisterName('N/A');
+                        }
                     } else {
                         setCashRegisterName('N/A');
                     }
@@ -69,7 +74,7 @@ export function OrderDetailDialog({ order, open, loading, onClose }: OrderDetail
                     <ScrollArea className="overflow-y-auto pr-4">
                         <div className="space-y-4">
                             {/* Order Info */}
-                            <div className="grid grid-cols-4 gap-4 p-4 bg-muted/30 rounded-lg">
+                            <div className="grid grid-cols-4 gap-4 p-4 bg-muted dark:bg-muted/40 rounded-lg">
                                 <div>
                                     <p className="text-sm text-muted-foreground">Cliente</p>
                                     <h1 className={cn("font-semibold text-sm mb-1 truncate select-none", order.customer.length < 15 ? "text-xl" : "")} title={order.customer}>
@@ -133,7 +138,7 @@ export function OrderDetailDialog({ order, open, loading, onClose }: OrderDetail
                             {/* Order Items */}
                             <div className="space-y-2">
                                 <h4 className="font-semibold">Prodotti</h4>
-                                <div className="space-y-3 max-h-[340px] overflow-y-auto pr-2">
+                                <div className="space-y-3 max-h-[340px] overflow-y-auto ">
                                     {order.categorizedItems.map((catItem, catIndex) => (
                                         <div key={catIndex}>
                                             <h5 className="text-sm font-semibold text-amber-600 mb-2">
@@ -141,7 +146,7 @@ export function OrderDetailDialog({ order, open, loading, onClose }: OrderDetail
                                             </h5>
                                             <div className="space-y-2">
                                                 {catItem.items.map((item, itemIndex) => (
-                                                    <div key={itemIndex} className="flex items-start justify-between p-2 bg-muted/20 rounded">
+                                                    <div key={itemIndex} className="flex items-start justify-between p-2 bg-muted dark:bg-muted/40 rounded-lg">
                                                         <div className="flex-1">
                                                             <p className="font-medium">{item.food.name}</p>
                                                             {item.notes && (
@@ -172,26 +177,26 @@ export function OrderDetailDialog({ order, open, loading, onClose }: OrderDetail
                                     <div className="items-center space-y-0 text-xs">
                                         <div className="flex items-center justify-between">
                                             <div className="font-semibold">Subtotale:</div>
-                                            <div className="font-bold text-amber-600">
+                                            <div className="font-bold text-muted-foreground">
                                                 {parseFloat(order.subTotal).toFixed(2)} €
                                             </div>
                                         </div>
                                         <div className="flex items-center justify-between">
                                             <div className="font-semibold">Sovrapprezzi:</div>
-                                            <div className="font-bold text-green-600">
+                                            <div className="font-bold text-amber-600 dark:text-amber-500">
                                                 {parseFloat(order.surcharge?.toString() || '0').toFixed(2)} €
                                             </div>
                                         </div>
                                         <div className="flex items-center justify-between">
                                             <div className="font-semibold">Sconto:</div>
-                                            <div className="font-bold text-red-600">
+                                            <div className="font-bold text-green-600 dark:text-green-500">
                                                 {parseFloat(order.discount?.toString() || '0').toFixed(2)} €
                                             </div>
                                         </div>
                                     </div>
                                     <div className="flex items-center justify-between">
                                         <div className="text-2xl font-semibold">Totale:</div>
-                                        <div className="text-2xl font-bold text-amber-600">
+                                        <div className="text-2xl font-bold text-amber-600 dark:text-amber-500">
                                             {parseFloat(order.total).toFixed(2)} €
                                         </div>
                                     </div>
