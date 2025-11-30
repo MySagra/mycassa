@@ -83,14 +83,15 @@ Part of the **MySagra** ecosystem, MyCassa seamlessly integrates with backend se
    
    Update the following variables:
    ```env
-   # API Configuration
-   NEXT_PUBLIC_API_URL=http://localhost:4300
+   # API Configuration (server-side only)
    API_URL=http://mysagra-mysagra-backend-1:4300
    
    # NextAuth Configuration
    AUTH_SECRET=your_secure_random_secret_here
    AUTH_URL=http://localhost:7000
    ```
+   
+   > **Note**: All API calls are made server-side using Server Actions. The `API_URL` environment variable is only accessed server-side.
 
 4. **Run the development server**
    ```bash
@@ -150,7 +151,7 @@ The container connects to the `mysagra_default` network to communicate with the 
 - **[@auth/core](https://authjs.dev/)** - Core authentication library
 
 ### Data Fetching & API
-- **[Axios](https://axios-http.com/)** - HTTP client
+- **[Next.js Server Actions](https://nextjs.org/docs/app/building-your-application/data-fetching/server-actions-and-mutations)** - Server-side data mutations
 - **[@microsoft/fetch-event-source](https://github.com/Azure/fetch-event-source)** - Server-Sent Events support
 
 ### Utilities
@@ -175,9 +176,8 @@ mycassa/
 │   └── ui/               # shadcn/ui components
 ├── actions/              # Server Actions (BFF layer)
 ├── lib/                  # Utility functions and types
-│   ├── api-client.ts     # API client configuration
 │   ├── api-types.ts      # API type definitions
-│   ├── auth.ts           # Authentication configuration
+│   ├── auth.ts           # NextAuth configuration
 │   └── utils.ts          # Helper functions
 ├── hooks/                # Custom React hooks
 ├── types/                # TypeScript type definitions
@@ -199,10 +199,11 @@ mycassa/
 
 | Variable | Description | Example |
 |----------|-------------|---------|
-| `NEXT_PUBLIC_API_URL` | Public API URL (client-side) | `http://localhost:4300` |
-| `API_URL` | Internal API URL (server-side) | `http://mysagra-mysagra-backend-1:4300` |
+| `API_URL` | Backend API URL (server-side only) | `http://mysagra-mysagra-backend-1:4300` |
 | `AUTH_SECRET` | Secret key for NextAuth sessions | Random string (generate with `openssl rand -base64 32`) |
 | `AUTH_URL` | Application URL for auth callbacks | `http://localhost:7000` |
+
+> **Architecture Note**: All API communication is handled server-side through Next.js Server Actions and API Routes. The backend URL is never exposed to the client.
 
 ## 🤝 Contributing
 

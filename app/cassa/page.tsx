@@ -182,12 +182,10 @@ export default function CassaPage() {
         const abortController = new AbortController();
 
         const connectSSE = async () => {
-            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
             try {
-                await fetchEventSource(`${apiUrl}/events/cashier`, {
+                await fetchEventSource(`/api/events/cashier`, {
                     method: 'GET',
                     headers: {
-                        'Authorization': `Bearer ${session.accessToken}`,
                         'Accept': 'text/event-stream',
                     },
                     signal: abortController.signal,
