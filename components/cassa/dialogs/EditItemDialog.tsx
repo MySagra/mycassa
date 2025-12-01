@@ -64,6 +64,7 @@ export function EditItemDialog({ item, open, onClose, onSave }: EditItemDialogPr
                         <div className="flex items-center gap-2">
                             <Button
                                 variant="outline"
+                                className='cursor-pointer'
                                 size="icon"
                                 onClick={() => setEditQuantity(Math.max(1, editQuantity - 1))}
                             >
@@ -83,6 +84,7 @@ export function EditItemDialog({ item, open, onClose, onSave }: EditItemDialogPr
                             <Button
                                 variant="outline"
                                 size="icon"
+                                className='cursor-pointer'
                                 onClick={() => setEditQuantity(Math.min(item.quantity, editQuantity + 1))}
                                 disabled={editQuantity >= item.quantity}
                             >
@@ -111,7 +113,7 @@ export function EditItemDialog({ item, open, onClose, onSave }: EditItemDialogPr
                                                     type="button"
                                                     variant="outline"
                                                     size="icon"
-                                                    className="h-8 w-8"
+                                                    className="h-8 w-8 cursor-pointer"
                                                     onClick={() => updateIngredientQuantity(ingredient.id, -1)}
                                                 >
                                                     <Minus className="h-4 w-4" />
@@ -121,7 +123,7 @@ export function EditItemDialog({ item, open, onClose, onSave }: EditItemDialogPr
                                                     type="button"
                                                     variant="outline"
                                                     size="icon"
-                                                    className="h-8 w-8"
+                                                    className="h-8 w-8 cursor-pointer"
                                                     onClick={() => updateIngredientQuantity(ingredient.id, 1)}
                                                 >
                                                     <Plus className="h-4 w-4" />
@@ -153,12 +155,13 @@ export function EditItemDialog({ item, open, onClose, onSave }: EditItemDialogPr
                 <DialogFooter>
                     <Button
                         variant="outline"
+                        className='cursor-pointer'
                         onClick={onClose}
                     >
                         Annulla
                     </Button>
                     <Button
-                        className="bg-amber-500 hover:bg-amber-600"
+                        className="bg-amber-500 hover:bg-amber-600 cursor-pointer"
                         onClick={handleSave}
                     >
                         Salva

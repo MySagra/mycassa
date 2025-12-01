@@ -32,19 +32,20 @@ export function CassaHeader({ onLogout, onSettingsClick, theme, onThemeToggle, c
                         </div>
                     )}
                     <ButtonGroup>
-                        <Button variant="outline" size="icon" onClick={onSettingsClick}>
+                        <Button variant="outline" className='cursor-pointer' size="icon" onClick={onSettingsClick}>
                             <Settings className="h-5 w-5" />
                         </Button>
                         <Button
                             variant="outline"
+                            className='cursor-pointer'
                             size="icon"
                             onClick={onThemeToggle}
                         >
-                            {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+                            {theme === 'dark' ? <Sun className="h-5 w-5 cursor-pointer" /> : <Moon className="h-5 w-5 cursor-pointer" />}
                         </Button>
                     </ButtonGroup>
 
-                    <Button variant="outline" onClick={onLogout} className="select-none">
+                    <Button variant="outline" onClick={onLogout} className="select-none cursor-pointer">
                         <LogOut className="h-5 w-5" />
                         Logout
                     </Button>

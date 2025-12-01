@@ -31,6 +31,7 @@ export function GeneralSettingsCard({ enableTableInput, onTableInputToggle, isLo
                     </div>
                     <Switch
                         checked={enableTableInput}
+                        className='cursor-pointer'
                         onCheckedChange={onTableInputToggle}
                         disabled={isLoading}
                     />

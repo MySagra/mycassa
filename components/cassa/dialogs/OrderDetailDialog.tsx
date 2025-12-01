@@ -217,6 +217,7 @@ export function OrderDetailDialog({ order, open, loading, onClose }: OrderDetail
                         <div className="flex items-center gap-2">
                             <Button
                                 variant="outline"
+                                className='cursor-pointer'
                                 onClick={() => toast.error('Funzionalità di stampa non ancora implementata')}
                             >
                                 <Printer className="h-4 w-4" />
@@ -224,6 +225,7 @@ export function OrderDetailDialog({ order, open, loading, onClose }: OrderDetail
                             </Button>
                             <Button
                                 variant="outline"
+                                className='cursor-pointer'
                                 onClick={onClose}
                             >
                                 Chiudi

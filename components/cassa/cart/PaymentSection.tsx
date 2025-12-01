@@ -71,7 +71,7 @@ export function PaymentSection({
                 <ButtonGroup className="mt-2 w-full">
                     <Button
                         variant={paymentMethod === 'CASH' ? 'default' : 'outline'}
-                        className="flex-1 select-none"
+                        className="flex-1 select-none cursor-pointer"
                         onClick={() => onUpdatePaymentMethod('CASH')}
                     >
                         <Banknote className="mr-2 h-4 w-4" />
@@ -79,7 +79,7 @@ export function PaymentSection({
                     </Button>
                     <Button
                         variant={paymentMethod === 'CARD' ? 'default' : 'outline'}
-                        className="flex-1 select-none"
+                        className="flex-1 select-none cursor-pointer"
                         onClick={() => onUpdatePaymentMethod('CARD')}
                     >
                         <CreditCard className="mr-2 h-4 w-4" />

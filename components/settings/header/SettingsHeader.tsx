@@ -20,7 +20,7 @@ export function SettingsHeader() {
                 <Button
                     variant="outline"
                     size="lg"
-                    className='select-none'
+                    className='select-none cursor-pointer'
                     onClick={() => router.push('/cassa')}
                 >
                     <ArrowLeft className="mr-2 h-4 w-4" />

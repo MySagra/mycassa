@@ -60,8 +60,8 @@ export function FoodGrid({ foods, categories, selectedCategoryId, onAddToCart, l
                                 className="w-full bg-card rounded-lg border"
                                 defaultValue={categoryName}
                             >
-                                <AccordionItem value={categoryName} className="border-nonel select-none">
-                                    <AccordionTrigger className="px-4 py-3 hover:no-underline">
+                                <AccordionItem value={categoryName} className="border-none select-none">
+                                    <AccordionTrigger className="px-4 py-3 cursor-pointer hover:no-underline">
                                         <h2 className="text-xl font-semibold">{categoryName.toUpperCase()}</h2>
                                     </AccordionTrigger>
                                     <AccordionContent className="px-4 pb-4">

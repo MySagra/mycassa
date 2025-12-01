@@ -89,7 +89,7 @@ export function CartSidebar({
                 <Button
                     variant={showDailyOrders ? 'default' : 'outline'}
                     onClick={onToggleDailyOrders}
-                    className='select-none'
+                    className='select-none cursor-pointer'
                 >
                     Ordini Giornalieri
                 </Button>
@@ -158,7 +158,7 @@ export function CartSidebar({
                     onClick={() => setOpenClearDialog(true)}
                     aria-label="Svuota carrello"
                     title="Svuota carrello"
-                    className="h-10 w-10 disabled:cursor-not-allowed"
+                    className="h-10 w-10 disabled:cursor-not-allowed cursor-pointer"
                     disabled={cart.length === 0}
                 >
                     <Trash2 className="h-4 w-4 text-white" />
@@ -189,7 +189,7 @@ export function CartSidebar({
                         <TooltipTrigger asChild>
                             <div className="flex-1">
                                 <Button
-                                    className="w-full bg-amber-500 text-lg font-semibold hover:bg-amber-600 select-none"
+                                    className="w-full bg-amber-500 text-lg font-semibold hover:bg-amber-600 select-none cursor-pointer"
                                     size="lg"
                                     onClick={onConfirmOrder}
                                     disabled={cart.length === 0 || !customer || (enableTableInput && !table)}
@@ -213,7 +213,7 @@ export function CartSidebar({
                 <Button
                     variant="secondary"
                     size="icon"
-                    className="h-10 w-10 disabled:cursor-not-allowed"
+                    className="h-10 w-10 disabled:cursor-not-allowed cursor-pointer"
                     onClick={onOpenDiscount}
                     aria-label="Applica sconto"
                     title="Applica sconto"

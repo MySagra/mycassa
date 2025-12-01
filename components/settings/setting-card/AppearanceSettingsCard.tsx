@@ -32,7 +32,7 @@ export function AppearanceSettingsCard({ theme, setTheme }: AppearanceSettingsCa
                         <Button
                             variant={theme === 'light' ? 'default' : 'outline'}
                             size="sm"
-                            className='select-none'
+                            className='select-none cursor-pointer'
                             onClick={() => setTheme('light')}
                         >
                             <Sun className="h-4 w-4 mr-2" />
@@ -41,7 +41,7 @@ export function AppearanceSettingsCard({ theme, setTheme }: AppearanceSettingsCa
                         <Button
                             variant={theme === 'dark' ? 'default' : 'outline'}
                             size="sm"
-                            className='select-none'
+                            className='select-none cursor-pointer'
                             onClick={() => setTheme('dark')}
                         >
                             <Moon className="h-4 w-4 mr-2" />

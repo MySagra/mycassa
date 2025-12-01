@@ -107,6 +107,7 @@ export function DiscountDialog({ open, currentDiscount, onClose, onApply, onRemo
                 <DialogFooter>
                     <Button
                         variant="outline"
+                        className='cursor-pointer'
                         onClick={() => {
                             onClose();
                             setDiscountAmount('');
@@ -117,12 +118,13 @@ export function DiscountDialog({ open, currentDiscount, onClose, onApply, onRemo
                     </Button>
                     <Button
                         variant="destructive"
+                        className='cursor-pointer'
                         onClick={handleRemove}
                     >
                         Rimuovi Sconto
                     </Button>
                     <Button
-                        className="bg-amber-500 hover:bg-amber-600"
+                        className="bg-amber-500 hover:bg-amber-600 cursor-pointer"
                         onClick={handleApply}
                     >
                         Applica

@@ -48,7 +48,7 @@ export function OrderForm({
                             }
                         }}
                     />
-                    <Button onClick={onLoadOrder} disabled={loadingOrder}>
+                    <Button onClick={onLoadOrder} className="cursor-pointer" disabled={loadingOrder}>
                         <Search className="h-4 w-4" />
                     </Button>
                 </div>

@@ -78,7 +78,7 @@ export function DailyOrderCard({ order, onViewDetail, onLoadToCart, searchQuery 
                     <Button
                         variant="outline"
                         size="sm"
-                        className="flex-1 select-none"
+                        className="flex-1 select-none cursor-pointer"
                         onClick={onViewDetail}
                     >
                         <Eye className="mr-2 h-4 w-4" />
@@ -87,7 +87,7 @@ export function DailyOrderCard({ order, onViewDetail, onLoadToCart, searchQuery 
                     <Button
                         variant="default"
                         size="sm"
-                        className="flex-1 select-none"
+                        className="flex-1 select-none cursor-pointer"
                         onClick={onLoadToCart}
                         disabled={!isPending}
                         title={!isPending ? 'Solo gli ordini in attesa possono essere caricati' : ''}

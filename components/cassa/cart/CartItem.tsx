@@ -46,7 +46,7 @@ export function CartItem({ item, onUpdateQuantity, onRemove, onEdit }: CartItemP
                     <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8"
+                        className="h-8 w-8 cursor-pointer"
                         onClick={onEdit}
                     >
                         <Pencil className="h-4 w-4" />
@@ -54,7 +54,7 @@ export function CartItem({ item, onUpdateQuantity, onRemove, onEdit }: CartItemP
                     <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8 text-destructive"
+                        className="h-8 w-8 text-destructive cursor-pointer"
                         onClick={onRemove}
                     >
                         <X className="h-4 w-4" />
@@ -66,7 +66,7 @@ export function CartItem({ item, onUpdateQuantity, onRemove, onEdit }: CartItemP
                     <Button
                         variant="outline"
                         size="icon"
-                        className="h-8 w-8"
+                        className="h-8 w-8 cursor-pointer"
                         onClick={() => onUpdateQuantity(-1)}
                     >
                         <Minus className="h-4 w-4" />
@@ -75,7 +75,7 @@ export function CartItem({ item, onUpdateQuantity, onRemove, onEdit }: CartItemP
                     <Button
                         variant="outline"
                         size="icon"
-                        className="h-8 w-8"
+                        className="h-8 w-8 cursor-pointer"
                         onClick={() => onUpdateQuantity(1)}
                     >
                         <Plus className="h-4 w-4" />
