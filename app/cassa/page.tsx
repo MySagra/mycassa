@@ -170,13 +170,17 @@ export default function CassaPage() {
     // SSE connection - Always connected when authenticated
     useEffect(() => {
         if (!session?.accessToken) {
+            console.log('[SSE] No access token, skipping connection');
             return;
         }
 
         // Prevent multiple connections
         if (sseConnectionRef.current) {
+            console.log('[SSE] Connection already exists, skipping');
             return;
         }
+        
+        console.log('[SSE] Initializing SSE connection...');
         sseConnectionRef.current = true;
 
         const abortController = new AbortController();
@@ -189,15 +193,20 @@ export default function CassaPage() {
                         'Accept': 'text/event-stream',
                     },
                     signal: abortController.signal,
+                    
+                    // Automatic retry configuration
+                    openWhenHidden: true,
 
                     async onopen(response) {
                         if (response.ok) {
+                            console.log('[SSE] Connessione stabilita con successo');
 
-                            // Fetch initial daily orders when SSE connection is established
+                            // Fetch initial daily orders when SSE connection is established or reopened
                             try {
                                 const result = await getTodayOrders();
                                 if (result.success) {
                                     setDailyOrders(result.data);
+                                    console.log('[SSE] Ordini caricati:', result.data.length);
                                 } else {
                                     console.error('[SSE] Errore caricamento ordini iniziali:', result.error);
                                 }
@@ -206,7 +215,7 @@ export default function CassaPage() {
                             }
                         } else {
                             console.error(`[SSE] Errore di connessione: Status ${response.status}`);
-                            abortController.abort();
+                            throw new Error(`SSE connection failed with status ${response.status}`);
                         }
                     },
 
@@ -251,9 +260,9 @@ export default function CassaPage() {
                         // Handle confirmed-order event
                         else if (event.event === 'confirmed-order') {
                             try {
-                                const { orderId, displayCode } = JSON.parse(event.data);
+                                const { id, displayCode } = JSON.parse(event.data);
                                 setDailyOrders((prevOrders) => {
-                                    return prevOrders.filter(o => o.id !== orderId);
+                                    return prevOrders.filter(o => o.id !== id);
                                 });
 
                                 toast.info(`Ordine confermato ${displayCode}`);
@@ -352,6 +361,7 @@ export default function CassaPage() {
                     },
 
                     onclose() {
+                        console.log('[SSE] Connessione chiusa');
                         sseConnectionRef.current = false;
                     },
 
@@ -362,19 +372,24 @@ export default function CassaPage() {
                             toast.error("Token scaduto");
                         }
                         sseConnectionRef.current = false;
+                        // Throw error to trigger retry
+                        throw err;
                     }
                 });
             } catch (err: any) {
                 if (err.name === 'AbortError' || err.message === 'BodyStreamBuffer was aborted') {
+                    console.log('[SSE] Connessione abortita intenzionalmente');
                     return;
                 }
                 console.error('[SSE] Errore connessione:', err);
+                sseConnectionRef.current = false;
             }
         };
 
         connectSSE();
 
         return () => {
+            console.log('[SSE] Cleanup: chiusura connessione');
             abortController.abort();
             sseConnectionRef.current = false;
         };
