@@ -11,7 +11,7 @@ interface CategorySidebarProps {
 
 export function CategorySidebar({ categories, selectedCategoryId, onSelectCategory, loading }: CategorySidebarProps) {
     return (
-        <aside className="w-64 border-r bg-card">
+        <aside className="w-64 border-r bg-card hidden xl:block">
             <div className="p-2">
                 <Button
                     variant={selectedCategoryId === null ? 'default' : 'outline'}
