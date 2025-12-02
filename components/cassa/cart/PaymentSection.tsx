@@ -114,7 +114,7 @@ export function PaymentSection({
                                         }}
                                         className={`text-right pr-8 ${validationErrors.paidAmount ? 'border-red-500' : ''}`}
                                     />
-                                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground select-none">
                                         €
                                     </span>
                                 </div>

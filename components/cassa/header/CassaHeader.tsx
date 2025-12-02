@@ -27,7 +27,7 @@ export function CassaHeader({ onLogout, onSettingsClick, theme, onThemeToggle, c
                 <div className="flex items-center gap-2">
                     {cashRegisterName && (
                         <div className="flex items-center gap-2 ml-2">
-                            <span className="text-sm font-medium text-muted-foreground bg-muted px-3 py-1 rounded-full">
+                            <span className="text-sm font-medium text-muted-foreground bg-muted px-3 py-1 rounded-full select-none">
                                 {cashRegisterName}
                             </span>
                         </div>

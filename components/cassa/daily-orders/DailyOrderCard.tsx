@@ -57,7 +57,7 @@ export function DailyOrderCard({ order, onViewDetail, onLoadToCart, searchQuery 
     return (
         <Card ref={cardRef} className="border hover:border-amber-500 transition-all duration-300">
             <CardContent className="space-y-3">
-                <div className="flex items-start justify-between">
+                <div className="flex items-start justify-between select-none">
                     <div className="space-y-1">
                         <div className="flex items-center gap-2">
                             <span

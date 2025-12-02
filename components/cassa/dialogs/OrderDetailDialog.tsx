@@ -56,7 +56,7 @@ export function OrderDetailDialog({ order, open, loading, onClose }: OrderDetail
     }, [order]);
     return (
         <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
-            <DialogContent className="sm:max-w-[600px] max-h-[90vh] flex flex-col">
+            <DialogContent className="sm:max-w-[600px] max-h-[90vh] flex flex-col select-none">
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
                         <FileText className="h-5 w-5" />

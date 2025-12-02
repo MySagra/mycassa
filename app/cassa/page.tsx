@@ -32,6 +32,7 @@ export default function CassaPage() {
     const sseConnectionRef = useRef(false);
     const lastEventRef = useRef<string | null>(null);
     const showAllOrdersRef = useRef<boolean>(false);
+    const dailyOrdersRef = useRef<DailyOrder[]>([]);
     const isAuthenticated = status === 'authenticated';
     const isLoading = status === 'loading';
     const [categories, setCategories] = useState<Category[]>([]);
@@ -63,9 +64,11 @@ export default function CassaPage() {
     const [showAllOrders, setShowAllOrders] = useState(false);
 
     // Keep ref in sync with state
+    // Keep ref in sync with state
     useEffect(() => {
         showAllOrdersRef.current = showAllOrders;
-    }, [showAllOrders]);
+        dailyOrdersRef.current = dailyOrders;
+    }, [showAllOrders, dailyOrders]);
 
     // Load enableTableInput from localStorage on mount
     useEffect(() => {
@@ -211,7 +214,7 @@ export default function CassaPage() {
 
                             // Fetch initial daily orders when SSE connection is established or reopened
                             try {
-                                const result = await getTodayOrders();
+                                const result = showAllOrdersRef.current ? await getAllTodayOrders() : await getTodayOrders();
                                 if (result.success) {
                                     setDailyOrders(result.data);
                                     console.log('[SSE] Ordini caricati:', result.data.length);
@@ -266,17 +269,42 @@ export default function CassaPage() {
                             }
                         }
                         // Handle confirmed-order event
+                        // Handle confirmed-order event
                         else if (event.event === 'confirmed-order') {
                             try {
                                 const { id, displayCode } = JSON.parse(event.data);
 
                                 // If showing all orders, update the order status instead of removing
                                 if (showAllOrdersRef.current) {
-                                    setDailyOrders((prevOrders) => {
-                                        return prevOrders.map(o =>
-                                            o.id === id ? { ...o, status: 'CONFIRMED' } : o
-                                        );
-                                    });
+                                    const orderExists = dailyOrdersRef.current.some(o => o.id === id);
+
+                                    if (orderExists) {
+                                        setDailyOrders((prevOrders) => {
+                                            return prevOrders.map(o =>
+                                                o.id === id ? { ...o, status: 'CONFIRMED' } : o
+                                            );
+                                        });
+                                    } else {
+                                        // If order doesn't exist, fetch and add it
+                                        try {
+                                            const result = await getOrderByOrderId(id);
+                                            if (result.success) {
+                                                const newOrder = result.data;
+                                                const dailyOrder: DailyOrder = {
+                                                    id: parseInt(newOrder.id),
+                                                    displayCode: newOrder.displayCode,
+                                                    table: newOrder.table,
+                                                    customer: newOrder.customer,
+                                                    createdAt: newOrder.createdAt,
+                                                    subTotal: newOrder.subTotal,
+                                                    status: 'CONFIRMED'
+                                                };
+                                                setDailyOrders(prev => [dailyOrder, ...prev]);
+                                            }
+                                        } catch (error) {
+                                            console.error('[SSE] Error fetching new confirmed order:', error);
+                                        }
+                                    }
                                 } else {
                                     // Only remove from list if showing pending orders only
                                     setDailyOrders((prevOrders) => {
