@@ -140,6 +140,53 @@ export async function getTodayOrders() {
 }
 
 /**
+ * Get all today's orders (regardless of status)
+ */
+export async function getAllTodayOrders() {
+  const session = await auth();
+
+  if (!session?.accessToken) {
+    return { success: false, error: 'Non autenticato' };
+  }
+
+  try {
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(today.getDate() + 1);
+
+    const dateFrom = `${today.toISOString().split('T')[0]}T07%3A59%3A00Z`;
+    const dateTo = `${tomorrow.toISOString().split('T')[0]}T08%3A00%3A00Z`;
+
+    const response = await fetch(`${process.env.API_URL}/v1/orders?page=1&limit=20&sortBy=createdAt&dateFrom=${dateFrom}&dateTo=${dateTo}`, {
+      headers: {
+        'Authorization': `Bearer ${session.accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      cache: 'no-store',
+    });
+
+    if (response.status === 401 || response.status === 403) {
+      await signOut({ redirectTo: '/login' });
+    }
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      return { success: false, error: errorData.message || 'Impossibile caricare tutti gli ordini di oggi' };
+    }
+
+    const orders = (await response.json()).data;
+    return { success: true, data: orders };
+  } catch (error: any) {
+    if (isRedirectError(error)) {
+      throw error;
+    }
+    console.error('getAllTodayOrders error:', error);
+    return { success: false, error: error.message || 'Errore sconosciuto' };
+  }
+}
+
+
+/**
  * Get order by display code
  */
 export async function getOrderByCode(code: string) {
@@ -289,6 +336,57 @@ export async function searchDailyOrders(searchValue: string) {
     return { success: false, error: error.message || 'Errore sconosciuto' };
   }
 }
+
+/**
+ * Search all orders by value (tavolo, cliente, o id) - regardless of status
+ */
+export async function searchAllDailyOrders(searchValue: string) {
+  const session = await auth();
+
+  if (!session?.accessToken) {
+    return { success: false, error: 'Non autenticato' };
+  }
+
+  if (!searchValue || typeof searchValue !== 'string') {
+    return { success: false, error: 'Valore di ricerca non valido' };
+  }
+
+  const today = new Date();
+  const tomorrow = new Date(today);
+  tomorrow.setDate(today.getDate() + 1);
+
+  const dateFrom = `${today.toISOString().split('T')[0]}T07%3A59%3A00Z`;
+  const dateTo = `${tomorrow.toISOString().split('T')[0]}T08%3A00%3A00Z`;
+
+  try {
+    const response = await fetch(`${process.env.API_URL}/v1/orders?search=${searchValue}&page=1&limit=20&sortBy=createdAt&dateFrom=${dateFrom}&dateTo=${dateTo}`, {
+      headers: {
+        'Authorization': `Bearer ${session.accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      cache: 'no-store',
+    });
+
+    if (response.status === 401 || response.status === 403) {
+      await signOut({ redirectTo: '/login' });
+    }
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      return { success: false, error: errorData.message || 'Errore nella ricerca di tutti gli ordini' };
+    }
+
+    const data = (await response.json()).data;
+    return { success: true, data };
+  } catch (error: any) {
+    if (isRedirectError(error)) {
+      throw error;
+    }
+    console.error('searchAllDailyOrders error:', error);
+    return { success: false, error: error.message || 'Errore sconosciuto' };
+  }
+}
+
 
 /**
  * Create a new order

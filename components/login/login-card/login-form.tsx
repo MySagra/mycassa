@@ -107,7 +107,7 @@ export function LoginForm() {
                                         render={({ field }) => (
                                             <FormItem>
                                                 <FormControl>
-                                                    <Input autoComplete="off" placeholder="Your password" type="password" {...field} />
+                                                    <Input autoComplete="off" placeholder="La tua password" type="password" {...field} />
                                                 </FormControl>
                                             </FormItem>
                                         )}

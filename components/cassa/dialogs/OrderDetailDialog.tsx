@@ -172,7 +172,7 @@ export function OrderDetailDialog({ order, open, loading, onClose }: OrderDetail
                             </div>
 
                             {/* Total */}
-                            <div className="p-3 bg-amber-500/10 rounded-lg border border-amber-500/20">
+                            <div className="p-3 bg-amber-500/20 rounded-lg border border-amber-500/20">
                                 <div>
                                     <div className="items-center space-y-0 text-xs">
                                         <div className="flex items-center justify-between">

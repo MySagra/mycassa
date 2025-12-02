@@ -1,3 +1,4 @@
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { ButtonGroup } from '@/components/ui/button-group';
 import { Settings, Moon, Sun, LogOut } from 'lucide-react';
@@ -45,10 +46,29 @@ export function CassaHeader({ onLogout, onSettingsClick, theme, onThemeToggle, c
                         </Button>
                     </ButtonGroup>
 
-                    <Button variant="outline" onClick={onLogout} className="select-none cursor-pointer">
-                        <LogOut className="h-5 w-5" />
-                        Logout
-                    </Button>
+                    <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                            <Button variant="outline" className="select-none cursor-pointer">
+                                <LogOut className="h-5 w-5" />
+                                Logout
+                            </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>Vuoi effettuare il logout?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    Ritornerai alla pagina di login
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel className="cursor-pointer">Annulla</AlertDialogCancel>
+                                <AlertDialogAction onClick={onLogout} className="bg-destructive text-destructive-foreground hover:bg-destructive/90 cursor-pointer">
+                                    <LogOut className="h-5 w-5" />
+                                    Logout
+                                </AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
                 </div>
             </div>
         </header>

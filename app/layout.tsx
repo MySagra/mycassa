@@ -27,7 +27,7 @@ export default function RootLayout({
       >
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
+          defaultTheme="dark"
           enableSystem
           disableTransitionOnChange
         >
@@ -36,6 +36,7 @@ export default function RootLayout({
           </SessionProvider>
           <Toaster
             position="top-center"
+            offset="6px"
           />
         </ThemeProvider>
       </body>
