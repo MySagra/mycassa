@@ -56,7 +56,7 @@ export function OrderDetailDialog({ order, open, loading, onClose }: OrderDetail
     }, [order]);
     return (
         <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
-            <DialogContent className="sm:max-w-[600px] max-h-[90vh] flex flex-col">
+            <DialogContent className="sm:max-w-[600px] max-h-[90vh] flex flex-col select-none">
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
                         <FileText className="h-5 w-5" />
@@ -172,7 +172,7 @@ export function OrderDetailDialog({ order, open, loading, onClose }: OrderDetail
                             </div>
 
                             {/* Total */}
-                            <div className="p-3 bg-amber-500/10 rounded-lg border border-amber-500/20">
+                            <div className="p-3 bg-amber-500/20 rounded-lg border border-amber-500/20">
                                 <div>
                                     <div className="items-center space-y-0 text-xs">
                                         <div className="flex items-center justify-between">
@@ -217,6 +217,7 @@ export function OrderDetailDialog({ order, open, loading, onClose }: OrderDetail
                         <div className="flex items-center gap-2">
                             <Button
                                 variant="outline"
+                                className='cursor-pointer'
                                 onClick={() => toast.error('Funzionalità di stampa non ancora implementata')}
                             >
                                 <Printer className="h-4 w-4" />
@@ -224,6 +225,7 @@ export function OrderDetailDialog({ order, open, loading, onClose }: OrderDetail
                             </Button>
                             <Button
                                 variant="outline"
+                                className='cursor-pointer'
                                 onClick={onClose}
                             >
                                 Chiudi

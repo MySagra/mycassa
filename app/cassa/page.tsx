@@ -6,7 +6,7 @@ import { useSession } from 'next-auth/react';
 import { useTheme } from 'next-themes';
 import { fetchEventSource } from '@microsoft/fetch-event-source';
 import { toast } from 'sonner';
-import { getCategories, getOrderByOrderId, confirmOrder as confirmOrderAction, createOrder, getTodayOrders, getFoodById, searchDailyOrders, getOrderByCode, getCashRegisters } from '@/actions/cassa';
+import { getCategories, getOrderByOrderId, confirmOrder as confirmOrderAction, createOrder, getTodayOrders, getAllTodayOrders, getFoodById, searchDailyOrders, searchAllDailyOrders, getOrderByCode, getCashRegisters } from '@/actions/cassa';
 import { logout as logoutAction } from '@/actions/auth';
 import { Category, Food, PaymentMethod, OrderDetailResponse, ExtendedCartItem } from '@/lib/api-types';
 import { DailyOrder } from '@/lib/cassa/types';
@@ -31,6 +31,8 @@ export default function CassaPage() {
     const cartScrollRef = useRef<HTMLDivElement>(null);
     const sseConnectionRef = useRef(false);
     const lastEventRef = useRef<string | null>(null);
+    const showAllOrdersRef = useRef<boolean>(false);
+    const dailyOrdersRef = useRef<DailyOrder[]>([]);
     const isAuthenticated = status === 'authenticated';
     const isLoading = status === 'loading';
     const [categories, setCategories] = useState<Category[]>([]);
@@ -58,6 +60,15 @@ export default function CassaPage() {
     const [loadingOrderDetail, setLoadingOrderDetail] = useState(false);
     const [cashRegisterName, setCashRegisterName] = useState<string>('');
     const [showConfigDialog, setShowConfigDialog] = useState(false);
+    const [loadingConfirmOrder, setLoadingConfirmOrder] = useState(false);
+    const [showAllOrders, setShowAllOrders] = useState(false);
+
+    // Keep ref in sync with state
+    // Keep ref in sync with state
+    useEffect(() => {
+        showAllOrdersRef.current = showAllOrders;
+        dailyOrdersRef.current = dailyOrders;
+    }, [showAllOrders, dailyOrders]);
 
     // Load enableTableInput from localStorage on mount
     useEffect(() => {
@@ -170,36 +181,43 @@ export default function CassaPage() {
     // SSE connection - Always connected when authenticated
     useEffect(() => {
         if (!session?.accessToken) {
+            console.log('[SSE] No access token, skipping connection');
             return;
         }
 
         // Prevent multiple connections
         if (sseConnectionRef.current) {
+            console.log('[SSE] Connection already exists, skipping');
             return;
         }
+
+        console.log('[SSE] Initializing SSE connection...');
         sseConnectionRef.current = true;
 
         const abortController = new AbortController();
 
         const connectSSE = async () => {
-            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
             try {
-                await fetchEventSource(`${apiUrl}/events/cashier`, {
+                await fetchEventSource(`/api/events/cashier`, {
                     method: 'GET',
                     headers: {
-                        'Authorization': `Bearer ${session.accessToken}`,
                         'Accept': 'text/event-stream',
                     },
                     signal: abortController.signal,
 
+                    // Automatic retry configuration
+                    openWhenHidden: true,
+
                     async onopen(response) {
                         if (response.ok) {
+                            console.log('[SSE] Connessione stabilita con successo');
 
-                            // Fetch initial daily orders when SSE connection is established
+                            // Fetch initial daily orders when SSE connection is established or reopened
                             try {
-                                const result = await getTodayOrders();
+                                const result = showAllOrdersRef.current ? await getAllTodayOrders() : await getTodayOrders();
                                 if (result.success) {
                                     setDailyOrders(result.data);
+                                    console.log('[SSE] Ordini caricati:', result.data.length);
                                 } else {
                                     console.error('[SSE] Errore caricamento ordini iniziali:', result.error);
                                 }
@@ -208,7 +226,7 @@ export default function CassaPage() {
                             }
                         } else {
                             console.error(`[SSE] Errore di connessione: Status ${response.status}`);
-                            abortController.abort();
+                            throw new Error(`SSE connection failed with status ${response.status}`);
                         }
                     },
 
@@ -251,12 +269,48 @@ export default function CassaPage() {
                             }
                         }
                         // Handle confirmed-order event
+                        // Handle confirmed-order event
                         else if (event.event === 'confirmed-order') {
                             try {
-                                const { orderId, displayCode } = JSON.parse(event.data);
-                                setDailyOrders((prevOrders) => {
-                                    return prevOrders.filter(o => o.id !== orderId);
-                                });
+                                const { id, displayCode } = JSON.parse(event.data);
+
+                                // If showing all orders, update the order status instead of removing
+                                if (showAllOrdersRef.current) {
+                                    const orderExists = dailyOrdersRef.current.some(o => o.id === id);
+
+                                    if (orderExists) {
+                                        setDailyOrders((prevOrders) => {
+                                            return prevOrders.map(o =>
+                                                o.id === id ? { ...o, status: 'CONFIRMED' } : o
+                                            );
+                                        });
+                                    } else {
+                                        // If order doesn't exist, fetch and add it
+                                        try {
+                                            const result = await getOrderByOrderId(id);
+                                            if (result.success) {
+                                                const newOrder = result.data;
+                                                const dailyOrder: DailyOrder = {
+                                                    id: parseInt(newOrder.id),
+                                                    displayCode: newOrder.displayCode,
+                                                    table: newOrder.table,
+                                                    customer: newOrder.customer,
+                                                    createdAt: newOrder.createdAt,
+                                                    subTotal: newOrder.subTotal,
+                                                    status: 'CONFIRMED'
+                                                };
+                                                setDailyOrders(prev => [dailyOrder, ...prev]);
+                                            }
+                                        } catch (error) {
+                                            console.error('[SSE] Error fetching new confirmed order:', error);
+                                        }
+                                    }
+                                } else {
+                                    // Only remove from list if showing pending orders only
+                                    setDailyOrders((prevOrders) => {
+                                        return prevOrders.filter(o => o.id !== id);
+                                    });
+                                }
 
                                 toast.info(`Ordine confermato ${displayCode}`);
                             } catch (error) {
@@ -354,6 +408,7 @@ export default function CassaPage() {
                     },
 
                     onclose() {
+                        console.log('[SSE] Connessione chiusa');
                         sseConnectionRef.current = false;
                     },
 
@@ -364,19 +419,24 @@ export default function CassaPage() {
                             toast.error("Token scaduto");
                         }
                         sseConnectionRef.current = false;
+                        // Throw error to trigger retry
+                        throw err;
                     }
                 });
             } catch (err: any) {
                 if (err.name === 'AbortError' || err.message === 'BodyStreamBuffer was aborted') {
+                    console.log('[SSE] Connessione abortita intenzionalmente');
                     return;
                 }
                 console.error('[SSE] Errore connessione:', err);
+                sseConnectionRef.current = false;
             }
         };
 
         connectSSE();
 
         return () => {
+            console.log('[SSE] Cleanup: chiusura connessione');
             abortController.abort();
             sseConnectionRef.current = false;
         };
@@ -392,7 +452,7 @@ export default function CassaPage() {
         const loadInitialOrders = async () => {
             setLoadingDailyOrders(true);
             try {
-                const result = await getTodayOrders();
+                const result = showAllOrders ? await getAllTodayOrders() : await getTodayOrders();
                 if (result.success) {
                     setDailyOrders(result.data);
                 } else {
@@ -407,7 +467,7 @@ export default function CassaPage() {
         };
 
         loadInitialOrders();
-    }, [session?.accessToken, showDailyOrders]);
+    }, [session?.accessToken, showDailyOrders, showAllOrders]);
 
     // Search daily orders based on query
     useEffect(() => {
@@ -419,7 +479,7 @@ export default function CassaPage() {
         if (!searchQuery.trim()) {
             const loadInitialOrders = async () => {
                 try {
-                    const result = await getTodayOrders();
+                    const result = showAllOrders ? await getAllTodayOrders() : await getTodayOrders();
                     if (result.success) {
                         setDailyOrders(result.data);
                     }
@@ -435,7 +495,7 @@ export default function CassaPage() {
         // Search with query
         const searchOrders = async () => {
             try {
-                const result = await searchDailyOrders(searchQuery);
+                const result = showAllOrders ? await searchAllDailyOrders(searchQuery) : await searchDailyOrders(searchQuery);
                 if (result.success) {
                     setDailyOrders(result.data);
                 } else {
@@ -452,7 +512,7 @@ export default function CassaPage() {
         }, 300); // Debounce 300ms
 
         return () => clearTimeout(debounceTimer);
-    }, [session?.accessToken, showDailyOrders, searchQuery]);
+    }, [session?.accessToken, showDailyOrders, searchQuery, showAllOrders]);
 
     // Cart operations
     const addToCart = (food: Food) => {
@@ -689,6 +749,14 @@ export default function CassaPage() {
 
     // Confirm order
     const confirmOrder = async () => {
+        // Validate cash register is selected
+        const selectedCashRegister = localStorage.getItem('selectedCashRegister');
+        if (!selectedCashRegister) {
+            toast.error('Devi selezionare una cassa prima di confermare l\'ordine');
+            setShowConfigDialog(true);
+            return;
+        }
+
         // Validate customer
         const customerValidation = orderSchema.shape.customer.safeParse(customer);
 
@@ -729,6 +797,7 @@ export default function CassaPage() {
             return;
         }
 
+        setLoadingConfirmOrder(true);
         try {
             // Merge cart items with same foodId and notes
             const mergedOrderItems = mergeCartItems(cart);
@@ -763,8 +832,18 @@ export default function CassaPage() {
                     return;
                 }
 
-                // Remove the confirmed order from daily orders list
-                setDailyOrders((prevOrders) => prevOrders.filter(o => o.id !== orderId));
+                // Update or remove the confirmed order from daily orders list
+                if (showAllOrders) {
+                    // Update the order status to CONFIRMED
+                    setDailyOrders((prevOrders) =>
+                        prevOrders.map(o =>
+                            o.id === orderId ? { ...o, status: 'CONFIRMED' } : o
+                        )
+                    );
+                } else {
+                    // Remove the order from list if showing pending orders only
+                    setDailyOrders((prevOrders) => prevOrders.filter(o => o.id !== orderId));
+                }
             } else {
                 // Create new order with confirmation details
                 const createResult = await createOrder({
@@ -790,6 +869,8 @@ export default function CassaPage() {
         } catch (error: any) {
             console.error('Error confirming order:', error);
             toast.error(error.message || 'Impossibile confermare l\'ordine');
+        } finally {
+            setLoadingConfirmOrder(false);
         }
     };
 
@@ -843,6 +924,7 @@ export default function CassaPage() {
                             selectedCategoryId={selectedCategoryId}
                             onAddToCart={addToCart}
                             loading={loadingFoods}
+                            showDailyOrders={showDailyOrders}
                         />
                     </main>
 
@@ -877,6 +959,7 @@ export default function CassaPage() {
                         onEditItem={setEditingItem}
                         onClearCart={clearCart}
                         onConfirmOrder={confirmOrder}
+                        loadingConfirmOrder={loadingConfirmOrder}
                         onOpenDiscount={() => setOpenDiscountDialog(true)}
                         onUpdatePaymentMethod={setPaymentMethod}
                         onUpdatePaidAmount={(value) => {
@@ -894,9 +977,11 @@ export default function CassaPage() {
                             orders={dailyOrders}
                             searchQuery={searchQuery}
                             loading={loadingDailyOrders}
+                            showAllOrders={showAllOrders}
                             onSearchChange={setSearchQuery}
                             onViewDetail={viewOrderDetail}
                             onLoadToCart={loadOrderToCart}
+                            onToggleAllOrders={() => setShowAllOrders(!showAllOrders)}
                         />
                     )}
                 </div>

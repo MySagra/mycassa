@@ -11,11 +11,11 @@ interface CategorySidebarProps {
 
 export function CategorySidebar({ categories, selectedCategoryId, onSelectCategory, loading }: CategorySidebarProps) {
     return (
-        <aside className="w-64 border-r bg-card">
+        <aside className="w-64 border-r bg-card hidden xl:block">
             <div className="p-2">
                 <Button
                     variant={selectedCategoryId === null ? 'default' : 'outline'}
-                    className="w-full justify-start h-20"
+                    className="w-full justify-start h-20 cursor-pointer"
                     onClick={() => onSelectCategory(null)}
                 >
                     <div className='text-lg select-none'>
@@ -35,7 +35,7 @@ export function CategorySidebar({ categories, selectedCategoryId, onSelectCatego
                             <Button
                                 key={category.id}
                                 variant={selectedCategoryId === category.id ? 'default' : 'outline'}
-                                className="w-full justify-start select-none"
+                                className="w-full justify-start cursor-pointer select-none"
                                 onClick={() => onSelectCategory(category.id)}
                             >
                                 {category.name}

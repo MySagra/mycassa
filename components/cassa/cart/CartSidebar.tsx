@@ -34,6 +34,7 @@ interface CartSidebarProps {
     onEditItem: (item: ExtendedCartItem) => void;
     onClearCart: () => void;
     onConfirmOrder: () => void;
+    loadingConfirmOrder: boolean;
     onOpenDiscount: () => void;
     onUpdatePaymentMethod: (method: PaymentMethod) => void;
     onUpdatePaidAmount: (value: string) => void;
@@ -66,6 +67,7 @@ export function CartSidebar({
     onEditItem,
     onClearCart,
     onConfirmOrder,
+    loadingConfirmOrder,
     onOpenDiscount,
     onUpdatePaymentMethod,
     onUpdatePaidAmount,
@@ -89,7 +91,7 @@ export function CartSidebar({
                 <Button
                     variant={showDailyOrders ? 'default' : 'outline'}
                     onClick={onToggleDailyOrders}
-                    className='select-none'
+                    className='select-none cursor-pointer'
                 >
                     Ordini Giornalieri
                 </Button>
@@ -110,7 +112,7 @@ export function CartSidebar({
 
             {/* Cart Items */}
             <div className="flex-1 border-y overflow-hidden">
-                <ScrollArea className="h-full" ref={cartScrollRef}>
+                <ScrollArea className="h-full bg-background/60" ref={cartScrollRef}>
                     <div className="p-4">
                         {cart.length === 0 ? (
                             <div>
@@ -158,7 +160,7 @@ export function CartSidebar({
                     onClick={() => setOpenClearDialog(true)}
                     aria-label="Svuota carrello"
                     title="Svuota carrello"
-                    className="h-10 w-10 disabled:cursor-not-allowed"
+                    className="h-10 w-10 disabled:cursor-not-allowed cursor-pointer"
                     disabled={cart.length === 0}
                 >
                     <Trash2 className="h-4 w-4 text-white" />
@@ -175,7 +177,7 @@ export function CartSidebar({
                         <AlertDialogFooter>
                             <AlertDialogCancel>Annulla</AlertDialogCancel>
                             <AlertDialogAction
-                                className="bg-red-600 text-white hover:bg-red-700"
+                                className="bg-destructive text-white hover:bg-destructive/80"
                                 onClick={handleClearCart}
                             >
                                 Svuota
@@ -189,12 +191,19 @@ export function CartSidebar({
                         <TooltipTrigger asChild>
                             <div className="flex-1">
                                 <Button
-                                    className="w-full bg-amber-500 text-lg font-semibold hover:bg-amber-600 select-none"
+                                    className="w-full bg-amber-500 text-lg font-semibold hover:bg-amber-600 select-none cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
                                     size="lg"
                                     onClick={onConfirmOrder}
-                                    disabled={cart.length === 0 || !customer || (enableTableInput && !table)}
+                                    disabled={cart.length === 0 || !customer || (enableTableInput && !table) || loadingConfirmOrder}
                                 >
-                                    Crea Ordine
+                                    {loadingConfirmOrder ? (
+                                        <>
+                                            <span className="inline-block h-4 w-4 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                                            Creazione in corso...
+                                        </>
+                                    ) : (
+                                        'Crea Ordine'
+                                    )}
                                 </Button>
                             </div>
                         </TooltipTrigger>
@@ -211,9 +220,9 @@ export function CartSidebar({
                 </TooltipProvider>
 
                 <Button
-                    variant="secondary"
+                    variant="outline"
                     size="icon"
-                    className="h-10 w-10 disabled:cursor-not-allowed"
+                    className="h-10 w-10 disabled:cursor-not-allowed cursor-pointer"
                     onClick={onOpenDiscount}
                     aria-label="Applica sconto"
                     title="Applica sconto"

@@ -65,7 +65,7 @@ export function ConfigurationDialog({ open, onOpenChange, onCashRegisterSelected
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                    <DialogTitle>Configurazione Mancante</DialogTitle>
+                    <DialogTitle>Configurazione mancante</DialogTitle>
                     <DialogDescription>
                         Per utilizzare MyCassa devi prima configurare la cassa.
                     </DialogDescription>
@@ -82,7 +82,7 @@ export function ConfigurationDialog({ open, onOpenChange, onCashRegisterSelected
                             <SelectTrigger id="cash-register">
                                 <SelectValue placeholder={loading ? "Caricamento..." : "Seleziona una cassa"} />
                             </SelectTrigger>
-                            <SelectContent>
+                            <SelectContent >
                                 <SelectGroup>
                                     {cashRegisters.map((cr) => (
                                         <SelectItem key={cr.id} value={cr.id}>
@@ -96,7 +96,7 @@ export function ConfigurationDialog({ open, onOpenChange, onCashRegisterSelected
                 </div>
 
                 <DialogFooter>
-                    <Button onClick={handleSave} disabled={!selectedCashRegister || loading}>
+                    <Button className='cursor-pointer' onClick={handleSave} disabled={!selectedCashRegister || loading}>
                         Salva configurazione
                     </Button>
                 </DialogFooter>

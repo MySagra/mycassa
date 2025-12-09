@@ -1,3 +1,4 @@
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { ButtonGroup } from '@/components/ui/button-group';
 import { Settings, Moon, Sun, LogOut } from 'lucide-react';
@@ -26,28 +27,48 @@ export function CassaHeader({ onLogout, onSettingsClick, theme, onThemeToggle, c
                 <div className="flex items-center gap-2">
                     {cashRegisterName && (
                         <div className="flex items-center gap-2 ml-2">
-                            <span className="text-sm font-medium text-muted-foreground bg-muted px-3 py-1 rounded-full">
+                            <span className="text-sm font-medium text-muted-foreground bg-muted px-3 py-1 rounded-full select-none">
                                 {cashRegisterName}
                             </span>
                         </div>
                     )}
                     <ButtonGroup>
-                        <Button variant="outline" size="icon" onClick={onSettingsClick}>
+                        <Button variant="outline" className='cursor-pointer' size="icon" onClick={onSettingsClick}>
                             <Settings className="h-5 w-5" />
                         </Button>
                         <Button
                             variant="outline"
+                            className='cursor-pointer'
                             size="icon"
                             onClick={onThemeToggle}
                         >
-                            {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+                            {theme === 'dark' ? <Sun className="h-5 w-5 cursor-pointer" /> : <Moon className="h-5 w-5 cursor-pointer" />}
                         </Button>
                     </ButtonGroup>
 
-                    <Button variant="outline" onClick={onLogout} className="select-none">
-                        <LogOut className="h-5 w-5" />
-                        Logout
-                    </Button>
+                    <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                            <Button variant="outline" className="select-none cursor-pointer">
+                                <LogOut className="h-5 w-5" />
+                                Logout
+                            </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>Vuoi effettuare il logout?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    Ritornerai alla pagina di login
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel className="cursor-pointer">Annulla</AlertDialogCancel>
+                                <AlertDialogAction onClick={onLogout} className="bg-destructive text-destructive-foreground hover:bg-destructive/90 cursor-pointer">
+                                    <LogOut className="h-5 w-5" />
+                                    Logout
+                                </AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
                 </div>
             </div>
         </header>

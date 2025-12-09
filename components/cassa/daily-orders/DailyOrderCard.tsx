@@ -2,6 +2,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Eye, ShoppingCart } from 'lucide-react';
 import { DailyOrder } from '@/lib/cassa/types';
+import { useRef, useEffect } from 'react';
 
 interface DailyOrderCardProps {
     order: DailyOrder;
@@ -28,6 +29,23 @@ const getStatusBadge = (status: string) => {
 };
 
 export function DailyOrderCard({ order, onViewDetail, onLoadToCart, searchQuery }: DailyOrderCardProps) {
+    const cardRef = useRef<HTMLDivElement>(null);
+
+    // Add focus ring animation when card is first mounted
+    useEffect(() => {
+        if (cardRef.current) {
+            cardRef.current.classList.add('ring-2', 'ring-amber-500');
+
+            const timer = setTimeout(() => {
+                if (cardRef.current) {
+                    cardRef.current.classList.remove('ring-2', 'ring-amber-500');
+                }
+            }, 1500); // 1.5 seconds
+
+            return () => clearTimeout(timer);
+        }
+    }, []);
+
     const highlightText = (text: string) => {
         if (!searchQuery) return text;
         const regex = new RegExp(`(${searchQuery})`, 'gi');
@@ -37,9 +55,9 @@ export function DailyOrderCard({ order, onViewDetail, onLoadToCart, searchQuery 
     const isPending = order.status === 'PENDING';
 
     return (
-        <Card className="border hover:border-amber-500 transition-colors">
+        <Card ref={cardRef} className="border hover:border-amber-500 transition-all duration-300">
             <CardContent className="space-y-3">
-                <div className="flex items-start justify-between">
+                <div className="flex items-start justify-between select-none">
                     <div className="space-y-1">
                         <div className="flex items-center gap-2">
                             <span
@@ -78,7 +96,7 @@ export function DailyOrderCard({ order, onViewDetail, onLoadToCart, searchQuery 
                     <Button
                         variant="outline"
                         size="sm"
-                        className="flex-1 select-none"
+                        className="flex-1 select-none cursor-pointer"
                         onClick={onViewDetail}
                     >
                         <Eye className="mr-2 h-4 w-4" />
@@ -87,7 +105,7 @@ export function DailyOrderCard({ order, onViewDetail, onLoadToCart, searchQuery 
                     <Button
                         variant="default"
                         size="sm"
-                        className="flex-1 select-none"
+                        className="flex-1 select-none cursor-pointer"
                         onClick={onLoadToCart}
                         disabled={!isPending}
                         title={!isPending ? 'Solo gli ordini in attesa possono essere caricati' : ''}

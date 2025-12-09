@@ -9,9 +9,10 @@ interface FoodGridProps {
     selectedCategoryId: number | null;
     onAddToCart: (food: Food) => void;
     loading: boolean;
+    showDailyOrders: boolean;
 }
 
-export function FoodGrid({ foods, categories, selectedCategoryId, onAddToCart, loading }: FoodGridProps) {
+export function FoodGrid({ foods, categories, selectedCategoryId, onAddToCart, loading, showDailyOrders }: FoodGridProps) {
     // Filter foods by category
     const filteredFoods = selectedCategoryId
         ? foods.filter((food) => food.categoryId === selectedCategoryId)
@@ -57,15 +58,15 @@ export function FoodGrid({ foods, categories, selectedCategoryId, onAddToCart, l
                                 key={categoryName}
                                 type="single"
                                 collapsible
-                                className="w-full bg-card rounded-lg border"
+                                className="w-full bg-card/60 rounded-lg border"
                                 defaultValue={categoryName}
                             >
-                                <AccordionItem value={categoryName} className="border-nonel select-none">
-                                    <AccordionTrigger className="px-4 py-3 hover:no-underline">
+                                <AccordionItem value={categoryName} className="border-none select-none">
+                                    <AccordionTrigger className="px-4 py-3 cursor-pointer hover:no-underline">
                                         <h2 className="text-xl font-semibold">{categoryName.toUpperCase()}</h2>
                                     </AccordionTrigger>
                                     <AccordionContent className="px-4 pb-4">
-                                        <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+                                        <div className={`grid ${showDailyOrders ? "grid-cols-1 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3" : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"} gap-3`}>
                                             {categoryFoods.map((food) => (
                                                 <FoodCard
                                                     key={food.id}
@@ -80,7 +81,7 @@ export function FoodGrid({ foods, categories, selectedCategoryId, onAddToCart, l
                         ))}
                     </div>
                 ) : (
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+                    <div className={`grid ${showDailyOrders ? "grid-cols-1 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3" : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"} gap-3`}>
                         {filteredFoods.map((food) => (
                             <FoodCard
                                 key={food.id}
