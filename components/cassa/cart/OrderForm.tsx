@@ -1,7 +1,7 @@
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search } from 'lucide-react';
+import { Search, Loader2 } from 'lucide-react';
 
 interface OrderFormProps {
     displayCode: string;
@@ -49,7 +49,11 @@ export function OrderForm({
                         }}
                     />
                     <Button onClick={onLoadOrder} className="cursor-pointer" disabled={loadingOrder}>
-                        <Search className="h-4 w-4" />
+                        {loadingOrder ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                            <Search className="h-4 w-4" />
+                        )}
                     </Button>
                 </div>
             </div>
