@@ -1,6 +1,7 @@
 'use server';
 
 import { auth, signOut } from '@/lib/auth';
+import { getServerApiUrl } from '@/lib/api-url';
 import { get } from 'http';
 
 function isRedirectError(error: any) {
@@ -24,7 +25,7 @@ export async function getCategories() {
   }
 
   try {
-    const response = await fetch(`${process.env.API_URL}/v1/categories?available=true&include=foods`, {
+    const response = await fetch(`${getServerApiUrl()}/v1/categories?available=true&include=foods`, {
       headers: {
         'Authorization': `Bearer ${session.accessToken}`,
         'Content-Type': 'application/json',
@@ -66,7 +67,7 @@ export async function getFoodById(foodId: string) {
   }
 
   try {
-    const response = await fetch(`${process.env.API_URL}/v1/foods/${foodId}`, {
+    const response = await fetch(`${getServerApiUrl()}/v1/foods/${foodId}`, {
       headers: {
         'Authorization': `Bearer ${session.accessToken}`,
         'Content-Type': 'application/json',
@@ -111,7 +112,7 @@ export async function getTodayOrders() {
     const dateFrom = `${today.toISOString().split('T')[0]}T07%3A59%3A00Z`;
     const dateTo = `${tomorrow.toISOString().split('T')[0]}T08%3A00%3A00Z`;
 
-    const response = await fetch(`${process.env.API_URL}/v1/orders?page=1&limit=20&sortBy=createdAt&status=PENDING&dateFrom=${dateFrom}&dateTo=${dateTo}`, {
+    const response = await fetch(`${getServerApiUrl()}/v1/orders?page=1&limit=20&sortBy=createdAt&status=PENDING&dateFrom=${dateFrom}&dateTo=${dateTo}`, {
       headers: {
         'Authorization': `Bearer ${session.accessToken}`,
         'Content-Type': 'application/json',
@@ -157,7 +158,7 @@ export async function getAllTodayOrders() {
     const dateFrom = `${today.toISOString().split('T')[0]}T07%3A59%3A00Z`;
     const dateTo = `${tomorrow.toISOString().split('T')[0]}T08%3A00%3A00Z`;
 
-    const response = await fetch(`${process.env.API_URL}/v1/orders?page=1&limit=20&sortBy=createdAt&dateFrom=${dateFrom}&dateTo=${dateTo}`, {
+    const response = await fetch(`${getServerApiUrl()}/v1/orders?page=1&limit=20&sortBy=createdAt&dateFrom=${dateFrom}&dateTo=${dateTo}`, {
       headers: {
         'Authorization': `Bearer ${session.accessToken}`,
         'Content-Type': 'application/json',
@@ -208,7 +209,7 @@ export async function getOrderByCode(code: string) {
   const dateTo = `${tomorrow.toISOString().split('T')[0]}T08%3A00%3A00Z`;
 
   try {
-    const response = await fetch(`${process.env.API_URL}/v1/orders?displayCode=${encodeURIComponent(code)}&page=1&limit=20&sortBy=createdAt&dateFrom=${dateFrom}&dateTo=${dateTo}`, {
+    const response = await fetch(`${getServerApiUrl()}/v1/orders?displayCode=${encodeURIComponent(code)}&page=1&limit=20&sortBy=createdAt&dateFrom=${dateFrom}&dateTo=${dateTo}`, {
       headers: {
         'Authorization': `Bearer ${session.accessToken}`,
         'Content-Type': 'application/json',
@@ -259,7 +260,7 @@ export async function getOrderByOrderId(orderId: number) {
   }
 
   try {
-    const response = await fetch(`${process.env.API_URL}/v1/orders/${orderId}`, {
+    const response = await fetch(`${getServerApiUrl()}/v1/orders/${orderId}`, {
       headers: {
         'Authorization': `Bearer ${session.accessToken}`,
         'Content-Type': 'application/json',
@@ -309,7 +310,7 @@ export async function searchDailyOrders(searchValue: string) {
   const dateTo = `${tomorrow.toISOString().split('T')[0]}T08%3A00%3A00Z`;
 
   try {
-    const response = await fetch(`${process.env.API_URL}/v1/orders?search=${searchValue}&page=1&limit=20&sortBy=createdAt&dateFrom=${dateFrom}&dateTo=${dateTo}`, {
+    const response = await fetch(`${getServerApiUrl()}/v1/orders?search=${searchValue}&page=1&limit=20&sortBy=createdAt&dateFrom=${dateFrom}&dateTo=${dateTo}`, {
       headers: {
         'Authorization': `Bearer ${session.accessToken}`,
         'Content-Type': 'application/json',
@@ -359,7 +360,7 @@ export async function searchAllDailyOrders(searchValue: string) {
   const dateTo = `${tomorrow.toISOString().split('T')[0]}T08%3A00%3A00Z`;
 
   try {
-    const response = await fetch(`${process.env.API_URL}/v1/orders?search=${searchValue}&page=1&limit=20&sortBy=createdAt&dateFrom=${dateFrom}&dateTo=${dateTo}`, {
+    const response = await fetch(`${getServerApiUrl()}/v1/orders?search=${searchValue}&page=1&limit=20&sortBy=createdAt&dateFrom=${dateFrom}&dateTo=${dateTo}`, {
       headers: {
         'Authorization': `Bearer ${session.accessToken}`,
         'Content-Type': 'application/json',
@@ -417,7 +418,7 @@ export async function createOrder(orderData: {
   }
 
   try {
-    const response = await fetch(`${process.env.API_URL}/v1/orders`, {
+    const response = await fetch(`${getServerApiUrl()}/v1/orders`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${session.accessToken}`,
@@ -473,7 +474,7 @@ export async function confirmOrder(orderData: {
     const { orderId, ...bodyData } = orderData;
 
     // Use orderId in URL path: /v1/orders/:id/confirm
-    const response = await fetch(`${process.env.API_URL}/v1/orders/${orderId}/confirm`, {
+    const response = await fetch(`${getServerApiUrl()}/v1/orders/${orderId}/confirm`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${session.accessToken}`,
@@ -513,7 +514,7 @@ export async function getCashRegisters() {
   }
 
   try {
-    const response = await fetch(`${process.env.API_URL}/v1/cash-registers`, {
+    const response = await fetch(`${getServerApiUrl()}/v1/cash-registers`, {
       headers: {
         'Authorization': `Bearer ${session.accessToken}`,
         'Content-Type': 'application/json',
