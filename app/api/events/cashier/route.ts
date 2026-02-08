@@ -1,7 +1,6 @@
 'use server';
 
 import { auth } from '@/lib/auth';
-import { getServerApiUrl } from '@/lib/api-url';
 
 /**
  * SSE Proxy for cashier events
@@ -14,7 +13,7 @@ export async function GET(request: Request) {
         return new Response('Unauthorized', { status: 401 });
     }
 
-    const apiUrl = getServerApiUrl();
+    const apiUrl = process.env.API_URL || 'http://localhost:3001';
 
     try {
         // Connect to the backend SSE endpoint

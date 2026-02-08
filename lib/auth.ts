@@ -1,6 +1,5 @@
 import NextAuth from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
-import { getServerApiUrl } from '@/lib/api-url';
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
@@ -15,7 +14,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         }
 
         try {
-          const response = await fetch(`${getServerApiUrl()}/auth/login`, {
+          const response = await fetch(`${process.env.API_URL}/auth/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
