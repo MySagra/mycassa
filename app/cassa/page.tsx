@@ -10,7 +10,7 @@ import { getCategories, getOrderByOrderId, confirmOrder as confirmOrderAction, c
 import { logout as logoutAction } from '@/actions/auth';
 import { Category, Food, PaymentMethod, OrderDetailResponse, ExtendedCartItem } from '@/lib/api-types';
 import { DailyOrder } from '@/lib/cassa/types';
-import { calculateTotal, calculateTotalSurcharges, calculateChange, calculateIngredientSurcharge } from '@/lib/cassa/calculations';
+import { calculateTotal, calculateTotalSurcharges, calculateChange } from '@/lib/cassa/calculations';
 import { getOrderValidationMessage, orderSchema, paidAmountSchema } from '@/lib/cassa/validations';
 import { mergeCartItems } from '@/lib/cassa/cart-utils';
 import { CassaHeader } from '@/components/cassa/header/CassaHeader';
@@ -802,9 +802,6 @@ export default function CassaPage() {
             // Merge cart items with same foodId and notes
             const mergedOrderItems = mergeCartItems(cart);
 
-            // Calculate total surcharge from all items
-            const totalSurcharge = cart.reduce((sum, item) => sum + calculateIngredientSurcharge(item), 0);
-
             // If displayCode exists, load the order to confirm it
             if (displayCode.trim()) {
                 const result = await getOrderByCode(displayCode.toUpperCase());
@@ -823,7 +820,6 @@ export default function CassaPage() {
                     userId: localStorage.getItem('userId') || '',
                     cashRegisterId: localStorage.getItem('selectedCashRegister') || '',
                     discount: appliedDiscountAmount,
-                    surcharge: totalSurcharge,
                     orderItems: mergedOrderItems,
                 });
 
@@ -855,7 +851,6 @@ export default function CassaPage() {
                         userId: localStorage.getItem('userId') || '',
                         cashRegisterId: localStorage.getItem('selectedCashRegister') || '',
                         discount: appliedDiscountAmount,
-                        surcharge: totalSurcharge
                     }
                 });
 

@@ -402,13 +402,13 @@ export async function createOrder(orderData: {
     foodId: string;
     quantity: number;
     notes?: string;
+    surcharge: number;
   }>;
   confirm?: {
     paymentMethod: string;
     userId: string;
     cashRegisterId: string;
     discount: number;
-    surcharge: number;
   };
 }) {
   const session = await auth();
@@ -456,11 +456,11 @@ export async function confirmOrder(orderData: {
   userId: string;
   cashRegisterId: string;
   discount: number;
-  surcharge: number;
   orderItems: Array<{
     foodId: string;
     quantity: number;
     notes?: string;
+    surcharge: number;
   }>;
 }) {
   const session = await auth();

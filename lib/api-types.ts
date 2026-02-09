@@ -71,6 +71,7 @@ export interface OrderItem {
   foodId: string;
   quantity: number;
   notes?: string;
+  surcharge: number;
 }
 
 export interface CartItem {
@@ -126,7 +127,7 @@ export interface OrderDetailResponse {
 
 export interface CategorizedItems {
   category: {
-    id: number;
+    id: string;
     name: string;
   };
   items: OrderItemDetailed[];
@@ -136,6 +137,9 @@ export interface OrderItemDetailed {
   id: string;
   quantity: number;
   notes?: string;
+  total: string;
+  unitPrice: string;
+  unitSurcharge: string;
   food: FoodWithIngredients;
 }
 
@@ -153,7 +157,6 @@ export interface ConfirmOrderRequest {
   orderId: number;
   paymentMethod: PaymentMethod;
   discount?: number;
-  surcharge?: number;
   orderItems: OrderItem[];
 }
 

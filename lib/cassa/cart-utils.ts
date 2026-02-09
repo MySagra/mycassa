@@ -1,9 +1,11 @@
 import { ExtendedCartItem } from '@/lib/api-types';
+import { calculateIngredientSurcharge } from '@/lib/cassa/calculations';
 
 interface MergedOrderItem {
     foodId: string;
     quantity: number;
     notes?: string;
+    surcharge: number;
 }
 
 /**
@@ -52,19 +54,24 @@ export function mergeCartItems(items: ExtendedCartItem[]): MergedOrderItem[] {
             finalNotes = ingredientNotes;
         }
 
+        // Calculate surcharge for this item
+        const itemSurcharge = calculateIngredientSurcharge(item);
+
         // Create unique key: foodId + notes (or empty string if no notes)
         const key = `${item.food.id}|${finalNotes}`;
 
         if (mergedMap.has(key)) {
-            // Merge quantities
+            // Merge quantities and surcharges
             const existing = mergedMap.get(key)!;
             existing.quantity += item.quantity;
+            existing.surcharge += itemSurcharge;
         } else {
             // Add new entry
             mergedMap.set(key, {
                 foodId: item.food.id,
                 quantity: item.quantity,
                 ...(finalNotes && { notes: finalNotes }),
+                surcharge: itemSurcharge,
             });
         }
     });
