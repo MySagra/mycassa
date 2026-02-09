@@ -84,6 +84,7 @@ export interface CartItem {
 export interface ExtendedCartItem extends CartItem {
   cartItemId: string; // Unique identifier for each cart item
   ingredientQuantities?: Record<string, number>; // ingredientId -> quantity
+  extraIngredients?: Record<string, number>; // extra ingredientId -> quantity
 }
 
 export interface OrderRequest {

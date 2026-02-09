@@ -166,7 +166,7 @@ export function OrderDetailDialog({ order, open, loading, onClose }: OrderDetail
                                                                 </p>
                                                                 {unitSurcharge > 0 && (
                                                                     <p className="text-xs text-amber-600 dark:text-amber-500">
-                                                                        +{unitSurcharge.toFixed(2)} €
+                                                                        (+{unitSurcharge.toFixed(2)} €)
                                                                     </p>
                                                                 )}
                                                             </div>

@@ -6,9 +6,9 @@ import { useSession } from 'next-auth/react';
 import { useTheme } from 'next-themes';
 import { fetchEventSource } from '@microsoft/fetch-event-source';
 import { toast } from 'sonner';
-import { getCategories, getOrderByOrderId, confirmOrder as confirmOrderAction, createOrder, getTodayOrders, getAllTodayOrders, getFoodById, searchDailyOrders, searchAllDailyOrders, getOrderByCode, getCashRegisters } from '@/actions/cassa';
+import { getCategories, getOrderByOrderId, confirmOrder as confirmOrderAction, createOrder, getTodayOrders, getAllTodayOrders, getFoodById, searchDailyOrders, searchAllDailyOrders, getOrderByCode, getCashRegisters, getAllIngredients } from '@/actions/cassa';
 import { logout as logoutAction } from '@/actions/auth';
-import { Category, Food, PaymentMethod, OrderDetailResponse, ExtendedCartItem } from '@/lib/api-types';
+import { Category, Food, Ingredient, PaymentMethod, OrderDetailResponse, ExtendedCartItem } from '@/lib/api-types';
 import { DailyOrder } from '@/lib/cassa/types';
 import { calculateTotal, calculateTotalSurcharges, calculateChange } from '@/lib/cassa/calculations';
 import { getOrderValidationMessage, orderSchema, paidAmountSchema } from '@/lib/cassa/validations';
@@ -62,6 +62,7 @@ export default function CassaPage() {
     const [showConfigDialog, setShowConfigDialog] = useState(false);
     const [loadingConfirmOrder, setLoadingConfirmOrder] = useState(false);
     const [showAllOrders, setShowAllOrders] = useState(false);
+    const [allIngredients, setAllIngredients] = useState<Ingredient[]>([]);
 
     // Keep ref in sync with state
     // Keep ref in sync with state
@@ -163,8 +164,20 @@ export default function CassaPage() {
             }
         };
 
+        const fetchIngredients = async () => {
+            try {
+                const result = await getAllIngredients();
+                if (result.success) {
+                    setAllIngredients(result.data);
+                }
+            } catch (error) {
+                console.error('Error loading ingredients:', error);
+            }
+        };
+
         if (isAuthenticated) {
             fetchCategories();
+            fetchIngredients();
         }
     }, [isAuthenticated]);
 
@@ -297,6 +310,7 @@ export default function CassaPage() {
                                                     customer: newOrder.customer,
                                                     createdAt: newOrder.createdAt,
                                                     subTotal: newOrder.subTotal,
+                                                    total: newOrder.total,
                                                     status: 'CONFIRMED'
                                                 };
                                                 setDailyOrders(prev => [dailyOrder, ...prev]);
@@ -568,7 +582,7 @@ export default function CassaPage() {
     };
 
     // Edit item
-    const handleSaveEditedItem = (quantity: number, notes: string, ingredientQuantities: Record<string, number>) => {
+    const handleSaveEditedItem = (quantity: number, notes: string, ingredientQuantities: Record<string, number>, extraIngredients: Record<string, number>) => {
         if (!editingItem) return;
 
         setCart((prev) => {
@@ -594,7 +608,8 @@ export default function CassaPage() {
                             food: item.food,
                             quantity,
                             notes,
-                            ingredientQuantities
+                            ingredientQuantities,
+                            extraIngredients: Object.keys(extraIngredients).length > 0 ? extraIngredients : undefined
                         });
                     }
                 } else {
@@ -800,7 +815,7 @@ export default function CassaPage() {
         setLoadingConfirmOrder(true);
         try {
             // Merge cart items with same foodId and notes
-            const mergedOrderItems = mergeCartItems(cart);
+            const mergedOrderItems = mergeCartItems(cart, allIngredients);
 
             // If displayCode exists, load the order to confirm it
             if (displayCode.trim()) {
@@ -926,6 +941,7 @@ export default function CassaPage() {
                     {/* Right Sidebar - Cart */}
                     <CartSidebar
                         cart={cart}
+                        allIngredients={allIngredients}
                         customer={customer}
                         table={table}
                         displayCode={displayCode}
@@ -988,6 +1004,7 @@ export default function CassaPage() {
                 open={editingItem !== null}
                 onClose={() => setEditingItem(null)}
                 onSave={handleSaveEditedItem}
+                allIngredients={allIngredients}
             />
 
             {/* Discount Dialog */}

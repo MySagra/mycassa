@@ -540,3 +540,41 @@ export async function getCashRegisters() {
     return { success: false, error: error.message || 'Errore sconosciuto' };
   }
 }
+
+/**
+ * Get all ingredients
+ */
+export async function getAllIngredients() {
+  const session = await auth();
+
+  if (!session?.accessToken) {
+    return { success: false, error: 'Non autenticato' };
+  }
+
+  try {
+    const response = await fetch(`${process.env.API_URL}/v1/ingredients`, {
+      headers: {
+        'Authorization': `Bearer ${session.accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      cache: 'no-store',
+    });
+
+    if (response.status === 401 || response.status === 403) {
+      await signOut({ redirectTo: '/login' });
+    }
+
+    if (!response.ok) {
+      return { success: false, error: 'Errore nel caricamento degli ingredienti' };
+    }
+
+    const data = await response.json();
+    return { success: true, data };
+  } catch (error: any) {
+    if (isRedirectError(error)) {
+      throw error;
+    }
+    console.error('getAllIngredients error:', error);
+    return { success: false, error: error.message || 'Errore sconosciuto' };
+  }
+}
