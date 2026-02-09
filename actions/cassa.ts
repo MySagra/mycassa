@@ -11,6 +11,32 @@ function isRedirectError(error: any) {
 }
 
 /**
+ * Calcola il range di date per il "giorno lavorativo" degli ordini.
+ * Il giorno lavorativo va dalle 08:00 UTC alle 08:00 UTC del giorno successivo.
+ * Se l'ora corrente è prima delle 08:00 UTC (es. mezzanotte-8), il turno
+ * è ancora quello iniziato alle 08:00 del giorno precedente.
+ */
+function getDailyOrderDateRange() {
+  const now = new Date();
+  const CUTOFF_HOUR_UTC = 8;
+
+  // Determina la data base del turno
+  const baseDate = new Date(now);
+  if (now.getUTCHours() < CUTOFF_HOUR_UTC) {
+    // Prima delle 8 UTC: il turno è iniziato ieri alle 8
+    baseDate.setUTCDate(baseDate.getUTCDate() - 1);
+  }
+
+  const nextDate = new Date(baseDate);
+  nextDate.setUTCDate(baseDate.getUTCDate() + 1);
+
+  const dateFrom = `${baseDate.toISOString().split('T')[0]}T07%3A59%3A00Z`;
+  const dateTo = `${nextDate.toISOString().split('T')[0]}T08%3A00%3A00Z`;
+
+  return { dateFrom, dateTo };
+}
+
+/**
  * Get categories available for current user
  */
 /**
@@ -104,12 +130,7 @@ export async function getTodayOrders() {
   }
 
   try {
-    const today = new Date();
-    const tomorrow = new Date(today);
-    tomorrow.setDate(today.getDate() + 1);
-
-    const dateFrom = `${today.toISOString().split('T')[0]}T07%3A59%3A00Z`;
-    const dateTo = `${tomorrow.toISOString().split('T')[0]}T08%3A00%3A00Z`;
+    const { dateFrom, dateTo } = getDailyOrderDateRange();
 
     const response = await fetch(`${process.env.API_URL}/v1/orders?page=1&limit=20&sortBy=createdAt&status=PENDING&dateFrom=${dateFrom}&dateTo=${dateTo}`, {
       headers: {
@@ -150,12 +171,7 @@ export async function getAllTodayOrders() {
   }
 
   try {
-    const today = new Date();
-    const tomorrow = new Date(today);
-    tomorrow.setDate(today.getDate() + 1);
-
-    const dateFrom = `${today.toISOString().split('T')[0]}T07%3A59%3A00Z`;
-    const dateTo = `${tomorrow.toISOString().split('T')[0]}T08%3A00%3A00Z`;
+    const { dateFrom, dateTo } = getDailyOrderDateRange();
 
     const response = await fetch(`${process.env.API_URL}/v1/orders?page=1&limit=20&sortBy=createdAt&dateFrom=${dateFrom}&dateTo=${dateTo}`, {
       headers: {
@@ -200,12 +216,7 @@ export async function getOrderByCode(code: string) {
     return { success: false, error: 'Codice ordine non valido' };
   }
 
-  const today = new Date();
-  const tomorrow = new Date(today);
-  tomorrow.setDate(today.getDate() + 1);
-
-  const dateFrom = `${today.toISOString().split('T')[0]}T07%3A59%3A00Z`;
-  const dateTo = `${tomorrow.toISOString().split('T')[0]}T08%3A00%3A00Z`;
+  const { dateFrom, dateTo } = getDailyOrderDateRange();
 
   try {
     const response = await fetch(`${process.env.API_URL}/v1/orders?displayCode=${encodeURIComponent(code)}&page=1&limit=20&sortBy=createdAt&dateFrom=${dateFrom}&dateTo=${dateTo}`, {
@@ -301,12 +312,7 @@ export async function searchDailyOrders(searchValue: string) {
     return { success: false, error: 'Valore di ricerca non valido' };
   }
 
-  const today = new Date();
-  const tomorrow = new Date(today);
-  tomorrow.setDate(today.getDate() + 1);
-
-  const dateFrom = `${today.toISOString().split('T')[0]}T07%3A59%3A00Z`;
-  const dateTo = `${tomorrow.toISOString().split('T')[0]}T08%3A00%3A00Z`;
+  const { dateFrom, dateTo } = getDailyOrderDateRange();
 
   try {
     const response = await fetch(`${process.env.API_URL}/v1/orders?search=${searchValue}&page=1&limit=20&sortBy=createdAt&dateFrom=${dateFrom}&dateTo=${dateTo}`, {
@@ -351,12 +357,7 @@ export async function searchAllDailyOrders(searchValue: string) {
     return { success: false, error: 'Valore di ricerca non valido' };
   }
 
-  const today = new Date();
-  const tomorrow = new Date(today);
-  tomorrow.setDate(today.getDate() + 1);
-
-  const dateFrom = `${today.toISOString().split('T')[0]}T07%3A59%3A00Z`;
-  const dateTo = `${tomorrow.toISOString().split('T')[0]}T08%3A00%3A00Z`;
+  const { dateFrom, dateTo } = getDailyOrderDateRange();
 
   try {
     const response = await fetch(`${process.env.API_URL}/v1/orders?search=${searchValue}&page=1&limit=20&sortBy=createdAt&dateFrom=${dateFrom}&dateTo=${dateTo}`, {
