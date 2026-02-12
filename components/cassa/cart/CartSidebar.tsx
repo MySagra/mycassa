@@ -1,4 +1,4 @@
-import { ExtendedCartItem, PaymentMethod } from '@/lib/api-types';
+import { ExtendedCartItem, Ingredient, PaymentMethod } from '@/lib/api-types';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 
 interface CartSidebarProps {
     cart: ExtendedCartItem[];
+    allIngredients: Ingredient[];
     customer: string;
     table: string;
     displayCode: string;
@@ -45,6 +46,7 @@ interface CartSidebarProps {
 
 export function CartSidebar({
     cart,
+    allIngredients,
     customer,
     table,
     displayCode,
@@ -127,6 +129,7 @@ export function CartSidebar({
                                     <CartItem
                                         key={item.cartItemId}
                                         item={item}
+                                        allIngredients={allIngredients}
                                         onUpdateQuantity={(delta) => onUpdateQuantity(item.cartItemId, delta)}
                                         onRemove={() => onRemoveItem(item.cartItemId)}
                                         onEdit={() => onEditItem(item)}

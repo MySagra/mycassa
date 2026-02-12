@@ -145,26 +145,34 @@ export function OrderDetailDialog({ order, open, loading, onClose }: OrderDetail
                                                 {catItem.category.name}
                                             </h5>
                                             <div className="space-y-2">
-                                                {catItem.items.map((item, itemIndex) => (
-                                                    <div key={itemIndex} className="flex items-start justify-between p-2 bg-muted dark:bg-muted/40 rounded-lg">
-                                                        <div className="flex-1">
-                                                            <p className="font-medium">{item.food.name}</p>
-                                                            {item.notes && (
-                                                                <p className="text-xs text-muted-foreground mt-1">
-                                                                    Note: {item.notes}
+                                                {catItem.items.map((item, itemIndex) => {
+                                                    const unitSurcharge = parseFloat(item.unitSurcharge || '0');
+                                                    return (
+                                                        <div key={itemIndex} className="flex items-start justify-between p-2 bg-muted dark:bg-muted/40 rounded-lg">
+                                                            <div className="flex-1">
+                                                                <p className="font-medium">{item.food.name}</p>
+                                                                {item.notes && (
+                                                                    <p className="text-xs text-muted-foreground mt-1">
+                                                                        Note: {item.notes}
+                                                                    </p>
+                                                                )}
+                                                                <p className="text-sm text-muted-foreground mt-1">
+                                                                    Quantità: {item.quantity} × {parseFloat(item.unitPrice).toFixed(2)} €
                                                                 </p>
-                                                            )}
-                                                            <p className="text-sm text-muted-foreground mt-1">
-                                                                Quantità: {item.quantity} × {parseFloat(item.food.price).toFixed(2)} €
-                                                            </p>
+                                                            </div>
+                                                            <div className="text-right">
+                                                                <p className="font-semibold">
+                                                                    {parseFloat(item.total).toFixed(2)} €
+                                                                </p>
+                                                                {unitSurcharge > 0 && (
+                                                                    <p className="text-xs text-amber-600 dark:text-amber-500">
+                                                                        (+{unitSurcharge.toFixed(2)} €)
+                                                                    </p>
+                                                                )}
+                                                            </div>
                                                         </div>
-                                                        <div className="text-right">
-                                                            <p className="font-semibold">
-                                                                {(item.quantity * parseFloat(item.food.price)).toFixed(2)} €
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                ))}
+                                                    );
+                                                })}
                                             </div>
                                         </div>
                                     ))}
@@ -182,7 +190,7 @@ export function OrderDetailDialog({ order, open, loading, onClose }: OrderDetail
                                             </div>
                                         </div>
                                         <div className="flex items-center justify-between">
-                                            <div className="font-semibold">Sovrapprezzi:</div>
+                                            <div className="font-semibold">Totale sovrapprezzi:</div>
                                             <div className="font-bold text-amber-600 dark:text-amber-500">
                                                 {parseFloat(order.surcharge?.toString() || '0').toFixed(2)} €
                                             </div>

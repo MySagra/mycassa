@@ -88,7 +88,7 @@ export function DailyOrderCard({ order, onViewDetail, onLoadToCart, searchQuery 
                     </div>
                     <div className="text-right">
                         <p className="text-lg font-bold text-amber-600">
-                            {parseFloat(order.subTotal).toFixed(2)} €
+                            {parseFloat(order.total).toFixed(2)} €
                         </p>
                     </div>
                 </div>

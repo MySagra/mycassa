@@ -1,16 +1,17 @@
-import { ExtendedCartItem } from '@/lib/api-types';
+import { ExtendedCartItem, Ingredient } from '@/lib/api-types';
 import { Button } from '@/components/ui/button';
 import { Pencil, X, Minus, Plus } from 'lucide-react';
 import { calculateIngredientSurcharge } from '@/lib/cassa/calculations';
 
 interface CartItemProps {
     item: ExtendedCartItem;
+    allIngredients: Ingredient[];
     onUpdateQuantity: (delta: number) => void;
     onRemove: () => void;
     onEdit: () => void;
 }
 
-export function CartItem({ item, onUpdateQuantity, onRemove, onEdit }: CartItemProps) {
+export function CartItem({ item, allIngredients, onUpdateQuantity, onRemove, onEdit }: CartItemProps) {
     const itemPrice = (typeof item.food.price === 'number'
         ? item.food.price
         : parseFloat(item.food.price as unknown as string));
@@ -35,6 +36,16 @@ export function CartItem({ item, onUpdateQuantity, onRemove, onEdit }: CartItemP
                                     return null;
                                 })
                                 .filter(Boolean)
+                                .join(', ')}
+                        </p>
+                    )}
+                    {item.extraIngredients && Object.keys(item.extraIngredients).length > 0 && (
+                        <p className="text-xs text-amber-600 dark:text-amber-500 mt-1">
+                            {Object.entries(item.extraIngredients)
+                                .map(([id, qty]) => {
+                                    const name = allIngredients.find((i) => i.id === id)?.name ?? id;
+                                    return qty === 1 ? `+${name}` : `+${qty} ${name}`;
+                                })
                                 .join(', ')}
                         </p>
                     )}

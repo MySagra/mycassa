@@ -31,20 +31,24 @@ export function calculateTotalSurcharges(cart: ExtendedCartItem[]): number {
  * Extra ingredients cost 0.5€ each
  */
 export function calculateIngredientSurcharge(item: ExtendedCartItem): number {
-    if (!item.ingredientQuantities || !item.food.ingredients) {
-        return 0;
-    }
-
     let surcharge = 0;
 
-    item.food.ingredients.forEach((ingredient) => {
-        const qty = item.ingredientQuantities?.[ingredient.id] ?? 1;
+    // Surcharge for extra quantities of default ingredients
+    if (item.ingredientQuantities && item.food.ingredients) {
+        item.food.ingredients.forEach((ingredient) => {
+            const qty = item.ingredientQuantities?.[ingredient.id] ?? 1;
+            if (qty > 1) {
+                surcharge += (qty - 1) * 0.5;
+            }
+        });
+    }
 
-        if (qty > 1) {
-            // Add 0.5 for each extra piece
-            surcharge += (qty - 1) * 0.5;
+    // Surcharge for added extra ingredients (0.5€ per unit)
+    if (item.extraIngredients) {
+        for (const qty of Object.values(item.extraIngredients)) {
+            surcharge += qty * 0.5;
         }
-    });
+    }
 
     return surcharge * item.quantity; // Multiply by item quantity
 }
