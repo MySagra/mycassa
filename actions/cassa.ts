@@ -514,7 +514,7 @@ export async function getCashRegisters() {
   }
 
   try {
-    const response = await fetch(`${process.env.API_URL}/v1/cash-registers`, {
+    const response = await fetch(`${process.env.API_URL}/v1/cash-registers?enabled=true`, {
       headers: {
         'Authorization': `Bearer ${session.accessToken}`,
         'Content-Type': 'application/json',

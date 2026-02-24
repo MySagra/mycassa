@@ -23,7 +23,7 @@ export function AboutSettingsCard() {
                 <div className="space-y-2">
                     <Label>Licenza</Label>
                     <div className="text-sm text-muted-foreground">
-                        2025 MyCassa
+                        MyCassa
                     </div>
                 </div>
             </CardContent>
