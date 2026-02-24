@@ -151,6 +151,7 @@ export interface FoodWithIngredients {
   price: string;
   available: boolean;
   ingredients?: Ingredient[];
+  printerId?: string;
 }
 
 // Confirm Order Types
@@ -200,6 +201,7 @@ export const API_ENDPOINTS = {
     BY_CODE: (code: string) => `/v1/orders/${code}`,
     TODAY: '/v1/orders/day/today',
     CONFIRM: '/v1/confirm-order',
+    REPRINT: (id: string) => `/v1/orders/${id}/reprint`,
   },
   USERS: '/v1/users',
   ROLES: '/v1/roles',
