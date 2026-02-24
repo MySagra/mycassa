@@ -578,3 +578,88 @@ export async function getAllIngredients() {
     return { success: false, error: error.message || 'Errore sconosciuto' };
   }
 }
+
+/**
+ * Get printer by ID
+ */
+export async function getPrinterById(printerId: string) {
+  const session = await auth();
+
+  if (!session?.accessToken) {
+    return { success: false, error: 'Non autenticato' };
+  }
+
+  if (!printerId || typeof printerId !== 'string') {
+    return { success: false, error: 'ID stampante non valido' };
+  }
+
+  try {
+    const response = await fetch(`${process.env.API_URL}/v1/printers/${printerId}`, {
+      headers: {
+        'Authorization': `Bearer ${session.accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      cache: 'no-store',
+    });
+
+    if (response.status === 401 || response.status === 403) {
+      await signOut({ redirectTo: '/login' });
+    }
+
+    if (!response.ok) {
+      return { success: false, error: 'Errore nel caricamento della stampante' };
+    }
+
+    const data = await response.json();
+    return { success: true, data };
+  } catch (error: any) {
+    if (isRedirectError(error)) {
+      throw error;
+    }
+    console.error('getPrinterById error:', error);
+    return { success: false, error: error.message || 'Errore sconosciuto' };
+  }
+}
+
+/**
+ * Reprint order to selected printers
+ */
+export async function reprintOrder(orderId: string, body: {
+  orderItems: Array<{ id: string }>;
+  reprintReceipt: boolean;
+}) {
+  const session = await auth();
+
+  if (!session?.accessToken) {
+    return { success: false, error: 'Non autenticato' };
+  }
+
+  try {
+    const response = await fetch(`${process.env.API_URL}/v1/orders/${orderId}/reprint`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${session.accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    });
+
+    if (response.status === 401 || response.status === 403) {
+      await signOut({ redirectTo: '/login' });
+    }
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      return { success: false, error: errorData.message || 'Impossibile eseguire la ristampa' };
+    }
+
+    const data = await response.json();
+    return { success: true, data };
+  } catch (error: any) {
+    if (isRedirectError(error)) {
+      throw error;
+    }
+    console.error('reprintOrder error:', error);
+    return { success: false, error: error.message || 'Errore sconosciuto' };
+  }
+}
