@@ -51,6 +51,7 @@ export default function CassaPage() {
     const [editingItem, setEditingItem] = useState<ExtendedCartItem | null>(null);
     const [validationErrors, setValidationErrors] = useState<{ customer?: string; table?: string; paidAmount?: string }>({});
     const [searchQuery, setSearchQuery] = useState('');
+    const [foodSearchQuery, setFoodSearchQuery] = useState('');
     const [openDiscountDialog, setOpenDiscountDialog] = useState(false);
     const [appliedDiscountAmount, setAppliedDiscountAmount] = useState<number>(0);
     const [enableTableInput, setEnableTableInput] = useState(true);
@@ -915,6 +916,8 @@ export default function CassaPage() {
                     theme={theme}
                     onThemeToggle={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
                     cashRegisterName={cashRegisterName}
+                    foodSearchQuery={foodSearchQuery}
+                    onFoodSearchChange={setFoodSearchQuery}
                 />
 
                 <div className="flex flex-1 overflow-hidden">
@@ -935,6 +938,7 @@ export default function CassaPage() {
                             onAddToCart={addToCart}
                             loading={loadingFoods}
                             showDailyOrders={showDailyOrders}
+                            foodSearchQuery={foodSearchQuery}
                         />
                     </main>
 

@@ -57,20 +57,20 @@ export function DailyOrderCard({ order, onViewDetail, onLoadToCart, searchQuery 
     return (
         <Card ref={cardRef} className="border hover:border-amber-500 transition-all duration-300">
             <CardContent className="space-y-3">
-                <div className="flex items-start justify-between select-none">
-                    <div className="space-y-1">
-                        <div className="flex items-center gap-2">
+                <div className="flex items-start justify-between select-none min-w-0">
+                    <div className="space-y-1 min-w-0 flex-1 mr-2">
+                        <div className="flex items-center gap-2 min-w-0">
                             <span
-                                className="font-mono font-bold text-lg text-amber-600"
+                                className="font-mono font-bold text-lg text-amber-600 shrink-0"
                                 dangerouslySetInnerHTML={{ __html: highlightText(order.displayCode) }}
                             />
                             <span
-                                className="text-sm text-muted-foreground"
+                                className="text-sm text-muted-foreground truncate max-w-[120px]"
                                 dangerouslySetInnerHTML={{ __html: highlightText(`Tavolo ${order.table}`) }}
                             />
                         </div>
                         <p
-                            className="text-sm font-medium"
+                            className="text-sm font-medium truncate max-w-[180px]"
                             dangerouslySetInnerHTML={{ __html: highlightText(order.customer) }}
                         />
                         <div className="flex items-center gap-2">

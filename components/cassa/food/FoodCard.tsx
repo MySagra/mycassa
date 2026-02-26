@@ -5,16 +5,44 @@ import { cn } from '@/lib/utils';
 interface FoodCardProps {
     food: Food;
     onClick: () => void;
+    searchQuery?: string;
 }
 
-export function FoodCard({ food, onClick }: FoodCardProps) {
+function HighlightText({ text, query }: { text: string; query: string }) {
+    if (!query.trim()) return <>{text}</>;
+
+    const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+    const parts = text.split(regex);
+
+    return (
+        <>
+            {parts.map((part, i) =>
+                regex.test(part) ? (
+                    <mark key={i} className="bg-amber-300 text-amber-900 rounded-sm px-0.5 not-italic">
+                        {part}
+                    </mark>
+                ) : (
+                    <span key={i}>{part}</span>
+                )
+            )}
+        </>
+    );
+}
+
+export function FoodCard({ food, onClick, searchQuery = '' }: FoodCardProps) {
     const price = typeof food.price === 'number'
         ? food.price
         : parseFloat(food.price as unknown as string);
 
+    const isMatch = searchQuery.trim() !== '' &&
+        food.name.toLowerCase().includes(searchQuery.toLowerCase());
+
     return (
         <Card
-            className={`cursor-pointer transition-all hover:shadow-lg ${!food.available ? 'opacity-50' : ''}`}
+            className={cn(
+                'cursor-pointer transition-all hover:shadow-lg',
+                !food.available ? 'opacity-50' : ''
+            )}
             onClick={onClick}
         >
             <CardContent className="">
@@ -25,7 +53,7 @@ export function FoodCard({ food, onClick }: FoodCardProps) {
                     )}
                     title={food.name}
                 >
-                    {food.name}
+                    <HighlightText text={food.name} query={searchQuery} />
                 </h3>
                 <div className="flex items-center justify-between">
                     <span className="text-base font-bold text-amber-500 select-none">
