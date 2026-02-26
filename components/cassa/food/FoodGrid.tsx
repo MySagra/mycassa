@@ -10,13 +10,26 @@ interface FoodGridProps {
     onAddToCart: (food: Food) => void;
     loading: boolean;
     showDailyOrders: boolean;
+    foodSearchQuery?: string;
 }
 
-export function FoodGrid({ foods, categories, selectedCategoryId, onAddToCart, loading, showDailyOrders }: FoodGridProps) {
-    // Filter foods by category
-    const filteredFoods = selectedCategoryId
-        ? foods.filter((food) => food.categoryId === selectedCategoryId)
-        : foods;
+export function FoodGrid({ foods, categories, selectedCategoryId, onAddToCart, loading, showDailyOrders, foodSearchQuery = '' }: FoodGridProps) {
+    const isSearching = foodSearchQuery.trim() !== '';
+
+    // Filter foods by category, then optionally by search query
+    const filteredFoods = (() => {
+        let result = selectedCategoryId
+            ? foods.filter((food) => food.categoryId === selectedCategoryId)
+            : foods;
+
+        if (isSearching) {
+            result = result.filter((food) =>
+                food.name.toLowerCase().includes(foodSearchQuery.toLowerCase())
+            );
+        }
+
+        return result;
+    })();
 
     // Group foods by category and sort categories by position
     const foodsByCategory = filteredFoods.reduce((acc, food) => {
@@ -48,6 +61,10 @@ export function FoodGrid({ foods, categories, selectedCategoryId, onAddToCart, l
         );
     }
 
+    const gridCols = showDailyOrders
+        ? "grid-cols-1 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3"
+        : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4";
+
     return (
         <ScrollArea className="h-full">
             <div className="space-y-8 p-6">
@@ -59,19 +76,22 @@ export function FoodGrid({ foods, categories, selectedCategoryId, onAddToCart, l
                                 type="single"
                                 collapsible
                                 className="w-full bg-card/60 rounded-lg border"
+                                // When searching, always keep open; otherwise default open
                                 defaultValue={categoryName}
+                                value={isSearching ? categoryName : undefined}
                             >
                                 <AccordionItem value={categoryName} className="border-none select-none">
                                     <AccordionTrigger className="px-4 py-3 cursor-pointer hover:no-underline">
                                         <h2 className="text-xl font-semibold">{categoryName.toUpperCase()}</h2>
                                     </AccordionTrigger>
                                     <AccordionContent className="px-4 pb-4">
-                                        <div className={`grid ${showDailyOrders ? "grid-cols-1 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3" : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"} gap-3`}>
+                                        <div className={`grid ${gridCols} gap-3`}>
                                             {categoryFoods.map((food) => (
                                                 <FoodCard
                                                     key={food.id}
                                                     food={food}
                                                     onClick={() => onAddToCart(food)}
+                                                    searchQuery={foodSearchQuery}
                                                 />
                                             ))}
                                         </div>
@@ -79,17 +99,30 @@ export function FoodGrid({ foods, categories, selectedCategoryId, onAddToCart, l
                                 </AccordionItem>
                             </Accordion>
                         ))}
+                        {isSearching && filteredFoods.length === 0 && (
+                            <div className="flex h-32 items-center justify-center text-muted-foreground">
+                                Nessun cibo trovato per &ldquo;{foodSearchQuery}&rdquo;
+                            </div>
+                        )}
                     </div>
                 ) : (
-                    <div className={`grid ${showDailyOrders ? "grid-cols-1 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3" : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"} gap-3`}>
-                        {filteredFoods.map((food) => (
-                            <FoodCard
-                                key={food.id}
-                                food={food}
-                                onClick={() => onAddToCart(food)}
-                            />
-                        ))}
-                    </div>
+                    <>
+                        <div className={`grid ${gridCols} gap-3`}>
+                            {filteredFoods.map((food) => (
+                                <FoodCard
+                                    key={food.id}
+                                    food={food}
+                                    onClick={() => onAddToCart(food)}
+                                    searchQuery={foodSearchQuery}
+                                />
+                            ))}
+                        </div>
+                        {isSearching && filteredFoods.length === 0 && (
+                            <div className="flex h-32 items-center justify-center text-muted-foreground">
+                                Nessun cibo trovato per &ldquo;{foodSearchQuery}&rdquo;
+                            </div>
+                        )}
+                    </>
                 )}
             </div>
         </ScrollArea>

@@ -77,7 +77,7 @@ export function EditItemDialog({ item, open, onClose, onSave, allIngredients = [
 
     return (
         <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
-            <DialogContent className="sm:max-w-[425px] overflow-hidden">
+            <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                 <DialogHeader>
                     <DialogTitle>Modifica Prodotto</DialogTitle>
                     <DialogDescription>
@@ -129,77 +129,79 @@ export function EditItemDialog({ item, open, onClose, onSave, allIngredients = [
                     {(item.food.ingredients && item.food.ingredients.length > 0 || Object.keys(extraIngredients).length > 0) && (
                         <div className="space-y-2">
                             <Label>Ingredienti</Label>
-                            <div className="space-y-3 max-h-65 overflow-y-auto border rounded-md p-3">
-                                {/* Default food ingredients */}
-                                {item.food.ingredients?.map((ingredient) => {
-                                    const qty = ingredientQuantities[ingredient.id] ?? 1;
-                                    return (
-                                        <div key={ingredient.id} className="flex items-center justify-between">
-                                            <label className="text-sm font-medium">
-                                                {ingredient.name}
-                                            </label>
-                                            <div className="flex items-center gap-2">
-                                                <Button
-                                                    type="button"
-                                                    variant="outline"
-                                                    size="icon"
-                                                    className="h-8 w-8 cursor-pointer"
-                                                    onClick={() => updateIngredientQuantity(ingredient.id, -1)}
-                                                >
-                                                    <Minus className="h-4 w-4" />
-                                                </Button>
-                                                <span className="w-8 text-center font-medium">{qty}</span>
-                                                <Button
-                                                    type="button"
-                                                    variant="outline"
-                                                    size="icon"
-                                                    className="h-8 w-8 cursor-pointer"
-                                                    onClick={() => updateIngredientQuantity(ingredient.id, 1)}
-                                                >
-                                                    <Plus className="h-4 w-4" />
-                                                </Button>
+                            <div className="border rounded-md overflow-hidden">
+                                <div className="space-y-3 max-h-65 overflow-y-auto p-3">
+                                    {/* Default food ingredients */}
+                                    {item.food.ingredients?.map((ingredient) => {
+                                        const qty = ingredientQuantities[ingredient.id] ?? 1;
+                                        return (
+                                            <div key={ingredient.id} className="flex items-center justify-between">
+                                                <label className="text-sm font-medium">
+                                                    {ingredient.name}
+                                                </label>
+                                                <div className="flex items-center gap-2">
+                                                    <Button
+                                                        type="button"
+                                                        variant="outline"
+                                                        size="icon"
+                                                        className="h-8 w-8 cursor-pointer"
+                                                        onClick={() => updateIngredientQuantity(ingredient.id, -1)}
+                                                    >
+                                                        <Minus className="h-4 w-4" />
+                                                    </Button>
+                                                    <span className="w-8 text-center font-medium">{qty}</span>
+                                                    <Button
+                                                        type="button"
+                                                        variant="outline"
+                                                        size="icon"
+                                                        className="h-8 w-8 cursor-pointer"
+                                                        onClick={() => updateIngredientQuantity(ingredient.id, 1)}
+                                                    >
+                                                        <Plus className="h-4 w-4" />
+                                                    </Button>
+                                                </div>
                                             </div>
-                                        </div>
-                                    );
-                                })}
+                                        );
+                                    })}
 
-                                {/* Separator + extra ingredient rows */}
-                                {Object.keys(extraIngredients).length > 0 && item.food.ingredients && item.food.ingredients.length > 0 && (
-                                    <div className="border-t my-2" />
-                                )}
-                                {Object.entries(extraIngredients).map(([id, qty]) => {
-                                    const ingredient = allIngredients.find((i) => i.id === id);
-                                    if (!ingredient) return null;
-                                    return (
-                                        <div key={id} className="flex items-center justify-between">
-                                            <label className="text-sm font-medium text-amber-500">
-                                                {ingredient.name}
-                                            </label>
-                                            <div className="flex items-center gap-2">
-                                                <Button
-                                                    type="button"
-                                                    variant="outline"
-                                                    size="icon"
-                                                    className="h-8 w-8 cursor-pointer"
-                                                    onClick={() => updateExtraIngredientQuantity(id, -1)}
-                                                    disabled={qty <= 1}
-                                                >
-                                                    <Minus className="h-4 w-4" />
-                                                </Button>
-                                                <span className="w-8 text-center font-medium">{qty}</span>
-                                                <Button
-                                                    type="button"
-                                                    variant="outline"
-                                                    size="icon"
-                                                    className="h-8 w-8 cursor-pointer"
-                                                    onClick={() => updateExtraIngredientQuantity(id, 1)}
-                                                >
-                                                    <Plus className="h-4 w-4" />
-                                                </Button>
+                                    {/* Separator + extra ingredient rows */}
+                                    {Object.keys(extraIngredients).length > 0 && item.food.ingredients && item.food.ingredients.length > 0 && (
+                                        <div className="border-t my-2" />
+                                    )}
+                                    {Object.entries(extraIngredients).map(([id, qty]) => {
+                                        const ingredient = allIngredients.find((i) => i.id === id);
+                                        if (!ingredient) return null;
+                                        return (
+                                            <div key={id} className="flex items-center justify-between">
+                                                <label className="text-sm font-medium text-amber-500">
+                                                    {ingredient.name}
+                                                </label>
+                                                <div className="flex items-center gap-2">
+                                                    <Button
+                                                        type="button"
+                                                        variant="outline"
+                                                        size="icon"
+                                                        className="h-8 w-8 cursor-pointer"
+                                                        onClick={() => updateExtraIngredientQuantity(id, -1)}
+                                                        disabled={qty <= 1}
+                                                    >
+                                                        <Minus className="h-4 w-4" />
+                                                    </Button>
+                                                    <span className="w-8 text-center font-medium">{qty}</span>
+                                                    <Button
+                                                        type="button"
+                                                        variant="outline"
+                                                        size="icon"
+                                                        className="h-8 w-8 cursor-pointer"
+                                                        onClick={() => updateExtraIngredientQuantity(id, 1)}
+                                                    >
+                                                        <Plus className="h-4 w-4" />
+                                                    </Button>
+                                                </div>
                                             </div>
-                                        </div>
-                                    );
-                                })}
+                                        );
+                                    })}
+                                </div>
                             </div>
                             <p className="text-xs text-muted-foreground">
                                 Imposta la quantità degli ingredienti (0 = nessuno)
@@ -227,7 +229,7 @@ export function EditItemDialog({ item, open, onClose, onSave, allIngredients = [
                                     </div>
                                 </AccordionTrigger>
                                 <AccordionContent>
-                                    <div className="flex flex-wrap gap-2 mt-2">
+                                    <div className="flex flex-wrap gap-2 mt-2 max-h-[100px] overflow-y-auto">
                                         {availableExtras
                                             .filter((i) => i.name.toLowerCase().includes(extraSearch.toLowerCase()))
                                             .map((ingredient) => {
