@@ -1,15 +1,13 @@
-'use server';
-
-import { auth } from '@/lib/auth';
+import { getAuthToken, AUTH_COOKIE_NAME } from '@/lib/auth';
 
 /**
  * SSE Proxy for cashier events
  * This endpoint proxies SSE connections from the backend, keeping API_URL server-side only
  */
 export async function GET(request: Request) {
-    const session = await auth();
+    const token = await getAuthToken();
 
-    if (!session?.accessToken) {
+    if (!token) {
         return new Response('Unauthorized', { status: 401 });
     }
 
@@ -20,7 +18,7 @@ export async function GET(request: Request) {
         const response = await fetch(`${apiUrl}/events/cashier`, {
             method: 'GET',
             headers: {
-                'Authorization': `Bearer ${session.accessToken}`,
+                'Cookie': `${AUTH_COOKIE_NAME}=${token}`,
                 'Accept': 'text/event-stream',
             },
         });

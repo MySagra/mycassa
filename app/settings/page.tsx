@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useSession } from 'next-auth/react';
+import { useAuth } from '@/hooks/use-auth';
 import { useTheme } from 'next-themes';
 import { toast } from 'sonner';
 import { SettingsHeader } from '@/components/settings/header/SettingsHeader';
@@ -13,13 +13,10 @@ import { AboutSettingsCard } from '../../components/settings/setting-card/AboutS
 
 export default function SettingsPage() {
     const router = useRouter();
-    const { data: session, status } = useSession();
+    const { isLoading, isAuthenticated } = useAuth();
     const { theme, setTheme } = useTheme();
     const [enableTableInput, setEnableTableInput] = useState(true);
     const [isLoadingSettings, setIsLoadingSettings] = useState(true);
-
-    const isAuthenticated = status === 'authenticated';
-    const isLoading = status === 'loading';
 
     // Load settings on mount
     useEffect(() => {

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { useSession } from 'next-auth/react';
+import { useAuth } from '@/hooks/use-auth';
 import { useTheme } from 'next-themes';
 import { fetchEventSource } from '@microsoft/fetch-event-source';
 import { toast } from 'sonner';
@@ -26,15 +26,13 @@ import { z } from 'zod';
 
 export default function CassaPage() {
     const router = useRouter();
-    const { data: session, status } = useSession();
+    const { user, isLoading, isAuthenticated } = useAuth();
     const { theme, setTheme } = useTheme();
     const cartScrollRef = useRef<HTMLDivElement>(null);
     const sseConnectionRef = useRef(false);
     const lastEventRef = useRef<string | null>(null);
     const showAllOrdersRef = useRef<boolean>(false);
     const dailyOrdersRef = useRef<DailyOrder[]>([]);
-    const isAuthenticated = status === 'authenticated';
-    const isLoading = status === 'loading';
     const [categories, setCategories] = useState<Category[]>([]);
     const [foods, setFoods] = useState<Food[]>([]);
     const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
@@ -80,12 +78,12 @@ export default function CassaPage() {
         }
     }, []);
 
-    // Save user ID to localStorage when session is available
+    // Save user ID to localStorage when user data is available
     useEffect(() => {
-        if (session?.user?.id) {
-            localStorage.setItem('userId', session.user.id);
+        if (user?.id) {
+            localStorage.setItem('userId', user.id);
         }
-    }, [session]);
+    }, [user]);
 
     // Load selected cash register name from localStorage
     useEffect(() => {
@@ -194,8 +192,8 @@ export default function CassaPage() {
 
     // SSE connection - Always connected when authenticated
     useEffect(() => {
-        if (!session?.accessToken) {
-            console.log('[SSE] No access token, skipping connection');
+        if (!isAuthenticated) {
+            console.log('[SSE] Not authenticated, skipping connection');
             return;
         }
 
@@ -455,11 +453,11 @@ export default function CassaPage() {
             abortController.abort();
             sseConnectionRef.current = false;
         };
-    }, [session?.accessToken]);
+    }, [isAuthenticated]);
 
     // Load daily orders when the section is opened
     useEffect(() => {
-        if (!session?.accessToken || !showDailyOrders) {
+        if (!isAuthenticated || !showDailyOrders) {
             return;
         }
 
@@ -482,11 +480,11 @@ export default function CassaPage() {
         };
 
         loadInitialOrders();
-    }, [session?.accessToken, showDailyOrders, showAllOrders]);
+    }, [isAuthenticated, showDailyOrders, showAllOrders]);
 
     // Search daily orders based on query
     useEffect(() => {
-        if (!session?.accessToken || !showDailyOrders) {
+        if (!isAuthenticated || !showDailyOrders) {
             return;
         }
 
@@ -527,7 +525,7 @@ export default function CassaPage() {
         }, 300); // Debounce 300ms
 
         return () => clearTimeout(debounceTimer);
-    }, [session?.accessToken, showDailyOrders, searchQuery, showAllOrders]);
+    }, [isAuthenticated, showDailyOrders, searchQuery, showAllOrders]);
 
     // Cart operations
     const addToCart = (food: Food) => {

@@ -1,7 +1,7 @@
 'use client';
 
-import { SessionProvider as NextAuthSessionProvider } from 'next-auth/react';
-
+// SessionProvider non è più necessario: l'autenticazione avviene tramite
+// il cookie HTTP-only mysagra_token e il hook useAuth.
 export function SessionProvider({ children }: { children: React.ReactNode }) {
-  return <NextAuthSessionProvider>{children}</NextAuthSessionProvider>;
+  return <>{children}</>;
 }
