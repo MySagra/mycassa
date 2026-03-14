@@ -1,13 +1,38 @@
 'use server';
 
-import { auth, signOut } from '@/lib/auth';
-import { get } from 'http';
+import { getAuthToken, AUTH_COOKIE_NAME } from '@/lib/auth';
+import { redirect } from 'next/navigation';
 
 function isRedirectError(error: any) {
   return error && (
     error.digest?.startsWith('NEXT_REDIRECT') ||
     error.message === 'NEXT_REDIRECT'
   );
+}
+
+/**
+ * Intestazioni comuni per le chiamate API autenticate.
+ * Il cookie mysagra_token viene inviato manualmente poiché le Server Actions
+ * non propagano automaticamente i cookie del browser alle fetch verso API esterne.
+ */
+async function authHeaders(): Promise<HeadersInit> {
+  const token = await getAuthToken();
+  if (!token) {
+    redirect('/login');
+  }
+  return {
+    'Content-Type': 'application/json',
+    'Cookie': `${AUTH_COOKIE_NAME}=${token}`,
+  };
+}
+
+/**
+ * Gestisce le risposte 401/403 reindirizzando al login.
+ */
+function handleAuthError(status: number) {
+  if (status === 401 || status === 403) {
+    redirect('/login');
+  }
 }
 
 /**
@@ -39,28 +64,15 @@ function getDailyOrderDateRange() {
 /**
  * Get categories available for current user
  */
-/**
- * Get categories available for current user
- */
 export async function getCategories() {
-  const session = await auth();
-
-  if (!session?.accessToken) {
-    return { success: false, error: 'Non autenticato' };
-  }
-
   try {
+    const headers = await authHeaders();
     const response = await fetch(`${process.env.API_URL}/v1/categories?available=true&include=foods`, {
-      headers: {
-        'Authorization': `Bearer ${session.accessToken}`,
-        'Content-Type': 'application/json',
-      },
+      headers,
       cache: 'no-store',
     });
 
-    if (response.status === 401 || response.status === 403) {
-      await signOut({ redirectTo: '/login' });
-    }
+    handleAuthError(response.status);
 
     if (!response.ok) {
       return { success: false, error: 'Errore nel caricamento delle categorie' };
@@ -81,28 +93,18 @@ export async function getCategories() {
  * Get a single food by ID
  */
 export async function getFoodById(foodId: string) {
-  const session = await auth();
-
-  if (!session?.accessToken) {
-    return { success: false, error: 'Non autenticato' };
-  }
-
   if (!foodId || typeof foodId !== 'string') {
     return { success: false, error: 'ID cibo non valido' };
   }
 
   try {
+    const headers = await authHeaders();
     const response = await fetch(`${process.env.API_URL}/v1/foods/${foodId}`, {
-      headers: {
-        'Authorization': `Bearer ${session.accessToken}`,
-        'Content-Type': 'application/json',
-      },
+      headers,
       cache: 'no-store',
     });
 
-    if (response.status === 401 || response.status === 403) {
-      await signOut({ redirectTo: '/login' });
-    }
+    handleAuthError(response.status);
 
     if (!response.ok) {
       return { success: false, error: 'Errore nel caricamento del cibo' };
@@ -123,26 +125,16 @@ export async function getFoodById(foodId: string) {
  * Get today's orders
  */
 export async function getTodayOrders() {
-  const session = await auth();
-
-  if (!session?.accessToken) {
-    return { success: false, error: 'Non autenticato' };
-  }
-
   try {
+    const headers = await authHeaders();
     const { dateFrom, dateTo } = getDailyOrderDateRange();
 
     const response = await fetch(`${process.env.API_URL}/v1/orders?page=1&limit=20&sortBy=createdAt&status=PENDING&dateFrom=${dateFrom}&dateTo=${dateTo}`, {
-      headers: {
-        'Authorization': `Bearer ${session.accessToken}`,
-        'Content-Type': 'application/json',
-      },
+      headers,
       cache: 'no-store',
     });
 
-    if (response.status === 401 || response.status === 403) {
-      await signOut({ redirectTo: '/login' });
-    }
+    handleAuthError(response.status);
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
@@ -164,26 +156,16 @@ export async function getTodayOrders() {
  * Get all today's orders (regardless of status)
  */
 export async function getAllTodayOrders() {
-  const session = await auth();
-
-  if (!session?.accessToken) {
-    return { success: false, error: 'Non autenticato' };
-  }
-
   try {
+    const headers = await authHeaders();
     const { dateFrom, dateTo } = getDailyOrderDateRange();
 
     const response = await fetch(`${process.env.API_URL}/v1/orders?page=1&limit=20&sortBy=createdAt&dateFrom=${dateFrom}&dateTo=${dateTo}`, {
-      headers: {
-        'Authorization': `Bearer ${session.accessToken}`,
-        'Content-Type': 'application/json',
-      },
+      headers,
       cache: 'no-store',
     });
 
-    if (response.status === 401 || response.status === 403) {
-      await signOut({ redirectTo: '/login' });
-    }
+    handleAuthError(response.status);
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
@@ -206,12 +188,6 @@ export async function getAllTodayOrders() {
  * Get order by display code
  */
 export async function getOrderByCode(code: string) {
-  const session = await auth();
-
-  if (!session?.accessToken) {
-    return { success: false, error: 'Non autenticato' };
-  }
-
   if (!code || typeof code !== 'string') {
     return { success: false, error: 'Codice ordine non valido' };
   }
@@ -219,17 +195,13 @@ export async function getOrderByCode(code: string) {
   const { dateFrom, dateTo } = getDailyOrderDateRange();
 
   try {
+    const headers = await authHeaders();
     const response = await fetch(`${process.env.API_URL}/v1/orders?displayCode=${encodeURIComponent(code)}&page=1&limit=20&sortBy=createdAt&dateFrom=${dateFrom}&dateTo=${dateTo}`, {
-      headers: {
-        'Authorization': `Bearer ${session.accessToken}`,
-        'Content-Type': 'application/json',
-      },
+      headers,
       cache: 'no-store',
     });
 
-    if (response.status === 401 || response.status === 403) {
-      await signOut({ redirectTo: '/login' });
-    }
+    handleAuthError(response.status);
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
@@ -259,28 +231,18 @@ export async function getOrderByCode(code: string) {
 }
 
 export async function getOrderByOrderId(orderId: number) {
-  const session = await auth();
-
-  if (!session?.accessToken) {
-    return { success: false, error: 'Non autenticato' };
-  }
-
   if (!orderId || typeof orderId !== 'number') {
     return { success: false, error: 'ID ordine non valido' };
   }
 
   try {
+    const headers = await authHeaders();
     const response = await fetch(`${process.env.API_URL}/v1/orders/${orderId}`, {
-      headers: {
-        'Authorization': `Bearer ${session.accessToken}`,
-        'Content-Type': 'application/json',
-      },
+      headers,
       cache: 'no-store',
     });
 
-    if (response.status === 401 || response.status === 403) {
-      await signOut({ redirectTo: '/login' });
-    }
+    handleAuthError(response.status);
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
@@ -302,12 +264,6 @@ export async function getOrderByOrderId(orderId: number) {
  * Search orders by value (tavolo, cliente, o id)
  */
 export async function searchDailyOrders(searchValue: string) {
-  const session = await auth();
-
-  if (!session?.accessToken) {
-    return { success: false, error: 'Non autenticato' };
-  }
-
   if (!searchValue || typeof searchValue !== 'string') {
     return { success: false, error: 'Valore di ricerca non valido' };
   }
@@ -315,17 +271,13 @@ export async function searchDailyOrders(searchValue: string) {
   const { dateFrom, dateTo } = getDailyOrderDateRange();
 
   try {
+    const headers = await authHeaders();
     const response = await fetch(`${process.env.API_URL}/v1/orders?search=${searchValue}&page=1&limit=20&sortBy=createdAt&dateFrom=${dateFrom}&dateTo=${dateTo}`, {
-      headers: {
-        'Authorization': `Bearer ${session.accessToken}`,
-        'Content-Type': 'application/json',
-      },
+      headers,
       cache: 'no-store',
     });
 
-    if (response.status === 401 || response.status === 403) {
-      await signOut({ redirectTo: '/login' });
-    }
+    handleAuthError(response.status);
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
@@ -347,12 +299,6 @@ export async function searchDailyOrders(searchValue: string) {
  * Search all orders by value (tavolo, cliente, o id) - regardless of status
  */
 export async function searchAllDailyOrders(searchValue: string) {
-  const session = await auth();
-
-  if (!session?.accessToken) {
-    return { success: false, error: 'Non autenticato' };
-  }
-
   if (!searchValue || typeof searchValue !== 'string') {
     return { success: false, error: 'Valore di ricerca non valido' };
   }
@@ -360,17 +306,13 @@ export async function searchAllDailyOrders(searchValue: string) {
   const { dateFrom, dateTo } = getDailyOrderDateRange();
 
   try {
+    const headers = await authHeaders();
     const response = await fetch(`${process.env.API_URL}/v1/orders?search=${searchValue}&page=1&limit=20&sortBy=createdAt&dateFrom=${dateFrom}&dateTo=${dateTo}`, {
-      headers: {
-        'Authorization': `Bearer ${session.accessToken}`,
-        'Content-Type': 'application/json',
-      },
+      headers,
       cache: 'no-store',
     });
 
-    if (response.status === 401 || response.status === 403) {
-      await signOut({ redirectTo: '/login' });
-    }
+    handleAuthError(response.status);
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
@@ -390,9 +332,6 @@ export async function searchAllDailyOrders(searchValue: string) {
 
 
 /**
- * Create a new order
- */
-/**
  * Create a new order (optionally confirmed)
  */
 export async function createOrder(orderData: {
@@ -411,25 +350,15 @@ export async function createOrder(orderData: {
     discount: number;
   };
 }) {
-  const session = await auth();
-
-  if (!session?.accessToken) {
-    return { success: false, error: 'Non autenticato' };
-  }
-
   try {
+    const headers = await authHeaders();
     const response = await fetch(`${process.env.API_URL}/v1/orders`, {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${session.accessToken}`,
-        'Content-Type': 'application/json',
-      },
+      headers,
       body: JSON.stringify(orderData),
     });
 
-    if (response.status === 401 || response.status === 403) {
-      await signOut({ redirectTo: '/login' });
-    }
+    handleAuthError(response.status);
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
@@ -463,29 +392,19 @@ export async function confirmOrder(orderData: {
     surcharge: number;
   }>;
 }) {
-  const session = await auth();
-
-  if (!session?.accessToken) {
-    return { success: false, error: 'Non autenticato' };
-  }
-
   try {
+    const headers = await authHeaders();
     // Extract orderId and prepare body without it
     const { orderId, ...bodyData } = orderData;
 
     // Use orderId in URL path: /v1/orders/:id/confirm
     const response = await fetch(`${process.env.API_URL}/v1/orders/${orderId}/confirm`, {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${session.accessToken}`,
-        'Content-Type': 'application/json',
-      },
+      headers,
       body: JSON.stringify(bodyData),
     });
 
-    if (response.status === 401 || response.status === 403) {
-      await signOut({ redirectTo: '/login' });
-    }
+    handleAuthError(response.status);
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
@@ -507,24 +426,14 @@ export async function confirmOrder(orderData: {
  * Get cash registers
  */
 export async function getCashRegisters() {
-  const session = await auth();
-
-  if (!session?.accessToken) {
-    return { success: false, error: 'Non autenticato' };
-  }
-
   try {
+    const headers = await authHeaders();
     const response = await fetch(`${process.env.API_URL}/v1/cash-registers?enabled=true`, {
-      headers: {
-        'Authorization': `Bearer ${session.accessToken}`,
-        'Content-Type': 'application/json',
-      },
+      headers,
       cache: 'no-store',
     });
 
-    if (response.status === 401 || response.status === 403) {
-      await signOut({ redirectTo: '/login' });
-    }
+    handleAuthError(response.status);
 
     if (!response.ok) {
       return { success: false, error: 'Errore nel caricamento delle casse' };
@@ -545,24 +454,14 @@ export async function getCashRegisters() {
  * Get all ingredients
  */
 export async function getAllIngredients() {
-  const session = await auth();
-
-  if (!session?.accessToken) {
-    return { success: false, error: 'Non autenticato' };
-  }
-
   try {
+    const headers = await authHeaders();
     const response = await fetch(`${process.env.API_URL}/v1/ingredients`, {
-      headers: {
-        'Authorization': `Bearer ${session.accessToken}`,
-        'Content-Type': 'application/json',
-      },
+      headers,
       cache: 'no-store',
     });
 
-    if (response.status === 401 || response.status === 403) {
-      await signOut({ redirectTo: '/login' });
-    }
+    handleAuthError(response.status);
 
     if (!response.ok) {
       return { success: false, error: 'Errore nel caricamento degli ingredienti' };
@@ -583,28 +482,18 @@ export async function getAllIngredients() {
  * Get printer by ID
  */
 export async function getPrinterById(printerId: string) {
-  const session = await auth();
-
-  if (!session?.accessToken) {
-    return { success: false, error: 'Non autenticato' };
-  }
-
   if (!printerId || typeof printerId !== 'string') {
     return { success: false, error: 'ID stampante non valido' };
   }
 
   try {
+    const headers = await authHeaders();
     const response = await fetch(`${process.env.API_URL}/v1/printers/${printerId}`, {
-      headers: {
-        'Authorization': `Bearer ${session.accessToken}`,
-        'Content-Type': 'application/json',
-      },
+      headers,
       cache: 'no-store',
     });
 
-    if (response.status === 401 || response.status === 403) {
-      await signOut({ redirectTo: '/login' });
-    }
+    handleAuthError(response.status);
 
     if (!response.ok) {
       return { success: false, error: 'Errore nel caricamento della stampante' };
@@ -628,25 +517,15 @@ export async function reprintOrder(orderId: string, body: {
   orderItems: Array<{ id: string }>;
   reprintReceipt: boolean;
 }) {
-  const session = await auth();
-
-  if (!session?.accessToken) {
-    return { success: false, error: 'Non autenticato' };
-  }
-
   try {
+    const headers = await authHeaders();
     const response = await fetch(`${process.env.API_URL}/v1/orders/${orderId}/reprint`, {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${session.accessToken}`,
-        'Content-Type': 'application/json',
-      },
+      headers,
       body: JSON.stringify(body),
     });
 
-    if (response.status === 401 || response.status === 403) {
-      await signOut({ redirectTo: '/login' });
-    }
+    handleAuthError(response.status);
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
