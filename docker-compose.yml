@@ -1,12 +1,13 @@
 services:
-  cassa:
+  mycassa:
+    image: mycassa-cassa
     build:
       context: .
       dockerfile: Dockerfile
     container_name: mycassa-cassa
     restart: always
     ports:
-      - "7000:7000"
+      - "3031:3031"
     env_file:
       - .env
     environment:
