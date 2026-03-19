@@ -9,7 +9,6 @@ import { SettingsHeader } from '@/components/settings/header/SettingsHeader';
 import { GeneralSettingsCard } from '../../components/settings/setting-card/GeneralSettingsCard';
 import { PrintersSettingsCard } from '../../components/settings/setting-card/PrintersSettingsCard';
 import { AppearanceSettingsCard } from '../../components/settings/setting-card/AppearanceSettingsCard';
-import { AboutSettingsCard } from '../../components/settings/setting-card/AboutSettingsCard';
 
 export default function SettingsPage() {
     const router = useRouter();
@@ -84,7 +83,6 @@ export default function SettingsPage() {
                     theme={theme}
                     setTheme={setTheme}
                 />
-                <AboutSettingsCard />
             </main>
         </div>
     );

@@ -78,12 +78,6 @@ export default function CassaPage() {
         }
     }, []);
 
-    // Save user ID to localStorage when user data is available
-    useEffect(() => {
-        if (user?.id) {
-            localStorage.setItem('userId', user.id);
-        }
-    }, [user]);
 
     // Load selected cash register name from localStorage
     useEffect(() => {
@@ -831,7 +825,7 @@ export default function CassaPage() {
                 const confirmResult = await confirmOrderAction({
                     orderId,
                     paymentMethod,
-                    userId: localStorage.getItem('userId') || '',
+                    userId: user?.id || '',
                     cashRegisterId: localStorage.getItem('selectedCashRegister') || '',
                     discount: appliedDiscountAmount,
                     orderItems: mergedOrderItems,
@@ -862,7 +856,7 @@ export default function CassaPage() {
                     orderItems: mergedOrderItems,
                     confirm: {
                         paymentMethod,
-                        userId: localStorage.getItem('userId') || '',
+                        userId: user?.id || '',
                         cashRegisterId: localStorage.getItem('selectedCashRegister') || '',
                         discount: appliedDiscountAmount,
                     }
@@ -886,6 +880,7 @@ export default function CassaPage() {
     // Handle logout
     const handleLogout = async () => {
         await logoutAction();
+        localStorage.removeItem('mycassa_user');
         router.push('/login');
         router.refresh();
     };
@@ -916,6 +911,7 @@ export default function CassaPage() {
                     cashRegisterName={cashRegisterName}
                     foodSearchQuery={foodSearchQuery}
                     onFoodSearchChange={setFoodSearchQuery}
+                    user={user ?? undefined}
                 />
 
                 <div className="flex flex-1 overflow-hidden">

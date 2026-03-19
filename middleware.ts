@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { AUTH_COOKIE_NAME } from '@/lib/auth';
+import { COOKIE_STORE_NAME } from '@/lib/auth';
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const token = request.cookies.get(AUTH_COOKIE_NAME)?.value;
+  const token = request.cookies.get(COOKIE_STORE_NAME)?.value;
 
   const isRoot = pathname === '/';
   const isOnProtectedRoute =

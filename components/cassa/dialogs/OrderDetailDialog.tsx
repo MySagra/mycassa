@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { FileText, Printer } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { getCashRegisters } from '@/actions/cassa';
+import { getCashRegisters, getUsers } from '@/actions/cassa';
 import { toast } from 'sonner';
 import { ReprintDialog } from './ReprintDialog';
 
@@ -24,6 +24,7 @@ interface CashRegister {
 
 export function OrderDetailDialog({ order, open, loading, onClose }: OrderDetailDialogProps) {
     const [cashRegisterName, setCashRegisterName] = useState<string>('');
+    const [operatorName, setOperatorName] = useState<string>('');
     const [reprintOpen, setReprintOpen] = useState(false);
 
     // Fetch cash register name when order changes
@@ -52,8 +53,23 @@ export function OrderDetailDialog({ order, open, loading, onClose }: OrderDetail
             }
         };
 
+        const fetchOperatorName = async () => {
+            if (order?.userId) {
+                const result = await getUsers();
+                if (result.success) {
+                    const user = (result.data as { id: string; username: string }[]).find(u => u.id === order.userId);
+                    setOperatorName(user?.username ?? 'N/A');
+                } else {
+                    setOperatorName('N/A');
+                }
+            } else {
+                setOperatorName('N/A');
+            }
+        };
+
         if (order) {
             fetchCashRegisterName();
+            fetchOperatorName();
         }
     }, [order]);
     return (
@@ -219,9 +235,15 @@ export function OrderDetailDialog({ order, open, loading, onClose }: OrderDetail
 
                     <DialogFooter>
                         <div className="flex items-center justify-between w-full">
-                            <div className='flex items-center gap-2'>
-                                <div className="text-sm text-muted-foreground">Cassa:</div>
-                                <div className="text-sm font-bold text-amber-600">{cashRegisterName}</div>
+                            <div className='flex flex-col gap-1'>
+                                <div className='flex items-center gap-2'>
+                                    <div className="text-sm text-muted-foreground">Cassa:</div>
+                                    <div className="text-sm font-bold text-amber-600">{cashRegisterName}</div>
+                                </div>
+                                <div className='flex items-center gap-2'>
+                                    <div className="text-sm text-muted-foreground">Operatore:</div>
+                                    <div className="text-sm font-bold text-amber-600">{operatorName}</div>
+                                </div>
                             </div>
 
                             <div className="flex items-center gap-2">

@@ -34,6 +34,7 @@ export function LoginForm() {
         try {
             const result = await loginAction(values.username, values.password);
             if (result.success) {
+                localStorage.setItem('mycassa_user', JSON.stringify(result.user));
                 // Wait a bit for session to be fully set
                 await new Promise(resolve => setTimeout(resolve, 100));
                 window.location.href = '/cassa'; // Force full page reload to ensure session is loaded

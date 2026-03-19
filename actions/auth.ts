@@ -1,9 +1,7 @@
 'use server';
 
 import { cookies } from 'next/headers';
-import { AUTH_COOKIE_NAME } from '@/lib/auth';
-
-const USER_COOKIE_NAME = 'mysagra_user';
+import { AUTH_COOKIE_NAME, COOKIE_STORE_NAME } from '@/lib/auth';
 
 /**
  * Login action: chiama l'API e il cookie mysagra_token viene impostato
@@ -32,7 +30,7 @@ export async function login(username: string, password: string) {
       const tokenMatch = setCookieHeader.match(/mysagra_token=([^;]+)/);
       if (tokenMatch) {
         const tokenValue = tokenMatch[1];
-        cookieStore.set(AUTH_COOKIE_NAME, tokenValue, {
+        cookieStore.set(COOKIE_STORE_NAME, tokenValue, {
           httpOnly: true,
           secure: process.env.NODE_ENV === 'production',
           sameSite: 'lax',
@@ -43,15 +41,6 @@ export async function login(username: string, password: string) {
     }
 
     const data = await response.json();
-    // Salva i dati utente in un cookie leggibile lato client
-    const cookieStore2 = await cookies();
-    cookieStore2.set(USER_COOKIE_NAME, JSON.stringify(data), {
-      httpOnly: false,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      path: '/',
-      maxAge: 60 * 60 * 6, // 6 ore
-    });
     return { success: true, user: data };
   } catch (error) {
     console.error('Login error:', error);
@@ -66,7 +55,7 @@ export async function login(username: string, password: string) {
 export async function logout() {
   try {
     const cookieStore = await cookies();
-    const token = cookieStore.get(AUTH_COOKIE_NAME)?.value;
+    const token = cookieStore.get(COOKIE_STORE_NAME)?.value;
 
     // Tenta di notificare il backend del logout (opzionale)
     if (token) {
@@ -83,10 +72,8 @@ export async function logout() {
   } catch {
     // Ignora errori
   } finally {
-    // Rimuovi sempre entrambi i cookie lato Next.js
     const cookieStore = await cookies();
-    cookieStore.delete(AUTH_COOKIE_NAME);
-    cookieStore.delete(USER_COOKIE_NAME);
+    cookieStore.delete(COOKIE_STORE_NAME);
   }
 
   return { success: true };

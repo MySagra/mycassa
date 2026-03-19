@@ -1,7 +1,8 @@
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { ButtonGroup } from '@/components/ui/button-group';
-import { Settings, Moon, Sun, LogOut, Search, X } from 'lucide-react';
+import { Settings, Moon, Sun, Search, X, Maximize, Minimize } from 'lucide-react';
+import { UserMenu } from './UserMenu';
+import { useState, useCallback } from 'react';
 
 interface CassaHeaderProps {
     onLogout: () => void;
@@ -11,9 +12,22 @@ interface CassaHeaderProps {
     cashRegisterName?: string;
     foodSearchQuery: string;
     onFoodSearchChange: (query: string) => void;
+    user?: { username: string; role: string };
 }
 
-export function CassaHeader({ onLogout, onSettingsClick, theme, onThemeToggle, cashRegisterName, foodSearchQuery, onFoodSearchChange }: CassaHeaderProps) {
+export function CassaHeader({ onLogout, onSettingsClick, theme, onThemeToggle, cashRegisterName, foodSearchQuery, onFoodSearchChange, user }: CassaHeaderProps) {
+    const [isFullscreen, setIsFullscreen] = useState(false);
+
+    const toggleFullscreen = useCallback(() => {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen();
+            setIsFullscreen(true);
+        } else {
+            document.exitFullscreen();
+            setIsFullscreen(false);
+        }
+    }, []);
+
     return (
         <header className="fixed top-0 w-full border-b bg-card z-50">
             <div className="flex h-16 items-center justify-between px-6">
@@ -36,7 +50,7 @@ export function CassaHeader({ onLogout, onSettingsClick, theme, onThemeToggle, c
                             value={foodSearchQuery}
                             onChange={(e) => onFoodSearchChange(e.target.value)}
                             placeholder="Cerca un cibo..."
-                            className="w-full h-9 rounded-md border border-input bg-background pl-9 pr-9 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                            className="w-full h-9 rounded-md border border-input bg-background pl-9 pr-9 text-sm shadow-sm transition-colors select-none placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                         />
                         {foodSearchQuery && (
                             <button
@@ -71,31 +85,17 @@ export function CassaHeader({ onLogout, onSettingsClick, theme, onThemeToggle, c
                         >
                             {theme === 'dark' ? <Sun className="h-5 w-5 cursor-pointer" /> : <Moon className="h-5 w-5 cursor-pointer" />}
                         </Button>
+                        <Button
+                            variant="outline"
+                            className='cursor-pointer'
+                            size="icon"
+                            onClick={toggleFullscreen}
+                        >
+                            {isFullscreen ? <Minimize className="h-5 w-5" /> : <Maximize className="h-5 w-5" />}
+                        </Button>
                     </ButtonGroup>
 
-                    <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                            <Button variant="outline" className="select-none cursor-pointer">
-                                <LogOut className="h-5 w-5" />
-                                Logout
-                            </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                            <AlertDialogHeader>
-                                <AlertDialogTitle>Vuoi effettuare il logout?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                    Ritornerai alla pagina di login
-                                </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                                <AlertDialogCancel className="cursor-pointer">Annulla</AlertDialogCancel>
-                                <AlertDialogAction onClick={onLogout} className="bg-destructive text-destructive-foreground hover:bg-destructive/90 cursor-pointer">
-                                    <LogOut className="h-5 w-5" />
-                                    Logout
-                                </AlertDialogAction>
-                            </AlertDialogFooter>
-                        </AlertDialogContent>
-                    </AlertDialog>
+                    {user && <UserMenu user={user} onLogout={onLogout} />}
                 </div>
             </div>
         </header>

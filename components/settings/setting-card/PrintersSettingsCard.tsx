@@ -66,7 +66,7 @@ export function PrintersSettingsCard() {
             </CardHeader>
             <CardContent className="space-y-4">
                 <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
+                    <div className="space-y-0.5 select-none">
                         <Label className="mb-2">Seleziona cassa</Label>
                         <Select value={selectedCashRegister} onValueChange={handleCashRegisterChange} disabled={loading}>
                             <SelectTrigger className="w-[220px]">

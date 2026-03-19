@@ -451,6 +451,34 @@ export async function getCashRegisters() {
 }
 
 /**
+ * Get all users
+ */
+export async function getUsers() {
+  try {
+    const headers = await authHeaders();
+    const response = await fetch(`${process.env.API_URL}/v1/users`, {
+      headers,
+      cache: 'no-store',
+    });
+
+    handleAuthError(response.status);
+
+    if (!response.ok) {
+      return { success: false, error: 'Errore nel caricamento degli utenti' };
+    }
+
+    const data = await response.json();
+    return { success: true, data };
+  } catch (error: any) {
+    if (isRedirectError(error)) {
+      throw error;
+    }
+    console.error('getUsers error:', error);
+    return { success: false, error: error.message || 'Errore sconosciuto' };
+  }
+}
+
+/**
  * Get all ingredients
  */
 export async function getAllIngredients() {
