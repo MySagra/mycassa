@@ -121,7 +121,7 @@ export function LoginForm() {
                                 </Field>
                             </FieldGroup>
                         </form>
-                        <div className="bg-white flex items-center justify-center h-150 w-full">
+                        <div className="hidden md:flex bg-white items-center justify-center h-150 w-full">
                             <img
                                 src="/placeholder.jpg"
                                 alt="Logo"
