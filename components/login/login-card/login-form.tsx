@@ -1,7 +1,8 @@
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { Field, FieldDescription, FieldGroup, FieldLabel, } from "@/components/ui/field"
+import { ButtonGroup } from "@/components/ui/button-group"
+import { Card, CardContent } from "@/components/ui/card"
+import { Field, FieldGroup, FieldLabel, } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { FormField, FormItem, FormControl } from "@/components/ui/form"
 import { useRouter } from "next/navigation";
@@ -10,11 +11,13 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm, FormProvider } from "react-hook-form"
 import { toast } from "sonner";
 import { login as loginAction } from "@/actions/auth";
+import { Eye, EyeOff } from "lucide-react";
 import z from "zod"
 
 export function LoginForm() {
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
 
     const formSchema = z.object({
         username: z.string().min(1, "Username obbligatorio"),
@@ -108,7 +111,18 @@ export function LoginForm() {
                                         render={({ field }) => (
                                             <FormItem>
                                                 <FormControl>
-                                                    <Input autoComplete="off" placeholder="La tua password" type="password" {...field} />
+                                                    <ButtonGroup className="w-full">
+                                                        <Input autoComplete="off" placeholder="La tua password" type={showPassword ? "text" : "password"} {...field} />
+                                                        <Button
+                                                            type="button"
+                                                            variant="outline"
+                                                            size="icon"
+                                                            tabIndex={-1}
+                                                            onClick={() => setShowPassword(p => !p)}
+                                                        >
+                                                            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                                        </Button>
+                                                    </ButtonGroup>
                                                 </FormControl>
                                             </FormItem>
                                         )}
