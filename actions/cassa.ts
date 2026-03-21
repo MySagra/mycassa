@@ -542,7 +542,7 @@ export async function getPrinterById(printerId: string) {
  * Reprint order to selected printers
  */
 export async function reprintOrder(orderId: string, body: {
-  orderItems: Array<{ id: string }>;
+  orderItems: string[];
   reprintReceipt: boolean;
 }) {
   try {

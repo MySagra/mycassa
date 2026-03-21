@@ -112,7 +112,7 @@ export function ReprintDialog({ order, open, onClose }: ReprintDialogProps) {
         const uniqueItemIds = [...new Set(selectedItemIds)];
 
         const body = {
-            orderItems: uniqueItemIds.map((id) => ({ id })),
+            orderItems: uniqueItemIds,
             reprintReceipt,
         };
 
