@@ -35,10 +35,13 @@ export function CategorySidebar({ categories, selectedCategoryId, onSelectCatego
                             <Button
                                 key={category.id}
                                 variant={selectedCategoryId === category.id ? 'default' : 'outline'}
-                                className="w-full justify-start cursor-pointer select-none"
+                                className={`w-full justify-start cursor-pointer select-none ${category.available === false ? 'opacity-60' : ''}`}
                                 onClick={() => onSelectCategory(category.id)}
                             >
-                                {category.name}
+                                <span className="truncate">{category.name}</span>
+                                {category.available === false && (
+                                    <span className="ml-auto shrink-0 text-xs text-muted-foreground">Non disp.</span>
+                                )}
                             </Button>
                         ))
                     )}

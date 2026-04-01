@@ -64,10 +64,12 @@ export function DailyOrderCard({ order, onViewDetail, onLoadToCart, searchQuery 
                                 className="font-mono font-bold text-lg text-amber-600 shrink-0"
                                 dangerouslySetInnerHTML={{ __html: highlightText(order.displayCode) }}
                             />
-                            <span
-                                className="text-sm text-muted-foreground truncate max-w-[120px]"
-                                dangerouslySetInnerHTML={{ __html: highlightText(`Tavolo ${order.table}`) }}
-                            />
+                            {order.table !== 'NO_TABLE_PRESET' && (
+                                <span
+                                    className="text-sm text-muted-foreground truncate max-w-[120px]"
+                                    dangerouslySetInnerHTML={{ __html: highlightText(`Tavolo ${order.table}`) }}
+                                />
+                            )}
                         </div>
                         <p
                             className="text-sm font-medium truncate max-w-[180px]"

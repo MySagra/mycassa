@@ -18,7 +18,7 @@ interface DailyOrdersSidebarProps {
     loading: boolean;
     showAllOrders: boolean;
     onSearchChange: (query: string) => void;
-    onViewDetail: (orderId: number) => void;
+    onViewDetail: (orderId: string) => void;
     onLoadToCart: (order: DailyOrder) => void;
     onToggleAllOrders: () => void;
 }

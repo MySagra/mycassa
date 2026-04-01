@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button';
 import { ButtonGroup } from '@/components/ui/button-group';
 import { Settings, Moon, Sun, Search, X, Maximize, Minimize } from 'lucide-react';
 import { UserMenu } from './UserMenu';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 
 interface CassaHeaderProps {
     onLogout: () => void;
@@ -15,8 +15,25 @@ interface CassaHeaderProps {
     user?: { username: string; role: string };
 }
 
+const EASTER_EGG_CLICKS = 20;
+const EASTER_EGG_LOGO = 'https://mymagri.altervista.org/magri.jpg';
+
 export function CassaHeader({ onLogout, onSettingsClick, theme, onThemeToggle, cashRegisterName, foodSearchQuery, onFoodSearchChange, user }: CassaHeaderProps) {
     const [isFullscreen, setIsFullscreen] = useState(false);
+    const [logoClickCount, setLogoClickCount] = useState(0);
+    const easterEggActive = logoClickCount >= EASTER_EGG_CLICKS;
+    const clickTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    const handleLogoClick = useCallback(() => {
+        setLogoClickCount((prev: number) => {
+            const next = prev + 1;
+            if (clickTimeoutRef.current) clearTimeout(clickTimeoutRef.current);
+            if (next < EASTER_EGG_CLICKS) {
+                clickTimeoutRef.current = setTimeout(() => setLogoClickCount(0), 20000);
+            }
+            return next;
+        });
+    }, []);
 
     const toggleFullscreen = useCallback(() => {
         if (!document.fullscreenElement) {
@@ -34,11 +51,12 @@ export function CassaHeader({ onLogout, onSettingsClick, theme, onThemeToggle, c
                 {/* Left: Logo + Title */}
                 <div className="flex items-center gap-3 min-w-0 shrink-0">
                     <img
-                        src="/logo.svg"
+                        src={easterEggActive ? EASTER_EGG_LOGO : '/logo.svg'}
                         alt="Logo"
                         className="mx-auto h-10 w-auto select-none"
+                        onClick={handleLogoClick}
                     />
-                    <h1 className="text-2xl font-bold select-none">MyCassa</h1>
+                    <h1 className="text-2xl font-bold select-none">{easterEggActive ? 'MaiMagri' : 'MyCassa'}</h1>
                 </div>
 
                 {/* Center: Food Search Bar */}

@@ -100,10 +100,12 @@ export function OrderDetailDialog({ order, open, loading, onClose }: OrderDetail
                                             {order.customer}
                                         </h1>
                                     </div>
-                                    <div className="min-w-0">
-                                        <p className="text-sm text-muted-foreground">Tavolo</p>
-                                        <p className="font-medium truncate" title={String(order.table)}>{order.table}</p>
-                                    </div>
+                                    {order.table !== 'NO_TABLE_PRESET' && (
+                                        <div className="min-w-0">
+                                            <p className="text-sm text-muted-foreground">Tavolo</p>
+                                            <p className="font-medium truncate" title={String(order.table)}>{order.table}</p>
+                                        </div>
+                                    )}
                                     <div>
                                         <p className="text-sm text-muted-foreground">Codice</p>
                                         <p className="font-mono font-bold text-amber-600">{order.displayCode}</p>

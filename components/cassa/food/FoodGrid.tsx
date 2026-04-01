@@ -70,7 +70,12 @@ export function FoodGrid({ foods, categories, selectedCategoryId, onAddToCart, l
             <div className="space-y-8 p-6">
                 {selectedCategoryId === null ? (
                     <div className="space-y-4">
-                        {Object.entries(sortedFoodsByCategory).map(([categoryName, categoryFoods]) => (
+                        {Object.entries(sortedFoodsByCategory)
+                            .filter(([categoryName]) => {
+                                const cat = categories.find((c) => c.name === categoryName);
+                                return cat ? cat.available !== false : true;
+                            })
+                            .map(([categoryName, categoryFoods]) => (
                             <Accordion
                                 key={categoryName}
                                 type="single"

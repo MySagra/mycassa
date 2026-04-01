@@ -67,7 +67,7 @@ function getDailyOrderDateRange() {
 export async function getCategories() {
   try {
     const headers = await authHeaders();
-    const response = await fetch(`${process.env.API_URL}/v1/categories?available=true&include=foods`, {
+    const response = await fetch(`${process.env.API_URL}/v1/categories?include=foods`, {
       headers,
       cache: 'no-store',
     });
@@ -230,8 +230,8 @@ export async function getOrderByCode(code: string) {
   }
 }
 
-export async function getOrderByOrderId(orderId: number) {
-  if (!orderId || typeof orderId !== 'number') {
+export async function getOrderByOrderId(orderId: string) {
+  if (!orderId || typeof orderId !== 'string') {
     return { success: false, error: 'ID ordine non valido' };
   }
 
@@ -380,7 +380,7 @@ export async function createOrder(orderData: {
  * Confirm existing order
  */
 export async function confirmOrder(orderData: {
-  orderId: number;
+  orderId: string;
   paymentMethod: string;
   userId: string;
   cashRegisterId: string;

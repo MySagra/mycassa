@@ -8,6 +8,7 @@ interface OrderFormProps {
     customer: string;
     table: string;
     enableTableInput: boolean;
+    tableInputDisabled?: boolean;
     validationErrors: { customer?: string; table?: string };
     onUpdateDisplayCode: (value: string) => void;
     onUpdateCustomer: (value: string) => void;
@@ -21,6 +22,7 @@ export function OrderForm({
     customer,
     table,
     enableTableInput,
+    tableInputDisabled,
     validationErrors,
     onUpdateDisplayCode,
     onUpdateCustomer,
@@ -75,16 +77,17 @@ export function OrderForm({
                     )}
                 </div>
 
-                {enableTableInput && (
+                {(enableTableInput || tableInputDisabled) && (
                     <div>
-                        <Label htmlFor="table" className='mb-2'>Tavolo *</Label>
+                        <Label htmlFor="table" className='mb-2'>Tavolo {tableInputDisabled ? '' : '*'}</Label>
                         <Input
                             autoComplete='off'
                             id="table"
                             placeholder="Es. 12 o Tavolo A5"
-                            value={table}
+                            value={tableInputDisabled ? "TAVOLO DISABILITATO" : table}
                             onChange={(e) => onUpdateTable(e.target.value)}
                             className={validationErrors.table ? 'border-red-500' : ''}
+                            disabled={tableInputDisabled}
                         />
                         {validationErrors.table && (
                             <p className="text-xs text-red-500 mt-1">{validationErrors.table}</p>
