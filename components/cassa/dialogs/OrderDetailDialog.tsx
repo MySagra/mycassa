@@ -252,6 +252,7 @@ export function OrderDetailDialog({ order, open, loading, onClose }: OrderDetail
                                 <Button
                                     variant="outline"
                                     className='cursor-pointer'
+                                    disabled={!order || order.status === 'PENDING'}
                                     onClick={() => setReprintOpen(true)}
                                 >
                                     <Printer className="h-4 w-4" />

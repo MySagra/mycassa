@@ -67,7 +67,7 @@ function getDailyOrderDateRange() {
 export async function getCategories() {
   try {
     const headers = await authHeaders();
-    const response = await fetch(`${process.env.API_URL}/v1/categories?include=foods`, {
+    const response = await fetch(`${process.env.API_URL}/v1/categories?include=foods.ingredients`, {
       headers,
       cache: 'no-store',
     });
