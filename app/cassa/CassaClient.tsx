@@ -6,7 +6,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { useTheme } from 'next-themes';
 import { fetchEventSource } from '@microsoft/fetch-event-source';
 import { toast } from 'sonner';
-import { getCategories, getOrderByOrderId, confirmOrder as confirmOrderAction, createOrder, getTodayOrders, getAllTodayOrders, getFoodById, searchDailyOrders, searchAllDailyOrders, getOrderByCode, getCashRegisters, getAllIngredients, getPrinterById } from '@/actions/cassa';
+import { getCategories, getOrderByOrderId, confirmOrder as confirmOrderAction, createOrder, getTodayOrders, getAllTodayOrders, getFoodById, searchDailyOrders, searchAllDailyOrders, getOrderByCode, getCashRegisters, getAllIngredients, getPrinterById, generalClosure } from '@/actions/cassa';
 import { logout as logoutAction } from '@/actions/auth';
 import { Category, Food, Ingredient, PaymentMethod, OrderDetailResponse, ExtendedCartItem } from '@/lib/api-types';
 import { DailyOrder } from '@/lib/cassa/types';
@@ -934,7 +934,7 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
             } else {
                 // Create new order with confirmation details
                 const createResult = await createOrder({
-                    table: enableTableInput && table.trim() ? table : "no table",
+                    table: enableTableInput && table.trim() ? table : "NO_TABLE_PRESET",
                     customer,
                     orderItems: mergedOrderItems,
                     confirm: {
@@ -968,6 +968,20 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
         router.refresh();
     };
 
+    const handleGeneralClosure = async () => {
+        const cashRegisterId = localStorage.getItem('selectedCashRegister');
+        if (!cashRegisterId) {
+            toast.error('Nessuna cassa selezionata');
+            return;
+        }
+        const result = await generalClosure(cashRegisterId);
+        if (result.success) {
+            toast.success('Chiusura cassa eseguita con successo');
+        } else {
+            toast.error(result.error || 'Errore durante la chiusura cassa');
+        }
+    };
+
     if (isLoading || !isAuthenticated) {
         return (
             <div className="flex min-h-screen items-center justify-center">
@@ -995,6 +1009,7 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
                     foodSearchQuery={foodSearchQuery}
                     onFoodSearchChange={setFoodSearchQuery}
                     user={user ?? undefined}
+                    onGeneralClosure={handleGeneralClosure}
                 />
 
                 <div className="flex flex-1 overflow-hidden">

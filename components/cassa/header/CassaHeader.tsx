@@ -3,6 +3,7 @@ import { ButtonGroup } from '@/components/ui/button-group';
 import { Settings, Moon, Sun, Search, X, Maximize, Minimize } from 'lucide-react';
 import { UserMenu } from './UserMenu';
 import { useState, useCallback, useRef } from 'react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
 interface CassaHeaderProps {
     onLogout: () => void;
@@ -13,16 +14,20 @@ interface CassaHeaderProps {
     foodSearchQuery: string;
     onFoodSearchChange: (query: string) => void;
     user?: { username: string; role: string };
+    onGeneralClosure?: () => void;
 }
 
 const EASTER_EGG_CLICKS = 20;
 const EASTER_EGG_LOGO = 'https://mymagri.altervista.org/magri.jpg';
 
-export function CassaHeader({ onLogout, onSettingsClick, theme, onThemeToggle, cashRegisterName, foodSearchQuery, onFoodSearchChange, user }: CassaHeaderProps) {
+export function CassaHeader({ onLogout, onSettingsClick, theme, onThemeToggle, cashRegisterName, foodSearchQuery, onFoodSearchChange, user, onGeneralClosure }: CassaHeaderProps) {
     const [isFullscreen, setIsFullscreen] = useState(false);
     const [logoClickCount, setLogoClickCount] = useState(0);
+    const [showClosureConfirm, setShowClosureConfirm] = useState(false);
     const easterEggActive = logoClickCount >= EASTER_EGG_CLICKS;
     const clickTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const userRoleName = user ? (typeof user.role === 'string' ? user.role : (user.role as any)?.name ?? '') : '';
+    const isAdminOrMaintainer = userRoleName.toUpperCase() === 'ADMIN' || userRoleName.toUpperCase() === 'MAINTAINER';
 
     const handleLogoClick = useCallback(() => {
         setLogoClickCount((prev: number) => {
@@ -91,6 +96,16 @@ export function CassaHeader({ onLogout, onSettingsClick, theme, onThemeToggle, c
                             </span>
                         </div>
                     )}
+                    {isAdminOrMaintainer && (
+                        <Button
+                            variant="destructive"
+                            className="cursor-pointer"
+                            size="sm"
+                            onClick={() => setShowClosureConfirm(true)}
+                        >
+                            Chiusura Sagra
+                        </Button>
+                    )}
                     <ButtonGroup>
                         <Button variant="outline" className='cursor-pointer' size="icon" onClick={onSettingsClick}>
                             <Settings className="h-5 w-5" />
@@ -116,6 +131,28 @@ export function CassaHeader({ onLogout, onSettingsClick, theme, onThemeToggle, c
                     {user && <UserMenu user={user} onLogout={onLogout} />}
                 </div>
             </div>
+
+            <AlertDialog open={showClosureConfirm} onOpenChange={setShowClosureConfirm}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Chiusura Sagra</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Sei sicuro di voler eseguire la chiusura cassa? Questa operazione non può essere annullata.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Annulla</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={() => {
+                                setShowClosureConfirm(false);
+                                onGeneralClosure?.();
+                            }}
+                        >
+                            Conferma
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </header>
     );
 }

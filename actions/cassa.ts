@@ -539,6 +539,36 @@ export async function getPrinterById(printerId: string) {
 }
 
 /**
+ * General closure of the cash register
+ */
+export async function generalClosure(cashRegisterId: string) {
+  try {
+    const headers = await authHeaders();
+    const response = await fetch(`${process.env.API_URL}/v1/reports/general-closure`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ cashRegister: cashRegisterId }),
+    });
+
+    handleAuthError(response.status);
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      return { success: false, error: errorData.message || 'Impossibile eseguire la chiusura cassa' };
+    }
+
+    const data = await response.json().catch(() => ({}));
+    return { success: true, data };
+  } catch (error: any) {
+    if (isRedirectError(error)) {
+      throw error;
+    }
+    console.error('generalClosure error:', error);
+    return { success: false, error: error.message || 'Errore sconosciuto' };
+  }
+}
+
+/**
  * Reprint order to selected printers
  */
 export async function reprintOrder(orderId: string, body: {
