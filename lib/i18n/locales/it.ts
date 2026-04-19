@@ -179,6 +179,14 @@ export const it = {
       passwordPlaceholder: "La tua password",
       loggingIn: "Accesso...",
       loginButton: "Accedi"
+    },
+    categorySideBar: {
+      allCategories: "Tutte le Categorie",
+      loading: "Caricamento...",
+      notAvailable: "Non disp."
+    },
+    foods: {
+      notAvailable: "Non disp."
     }
   }
 };

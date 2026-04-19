@@ -1,6 +1,7 @@
 import { Food } from '@/lib/api-types';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
+import { useTranslation } from 'react-i18next';
 
 interface FoodCardProps {
     food: Food;
@@ -30,6 +31,7 @@ function HighlightText({ text, query }: { text: string; query: string }) {
 }
 
 export function FoodCard({ food, onClick, searchQuery = '' }: FoodCardProps) {
+    const { t } = useTranslation();
     const price = typeof food.price === 'number'
         ? food.price
         : parseFloat(food.price as unknown as string);
@@ -60,7 +62,7 @@ export function FoodCard({ food, onClick, searchQuery = '' }: FoodCardProps) {
                         {price.toFixed(2)} €
                     </span>
                     {!food.available && (
-                        <span className="text-[10px] text-red-500 font-medium">Non disp.</span>
+                        <span className="text-[10px] text-red-500 font-medium">{t('foods.notAvailable')}</span>
                     )}
                 </div>
             </CardContent>
