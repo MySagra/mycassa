@@ -4,6 +4,7 @@ import { Settings, Moon, Sun, Search, X, Maximize, Minimize } from 'lucide-react
 import { UserMenu } from './UserMenu';
 import { useState, useCallback, useRef } from 'react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { useTranslation } from 'react-i18next';
 
 interface CassaHeaderProps {
     onLogout: () => void;
@@ -28,6 +29,7 @@ export function CassaHeader({ onLogout, onSettingsClick, theme, onThemeToggle, c
     const clickTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const userRoleName = user ? (typeof user.role === 'string' ? user.role : (user.role as any)?.name ?? '') : '';
     const isAdminOrMaintainer = userRoleName.toUpperCase() === 'ADMIN' || userRoleName.toUpperCase() === 'MAINTAINER';
+    const { t } = useTranslation();
 
     const handleLogoClick = useCallback(() => {
         setLogoClickCount((prev: number) => {
@@ -72,14 +74,14 @@ export function CassaHeader({ onLogout, onSettingsClick, theme, onThemeToggle, c
                             type="text"
                             value={foodSearchQuery}
                             onChange={(e) => onFoodSearchChange(e.target.value)}
-                            placeholder="Cerca un cibo..."
+                            placeholder={t('header.searchFood')}
                             className="w-full h-9 rounded-md border border-input bg-background pl-9 pr-9 text-sm shadow-sm transition-colors select-none placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                         />
                         {foodSearchQuery && (
                             <button
                                 onClick={() => onFoodSearchChange('')}
                                 className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-                                aria-label="Cancella ricerca"
+                                aria-label={t('header.clearSearch')}
                             >
                                 <X className="h-4 w-4" />
                             </button>
@@ -103,7 +105,7 @@ export function CassaHeader({ onLogout, onSettingsClick, theme, onThemeToggle, c
                             size="sm"
                             onClick={() => setShowClosureConfirm(true)}
                         >
-                            Chiusura Sagra
+                            {t('header.closureButton')}
                         </Button>
                     )}
                     <ButtonGroup>
@@ -135,20 +137,20 @@ export function CassaHeader({ onLogout, onSettingsClick, theme, onThemeToggle, c
             <AlertDialog open={showClosureConfirm} onOpenChange={setShowClosureConfirm}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Chiusura Sagra</AlertDialogTitle>
+                        <AlertDialogTitle>{t('header.closureConfirmTitle')}</AlertDialogTitle>
                         <AlertDialogDescription>
-                            Sei sicuro di voler eseguire la chiusura cassa? Questa operazione non può essere annullata.
+                            {t('header.closureConfirmDesc')}
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel>Annulla</AlertDialogCancel>
+                        <AlertDialogCancel>{t('header.cancel')}</AlertDialogCancel>
                         <AlertDialogAction
                             onClick={() => {
                                 setShowClosureConfirm(false);
                                 onGeneralClosure?.();
                             }}
                         >
-                            Conferma
+                            {t('header.confirm')}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>

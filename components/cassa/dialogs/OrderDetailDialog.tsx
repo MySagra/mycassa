@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 import { getCashRegisters, getUsers } from '@/actions/cashier';
 import { toast } from 'sonner';
 import { ReprintDialog } from './ReprintDialog';
+import { useTranslation } from 'react-i18next';
 
 interface OrderDetailDialogProps {
     order: OrderDetailResponse | null;
@@ -26,6 +27,7 @@ export function OrderDetailDialog({ order, open, loading, onClose }: OrderDetail
     const [cashRegisterName, setCashRegisterName] = useState<string>('');
     const [operatorName, setOperatorName] = useState<string>('');
     const [reprintOpen, setReprintOpen] = useState(false);
+    const { t } = useTranslation();
 
     // Fetch cash register name when order changes
     useEffect(() => {
@@ -79,15 +81,15 @@ export function OrderDetailDialog({ order, open, loading, onClose }: OrderDetail
                     <DialogHeader>
                         <DialogTitle className="flex items-center gap-2">
                             <FileText className="h-5 w-5" />
-                            Dettaglio Ordine {order?.displayCode}
+                            {t('orderDetailDialog.title')} {order?.displayCode}
                         </DialogTitle>
                         <DialogDescription>
-                            Visualizza i dettagli completi dell'ordine
+                            {t('orderDetailDialog.description')}
                         </DialogDescription>
                     </DialogHeader>
                     {loading ? (
                         <div className="flex items-center justify-center py-8">
-                            <div className="text-muted-foreground">Caricamento...</div>
+                            <div className="text-muted-foreground">{t('orderDetailDialog.loading')}</div>
                         </div>
                     ) : order ? (
                         <ScrollArea className="overflow-y-auto pr-4">
@@ -95,27 +97,27 @@ export function OrderDetailDialog({ order, open, loading, onClose }: OrderDetail
                                 {/* Order Info */}
                                 <div className="grid grid-cols-4 gap-4 p-4 bg-muted dark:bg-muted/40 rounded-lg">
                                     <div>
-                                        <p className="text-sm text-muted-foreground">Cliente</p>
+                                        <p className="text-sm text-muted-foreground">{t('orderDetailDialog.customer')}</p>
                                         <h1 className={cn("font-semibold text-sm mb-1 truncate select-none", order.customer.length < 15 ? "text-xl" : "")} title={order.customer}>
                                             {order.customer}
                                         </h1>
                                     </div>
                                     {order.table !== 'NO_TABLE_PRESET' && (
                                         <div className="min-w-0">
-                                            <p className="text-sm text-muted-foreground">Tavolo</p>
+                                            <p className="text-sm text-muted-foreground">{t('orderDetailDialog.table')}</p>
                                             <p className="font-medium truncate" title={String(order.table)}>{order.table}</p>
                                         </div>
                                     )}
                                     <div>
-                                        <p className="text-sm text-muted-foreground">Codice</p>
+                                        <p className="text-sm text-muted-foreground">{t('orderDetailDialog.code')}</p>
                                         <p className="font-mono font-bold text-amber-600">{order.displayCode}</p>
                                     </div>
                                     <div>
-                                        <p className="text-sm text-muted-foreground">Comanda</p>
+                                        <p className="text-sm text-muted-foreground">{t('orderDetailDialog.ticket')}</p>
                                         <p className="font-mono font-bold text-amber-600">{order.ticketNumber ?? 'N/A'}</p>
                                     </div>
                                     <div>
-                                        <p className="text-sm text-muted-foreground">Data creazione</p>
+                                        <p className="text-sm text-muted-foreground">{t('orderDetailDialog.creationDate')}</p>
                                         <p className="text-sm">
                                             {new Date(order.createdAt).toLocaleString('it-IT', {
                                                 day: '2-digit',
@@ -127,7 +129,7 @@ export function OrderDetailDialog({ order, open, loading, onClose }: OrderDetail
                                         </p>
                                     </div>
                                     <div>
-                                        <p className="text-sm text-muted-foreground">Data conferma</p>
+                                        <p className="text-sm text-muted-foreground">{t('orderDetailDialog.confirmationDate')}</p>
                                         <p className="text-sm">
                                             {order.confirmedAt ? new Date(order.confirmedAt).toLocaleString('it-IT', {
                                                 day: '2-digit',
@@ -139,18 +141,18 @@ export function OrderDetailDialog({ order, open, loading, onClose }: OrderDetail
                                         </p>
                                     </div>
                                     <div>
-                                        <p className="text-sm text-muted-foreground">Pagamento</p>
+                                        <p className="text-sm text-muted-foreground">{t('orderDetailDialog.payment')}</p>
                                         <p className="font-mono font-bold text-amber-600">
-                                            {order.paymentMethod === 'CARD' ? 'CARTA' : order.paymentMethod === 'CASH' ? 'CONTANTI' : order.paymentMethod || 'N/A'}
+                                            {order.paymentMethod === 'CARD' ? t('orderDetailDialog.paymentCard') : order.paymentMethod === 'CASH' ? t('orderDetailDialog.paymentCash') : order.paymentMethod || 'N/A'}
                                         </p>
                                     </div>
                                     <div>
-                                        <p className="text-sm text-muted-foreground">Stato</p>
+                                        <p className="text-sm text-muted-foreground">{t('orderDetailDialog.status')}</p>
                                         <div className="font-mono font-bold text-amber-600">
-                                            {order.status === 'PENDING' ? 'IN ATTESA'
-                                                : order.status === 'CONFIRMED' ? 'CONFERMATO'
-                                                    : order.status === 'COMPLETED' ? 'PRONTO'
-                                                        : order.status === 'PICKED_UP' ? 'RITIRATO'
+                                            {order.status === 'PENDING' ? t('orderDetailDialog.statusPending')
+                                                : order.status === 'CONFIRMED' ? t('orderDetailDialog.statusConfirmed')
+                                                    : order.status === 'COMPLETED' ? t('orderDetailDialog.statusReady')
+                                                        : order.status === 'PICKED_UP' ? t('orderDetailDialog.statusPickedUp')
                                                             : order.status || 'N/A'}
                                         </div>
                                     </div>
@@ -158,7 +160,7 @@ export function OrderDetailDialog({ order, open, loading, onClose }: OrderDetail
 
                                 {/* Order Items */}
                                 <div className="space-y-2">
-                                    <h4 className="font-semibold">Prodotti</h4>
+                                    <h4 className="font-semibold">{t('orderDetailDialog.products')}</h4>
                                     <div className="space-y-3 max-h-[340px] overflow-y-auto ">
                                         {order.categorizedItems.map((catItem, catIndex) => (
                                             <div key={catIndex}>
@@ -174,11 +176,11 @@ export function OrderDetailDialog({ order, open, loading, onClose }: OrderDetail
                                                                     <p className="font-medium">{item.food.name}</p>
                                                                     {item.notes && (
                                                                         <p className="text-xs text-muted-foreground mt-1">
-                                                                            Note: {item.notes}
+                                                                            {t('orderDetailDialog.notes')} {item.notes}
                                                                         </p>
                                                                     )}
                                                                     <p className="text-sm text-muted-foreground mt-1">
-                                                                        Quantità: {item.quantity} × {parseFloat(item.unitPrice).toFixed(2)} €
+                                                                        {t('orderDetailDialog.quantity')} {item.quantity} × {parseFloat(item.unitPrice).toFixed(2)} €
                                                                     </p>
                                                                 </div>
                                                                 <div className="text-right">
@@ -205,26 +207,26 @@ export function OrderDetailDialog({ order, open, loading, onClose }: OrderDetail
                                     <div>
                                         <div className="items-center space-y-0 text-xs">
                                             <div className="flex items-center justify-between">
-                                                <div className="font-semibold">Subtotale:</div>
+                                                <div className="font-semibold">{t('orderDetailDialog.subtotal')}</div>
                                                 <div className="font-bold text-muted-foreground">
                                                     {parseFloat(order.subTotal).toFixed(2)} €
                                                 </div>
                                             </div>
                                             <div className="flex items-center justify-between">
-                                                <div className="font-semibold">Totale sovrapprezzi:</div>
+                                                <div className="font-semibold">{t('orderDetailDialog.totalSurcharges')}</div>
                                                 <div className="font-bold text-amber-600 dark:text-amber-500">
                                                     {parseFloat(order.surcharge?.toString() || '0').toFixed(2)} €
                                                 </div>
                                             </div>
                                             <div className="flex items-center justify-between">
-                                                <div className="font-semibold">Sconto:</div>
+                                                <div className="font-semibold">{t('orderDetailDialog.discount')}</div>
                                                 <div className="font-bold text-green-600 dark:text-green-500">
                                                     {parseFloat(order.discount?.toString() || '0').toFixed(2)} €
                                                 </div>
                                             </div>
                                         </div>
                                         <div className="flex items-center justify-between">
-                                            <div className="text-2xl font-semibold">Totale:</div>
+                                            <div className="text-2xl font-semibold">{t('orderDetailDialog.total')}</div>
                                             <div className="text-2xl font-bold text-amber-600 dark:text-amber-500">
                                                 {parseFloat(order.total).toFixed(2)} €
                                             </div>
@@ -239,11 +241,11 @@ export function OrderDetailDialog({ order, open, loading, onClose }: OrderDetail
                         <div className="flex items-center justify-between w-full">
                             <div className='flex flex-col gap-1'>
                                 <div className='flex items-center gap-2'>
-                                    <div className="text-sm text-muted-foreground">Cassa:</div>
+                                    <div className="text-sm text-muted-foreground">{t('orderDetailDialog.cashRegister')}</div>
                                     <div className="text-sm font-bold text-amber-600">{cashRegisterName}</div>
                                 </div>
                                 <div className='flex items-center gap-2'>
-                                    <div className="text-sm text-muted-foreground">Operatore:</div>
+                                    <div className="text-sm text-muted-foreground">{t('orderDetailDialog.operator')}</div>
                                     <div className="text-sm font-bold text-amber-600">{operatorName}</div>
                                 </div>
                             </div>
@@ -256,14 +258,14 @@ export function OrderDetailDialog({ order, open, loading, onClose }: OrderDetail
                                     onClick={() => setReprintOpen(true)}
                                 >
                                     <Printer className="h-4 w-4" />
-                                    Stampa
+                                    {t('orderDetailDialog.print')}
                                 </Button>
                                 <Button
                                     variant="outline"
                                     className='cursor-pointer'
                                     onClick={onClose}
                                 >
-                                    Chiudi
+                                    {t('orderDetailDialog.close')}
                                 </Button>
                             </div>
                         </div>

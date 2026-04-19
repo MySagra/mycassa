@@ -2,6 +2,7 @@ import { ExtendedCartItem, Ingredient } from '@/lib/api-types';
 import { Button } from '@/components/ui/button';
 import { Pencil, X, Minus, Plus, AlertTriangle } from 'lucide-react';
 import { calculateIngredientSurcharge } from '@/lib/cassa/calculations';
+import { useTranslation } from 'react-i18next';
 
 interface CartItemProps {
     item: ExtendedCartItem;
@@ -19,13 +20,14 @@ export function CartItem({ item, allIngredients, onUpdateQuantity, onRemove, onE
     const itemTotal = (itemPrice * item.quantity) + itemSurcharge;
 
     const isUnavailable = item.food.available === false;
+    const { t } = useTranslation();
 
     return (
         <div className={`bg-card border rounded-lg p-3 ${isUnavailable ? 'border-destructive/60 bg-destructive/5' : ''}`}>
             {isUnavailable && (
                 <div className="flex items-center gap-1 mb-2 text-xs text-destructive font-medium">
                     <AlertTriangle className="h-3 w-3 shrink-0" />
-                    <span>Non disponibile</span>
+                    <span>{t('cartItem.unavailable')}</span>
                 </div>
             )}
             <div className="flex items-start justify-between gap-2 mb-2">

@@ -5,6 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { discountAmountSchema } from '@/lib/cassa/validations';
+import { useTranslation } from 'react-i18next';
 
 interface DiscountDialogProps {
     open: boolean;
@@ -17,6 +18,7 @@ interface DiscountDialogProps {
 export function DiscountDialog({ open, currentDiscount, onClose, onApply, onRemove }: DiscountDialogProps) {
     const [discountAmount, setDiscountAmount] = useState<string>('');
     const [validationError, setValidationError] = useState<string | undefined>();
+    const { t } = useTranslation();
 
     useEffect(() => {
         if (open) {
@@ -43,28 +45,28 @@ export function DiscountDialog({ open, currentDiscount, onClose, onApply, onRemo
         setValidationError(undefined);
         onApply(result.data);
         onClose();
-        toast.success(`Sconto di ${result.data.toFixed(2)} € applicato`);
+        toast.success(t('discountDialog.toastApplied', { amount: result.data.toFixed(2) }));
     };
 
     const handleRemove = () => {
         onRemove();
         setDiscountAmount('');
         onClose();
-        toast.success('Sconto rimosso');
+        toast.success(t('discountDialog.toastRemoved'));
     };
 
     return (
         <Dialog open={open} onOpenChange={onClose}>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                    <DialogTitle>Applica Sconto</DialogTitle>
+                    <DialogTitle>{t('discountDialog.title')}</DialogTitle>
                     <DialogDescription>
-                        Inserisci l'importo dello sconto da applicare al totale dell'ordine
+                        {t('discountDialog.description')}
                     </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4 py-4">
                     <div className="space-y-2">
-                        <Label htmlFor="discountAmount">Sconto (€)</Label>
+                        <Label htmlFor="discountAmount">{t('discountDialog.discountLabel')}</Label>
                         <div className="relative">
                             <Input
                                 autoComplete='off'
@@ -93,13 +95,13 @@ export function DiscountDialog({ open, currentDiscount, onClose, onApply, onRemo
                             <p className="text-xs text-red-500 mt-1">{validationError}</p>
                         )}
                         <p className="text-xs text-muted-foreground">
-                            Sconto massimo: 9999.99 €
+                            {t('discountDialog.maxDiscount')}
                         </p>
                     </div>
 
                     {currentDiscount > 0 && (
                         <div className="rounded-lg border bg-muted/50 p-3">
-                            <p className="text-sm text-muted-foreground mb-1">Sconto attualmente applicato:</p>
+                            <p className="text-sm text-muted-foreground mb-1">{t('discountDialog.currentDiscount')}</p>
                             <p className="text-lg font-semibold text-amber-600">{currentDiscount.toFixed(2)} €</p>
                         </div>
                     )}
@@ -114,20 +116,20 @@ export function DiscountDialog({ open, currentDiscount, onClose, onApply, onRemo
                             setValidationError(undefined);
                         }}
                     >
-                        Annulla
+                        {t('discountDialog.cancel')}
                     </Button>
                     <Button
                         variant="destructive"
                         className='cursor-pointer'
                         onClick={handleRemove}
                     >
-                        Rimuovi Sconto
+                        {t('discountDialog.removeDiscount')}
                     </Button>
                     <Button
                         className="bg-amber-500 hover:bg-amber-600 cursor-pointer"
                         onClick={handleApply}
                     >
-                        Applica
+                        {t('discountDialog.apply')}
                     </Button>
                 </DialogFooter>
             </DialogContent>

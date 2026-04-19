@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Eye, ShoppingCart } from 'lucide-react';
 import { DailyOrder } from '@/lib/cassa/types';
 import { useRef, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface DailyOrderCardProps {
     order: DailyOrder;
@@ -11,25 +12,26 @@ interface DailyOrderCardProps {
     searchQuery: string; // Added searchQuery prop
 }
 
-const getStatusBadge = (status: string) => {
-    const statusMap: Record<string, { label: string; className: string }> = {
-        PENDING: { label: 'In attesa', className: 'bg-yellow-500/20 text-yellow-700 dark:text-yellow-400' },
-        CONFIRMED: { label: 'Confermato', className: 'bg-green-500/20 text-green-700 dark:text-green-400' },
-        COMPLETED: { label: 'Completato', className: 'bg-pink-500/20 text-pink-700 dark:text-pink-400' },
-        PICKED_UP: { label: 'Ritirato', className: 'bg-blue-500/20 text-blue-700 dark:text-blue-400' }
-    };
-
-    const statusInfo = statusMap[status] || { label: status, className: 'bg-gray-500/20 text-gray-700 dark:text-gray-400' };
-
-    return (
-        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${statusInfo.className}`}>
-            {statusInfo.label}
-        </span>
-    );
-};
-
 export function DailyOrderCard({ order, onViewDetail, onLoadToCart, searchQuery }: DailyOrderCardProps) {
+    const { t } = useTranslation();
     const cardRef = useRef<HTMLDivElement>(null);
+
+    const statusMap: Record<string, { label: string; className: string }> = {
+        PENDING: { label: t('dailyOrderCard.statusPending'), className: 'bg-yellow-500/20 text-yellow-700 dark:text-yellow-400' },
+        CONFIRMED: { label: t('dailyOrderCard.statusConfirmed'), className: 'bg-green-500/20 text-green-700 dark:text-green-400' },
+        COMPLETED: { label: t('dailyOrderCard.statusCompleted'), className: 'bg-pink-500/20 text-pink-700 dark:text-pink-400' },
+        PICKED_UP: { label: t('dailyOrderCard.statusPickedUp'), className: 'bg-blue-500/20 text-blue-700 dark:text-blue-400' }
+    };
+    
+    const getStatusBadge = (status: string) => {
+        const statusInfo = statusMap[status] || { label: status, className: 'bg-gray-500/20 text-gray-700 dark:text-gray-400' };
+
+        return (
+            <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${statusInfo.className}`}>
+                {statusInfo.label}
+            </span>
+        );
+    };
 
     // Add focus ring animation when card is first mounted
     useEffect(() => {
@@ -67,7 +69,7 @@ export function DailyOrderCard({ order, onViewDetail, onLoadToCart, searchQuery 
                             {order.table !== 'NO_TABLE_PRESET' && (
                                 <span
                                     className="text-sm text-muted-foreground truncate max-w-[120px]"
-                                    dangerouslySetInnerHTML={{ __html: highlightText(`Tavolo ${order.table}`) }}
+                                    dangerouslySetInnerHTML={{ __html: highlightText(`${t('dailyOrderCard.tablePrefix')} ${order.table}`) }}
                                 />
                             )}
                         </div>
@@ -102,7 +104,7 @@ export function DailyOrderCard({ order, onViewDetail, onLoadToCart, searchQuery 
                         onClick={onViewDetail}
                     >
                         <Eye className="mr-2 h-4 w-4" />
-                        Visualizza
+                        {t('dailyOrderCard.view')}
                     </Button>
                     <Button
                         variant="default"
@@ -110,10 +112,10 @@ export function DailyOrderCard({ order, onViewDetail, onLoadToCart, searchQuery 
                         className="flex-1 select-none cursor-pointer"
                         onClick={onLoadToCart}
                         disabled={!isPending}
-                        title={!isPending ? 'Solo gli ordini in attesa possono essere caricati' : ''}
+                        title={!isPending ? t('dailyOrderCard.tooltipLoadOnlyPending') : ''}
                     >
                         <ShoppingCart className="mr-2 h-4 w-4" />
-                        Carica
+                        {t('dailyOrderCard.load')}
                     </Button>
                 </div>
             </CardContent>
