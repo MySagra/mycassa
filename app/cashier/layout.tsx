@@ -10,5 +10,5 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
 
 export const metadata: Metadata = {
   title: "MyCassa - Cassa",
-  description: "Sistema di gestione cassa per eventi",
+  description: "Sistema di gestione cashier per eventi",
 };

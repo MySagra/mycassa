@@ -1,7 +1,10 @@
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { ButtonGroup } from '@/components/ui/button-group';
-import { Settings, Moon, Sun, LogOut, Search, X } from 'lucide-react';
+import { Settings, Moon, Sun, Search, X, Maximize, Minimize } from 'lucide-react';
+import { UserMenu } from './UserMenu';
+import { useState, useCallback, useRef } from 'react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { useTranslation } from 'react-i18next';
 
 interface CassaHeaderProps {
     onLogout: () => void;
@@ -11,20 +14,56 @@ interface CassaHeaderProps {
     cashRegisterName?: string;
     foodSearchQuery: string;
     onFoodSearchChange: (query: string) => void;
+    user?: { username: string; role: string };
+    onGeneralClosure?: () => void;
 }
 
-export function CassaHeader({ onLogout, onSettingsClick, theme, onThemeToggle, cashRegisterName, foodSearchQuery, onFoodSearchChange }: CassaHeaderProps) {
+const EASTER_EGG_CLICKS = 20;
+const EASTER_EGG_LOGO = 'https://mymagri.altervista.org/magri.jpg';
+
+export function CassaHeader({ onLogout, onSettingsClick, theme, onThemeToggle, cashRegisterName, foodSearchQuery, onFoodSearchChange, user, onGeneralClosure }: CassaHeaderProps) {
+    const [isFullscreen, setIsFullscreen] = useState(false);
+    const [logoClickCount, setLogoClickCount] = useState(0);
+    const [showClosureConfirm, setShowClosureConfirm] = useState(false);
+    const easterEggActive = logoClickCount >= EASTER_EGG_CLICKS;
+    const clickTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const userRoleName = user ? (typeof user.role === 'string' ? user.role : (user.role as any)?.name ?? '') : '';
+    const isAdminOrMaintainer = userRoleName.toUpperCase() === 'ADMIN' || userRoleName.toUpperCase() === 'MAINTAINER';
+    const { t } = useTranslation();
+
+    const handleLogoClick = useCallback(() => {
+        setLogoClickCount((prev: number) => {
+            const next = prev + 1;
+            if (clickTimeoutRef.current) clearTimeout(clickTimeoutRef.current);
+            if (next < EASTER_EGG_CLICKS) {
+                clickTimeoutRef.current = setTimeout(() => setLogoClickCount(0), 20000);
+            }
+            return next;
+        });
+    }, []);
+
+    const toggleFullscreen = useCallback(() => {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen();
+            setIsFullscreen(true);
+        } else {
+            document.exitFullscreen();
+            setIsFullscreen(false);
+        }
+    }, []);
+
     return (
         <header className="fixed top-0 w-full border-b bg-card z-50">
             <div className="flex h-16 items-center justify-between px-6">
                 {/* Left: Logo + Title */}
                 <div className="flex items-center gap-3 min-w-0 shrink-0">
                     <img
-                        src="/logo.svg"
+                        src={easterEggActive ? EASTER_EGG_LOGO : '/logo.svg'}
                         alt="Logo"
                         className="mx-auto h-10 w-auto select-none"
+                        onClick={handleLogoClick}
                     />
-                    <h1 className="text-2xl font-bold select-none">MyCassa</h1>
+                    <h1 className="text-2xl font-bold select-none">{easterEggActive ? 'MaiMagri' : 'MyCassa'}</h1>
                 </div>
 
                 {/* Center: Food Search Bar */}
@@ -35,14 +74,14 @@ export function CassaHeader({ onLogout, onSettingsClick, theme, onThemeToggle, c
                             type="text"
                             value={foodSearchQuery}
                             onChange={(e) => onFoodSearchChange(e.target.value)}
-                            placeholder="Cerca un cibo..."
-                            className="w-full h-9 rounded-md border border-input bg-background pl-9 pr-9 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                            placeholder={t('header.searchFood')}
+                            className="w-full h-9 rounded-md border border-input bg-background pl-9 pr-9 text-sm shadow-sm transition-colors select-none placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                         />
                         {foodSearchQuery && (
                             <button
                                 onClick={() => onFoodSearchChange('')}
                                 className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-                                aria-label="Cancella ricerca"
+                                aria-label={t('header.clearSearch')}
                             >
                                 <X className="h-4 w-4" />
                             </button>
@@ -59,6 +98,16 @@ export function CassaHeader({ onLogout, onSettingsClick, theme, onThemeToggle, c
                             </span>
                         </div>
                     )}
+                    {isAdminOrMaintainer && (
+                        <Button
+                            variant="destructive"
+                            className="cursor-pointer"
+                            size="sm"
+                            onClick={() => setShowClosureConfirm(true)}
+                        >
+                            {t('header.closureButton')}
+                        </Button>
+                    )}
                     <ButtonGroup>
                         <Button variant="outline" className='cursor-pointer' size="icon" onClick={onSettingsClick}>
                             <Settings className="h-5 w-5" />
@@ -71,33 +120,41 @@ export function CassaHeader({ onLogout, onSettingsClick, theme, onThemeToggle, c
                         >
                             {theme === 'dark' ? <Sun className="h-5 w-5 cursor-pointer" /> : <Moon className="h-5 w-5 cursor-pointer" />}
                         </Button>
+                        <Button
+                            variant="outline"
+                            className='cursor-pointer'
+                            size="icon"
+                            onClick={toggleFullscreen}
+                        >
+                            {isFullscreen ? <Minimize className="h-5 w-5" /> : <Maximize className="h-5 w-5" />}
+                        </Button>
                     </ButtonGroup>
 
-                    <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                            <Button variant="outline" className="select-none cursor-pointer">
-                                <LogOut className="h-5 w-5" />
-                                Logout
-                            </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                            <AlertDialogHeader>
-                                <AlertDialogTitle>Vuoi effettuare il logout?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                    Ritornerai alla pagina di login
-                                </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                                <AlertDialogCancel className="cursor-pointer">Annulla</AlertDialogCancel>
-                                <AlertDialogAction onClick={onLogout} className="bg-destructive text-destructive-foreground hover:bg-destructive/90 cursor-pointer">
-                                    <LogOut className="h-5 w-5" />
-                                    Logout
-                                </AlertDialogAction>
-                            </AlertDialogFooter>
-                        </AlertDialogContent>
-                    </AlertDialog>
+                    {user && <UserMenu user={user} onLogout={onLogout} />}
                 </div>
             </div>
+
+            <AlertDialog open={showClosureConfirm} onOpenChange={setShowClosureConfirm}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>{t('header.closureConfirmTitle')}</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            {t('header.closureConfirmDesc')}
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>{t('header.cancel')}</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={() => {
+                                setShowClosureConfirm(false);
+                                onGeneralClosure?.();
+                            }}
+                        >
+                            {t('header.confirm')}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </header>
     );
 }

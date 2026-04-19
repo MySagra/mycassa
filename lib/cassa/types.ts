@@ -1,6 +1,6 @@
 // Daily Order type
 export interface DailyOrder {
-    id: number;
+    id: string;
     displayCode: string;
     table: string;
     customer: string;

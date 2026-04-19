@@ -9,6 +9,7 @@ import { PaymentSection } from './PaymentSection';
 import { CartItem } from './CartItem';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 
 interface CartSidebarProps {
     cart: ExtendedCartItem[];
@@ -17,6 +18,7 @@ interface CartSidebarProps {
     table: string;
     displayCode: string;
     enableTableInput: boolean;
+    tableInputDisabled?: boolean;
     paymentMethod: PaymentMethod;
     paidAmount: string;
     appliedDiscount: number;
@@ -51,6 +53,7 @@ export function CartSidebar({
     table,
     displayCode,
     enableTableInput,
+    tableInputDisabled,
     paymentMethod,
     paidAmount,
     appliedDiscount,
@@ -78,24 +81,25 @@ export function CartSidebar({
     cartScrollRef
 }: CartSidebarProps) {
     const [openClearDialog, setOpenClearDialog] = useState(false);
+    const { t } = useTranslation();
 
     const handleClearCart = () => {
         onClearCart();
         setOpenClearDialog(false);
-        toast.success('Carrello svuotato');
+        toast.success(t('cartSidebar.toastCleared'));
     };
 
     return (
         <aside className="w-96 border-l bg-card flex flex-col">
             <div className="flex items-center justify-between p-4">
-                <h2 className="text-xl font-semibold select-none">Carrello</h2>
+                <h2 className="text-xl font-semibold select-none">{t('cartSidebar.title')}</h2>
 
                 <Button
                     variant={showDailyOrders ? 'default' : 'outline'}
                     onClick={onToggleDailyOrders}
                     className='select-none cursor-pointer'
                 >
-                    Ordini Giornalieri
+                    {t('cartSidebar.dailyOrders')}
                 </Button>
             </div>
 
@@ -104,6 +108,7 @@ export function CartSidebar({
                 customer={customer}
                 table={table}
                 enableTableInput={enableTableInput}
+                tableInputDisabled={tableInputDisabled}
                 validationErrors={validationErrors}
                 onUpdateDisplayCode={onUpdateDisplayCode}
                 onUpdateCustomer={onUpdateCustomer}
@@ -120,7 +125,7 @@ export function CartSidebar({
                             <div>
                                 <ShoppingBasket className="h-20 w-20 mx-auto mt-10 text-muted-foreground" />
                                 <div className="flex items-center font-bold justify-center text-sm text-muted-foreground select-none">
-                                    Carrello vuoto
+                                    {t('cartSidebar.emptyCart')}
                                 </div>
                             </div>
                         ) : (
@@ -161,8 +166,8 @@ export function CartSidebar({
                     variant="destructive"
                     size="icon"
                     onClick={() => setOpenClearDialog(true)}
-                    aria-label="Svuota carrello"
-                    title="Svuota carrello"
+                    aria-label={t('cartSidebar.clearCartHover')}
+                    title={t('cartSidebar.clearCartHover')}
                     className="h-10 w-10 disabled:cursor-not-allowed cursor-pointer"
                     disabled={cart.length === 0}
                 >
@@ -172,45 +177,45 @@ export function CartSidebar({
                 <AlertDialog open={openClearDialog} onOpenChange={setOpenClearDialog}>
                     <AlertDialogContent>
                         <AlertDialogHeader>
-                            <AlertDialogTitle>Svuotare il carrello?</AlertDialogTitle>
+                            <AlertDialogTitle>{t('cartSidebar.clearCartTitle')}</AlertDialogTitle>
                             <AlertDialogDescription>
-                                L'azione non può essere annullata.
+                                {t('cartSidebar.clearCartDesc')}
                             </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
-                            <AlertDialogCancel>Annulla</AlertDialogCancel>
+                            <AlertDialogCancel>{t('cartSidebar.cancel')}</AlertDialogCancel>
                             <AlertDialogAction
                                 className="bg-destructive text-white hover:bg-destructive/80"
                                 onClick={handleClearCart}
                             >
-                                Svuota
+                                {t('cartSidebar.clear')}
                             </AlertDialogAction>
                         </AlertDialogFooter>
                     </AlertDialogContent>
                 </AlertDialog>
 
                 <TooltipProvider>
-                    <Tooltip open={cart.length === 0 || !customer || (enableTableInput && !table) ? undefined : false}>
+                    <Tooltip>
                         <TooltipTrigger asChild>
                             <div className="flex-1">
                                 <Button
-                                    className="w-full bg-amber-500 text-lg font-semibold hover:bg-amber-600 select-none cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
+                                    className="w-full text-lg font-semibold select-none cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
                                     size="lg"
                                     onClick={onConfirmOrder}
-                                    disabled={cart.length === 0 || !customer || (enableTableInput && !table) || loadingConfirmOrder}
+                                    disabled={cart.length === 0 || !customer || customer.length < 2 || (enableTableInput && !table) || loadingConfirmOrder}
                                 >
                                     {loadingConfirmOrder ? (
                                         <>
                                             <span className="inline-block h-4 w-4 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                                            Creazione in corso...
+                                            {t('cartSidebar.creatingOrder')}
                                         </>
                                     ) : (
-                                        'Crea Ordine'
+                                        t('cartSidebar.createOrder')
                                     )}
                                 </Button>
                             </div>
                         </TooltipTrigger>
-                        {(cart.length === 0 || !customer || (enableTableInput && !table)) && validationMessage && (
+                        {validationMessage && (
                             <TooltipContent side="top" className="max-w-xs select-none">
                                 <ul className="list-disc list-inside space-y-1 text-sm">
                                     {validationMessage.map((error, index) => (
@@ -227,8 +232,8 @@ export function CartSidebar({
                     size="icon"
                     className="h-10 w-10 disabled:cursor-not-allowed cursor-pointer"
                     onClick={onOpenDiscount}
-                    aria-label="Applica sconto"
-                    title="Applica sconto"
+                    aria-label={t('cartSidebar.applyDiscount')}
+                    title={t('cartSidebar.applyDiscount')}
                 >
                     <Percent className="h-6 w-6" strokeWidth={2.5} />
                 </Button>

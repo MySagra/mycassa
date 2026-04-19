@@ -1,7 +1,8 @@
 import { ExtendedCartItem, Ingredient } from '@/lib/api-types';
 import { Button } from '@/components/ui/button';
-import { Pencil, X, Minus, Plus } from 'lucide-react';
+import { Pencil, X, Minus, Plus, AlertTriangle } from 'lucide-react';
 import { calculateIngredientSurcharge } from '@/lib/cassa/calculations';
+import { useTranslation } from 'react-i18next';
 
 interface CartItemProps {
     item: ExtendedCartItem;
@@ -18,11 +19,20 @@ export function CartItem({ item, allIngredients, onUpdateQuantity, onRemove, onE
     const itemSurcharge = calculateIngredientSurcharge(item);
     const itemTotal = (itemPrice * item.quantity) + itemSurcharge;
 
+    const isUnavailable = item.food.available === false;
+    const { t } = useTranslation();
+
     return (
-        <div className="bg-card border rounded-lg p-3">
+        <div className={`bg-card border rounded-lg p-3 ${isUnavailable ? 'border-destructive/60 bg-destructive/5' : ''}`}>
+            {isUnavailable && (
+                <div className="flex items-center gap-1 mb-2 text-xs text-destructive font-medium">
+                    <AlertTriangle className="h-3 w-3 shrink-0" />
+                    <span>{t('cartItem.unavailable')}</span>
+                </div>
+            )}
             <div className="flex items-start justify-between gap-2 mb-2">
                 <div className="flex-1">
-                    <h4 className="font-medium text-sm select-none">{item.food.name}</h4>
+                    <h4 className={`font-medium text-sm select-none ${isUnavailable ? 'line-through text-muted-foreground' : ''}`}>{item.food.name}</h4>
                     {item.ingredientQuantities && item.food.ingredients && (
                         <p className="text-xs text-amber-600 dark:text-amber-500 mt-1">
                             {item.food.ingredients

@@ -11,6 +11,7 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { useTranslation } from 'react-i18next';
 
 interface DailyOrdersSidebarProps {
     orders: DailyOrder[];
@@ -18,7 +19,7 @@ interface DailyOrdersSidebarProps {
     loading: boolean;
     showAllOrders: boolean;
     onSearchChange: (query: string) => void;
-    onViewDetail: (orderId: number) => void;
+    onViewDetail: (orderId: string) => void;
     onLoadToCart: (order: DailyOrder) => void;
     onToggleAllOrders: () => void;
 }
@@ -33,11 +34,13 @@ export function DailyOrdersSidebar({
     onLoadToCart,
     onToggleAllOrders,
 }: DailyOrdersSidebarProps) {
+    const { t } = useTranslation();
+
     return (
         <aside className="w-96 border-l flex flex-col bg-card h-screen animate-in">
             <div className="p-4 border-b">
                 <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-lg font-semibold select-none">Ordini Giornalieri</h2>
+                    <h2 className="text-lg font-semibold select-none">{t('dailyOrders.title')}</h2>
                     <TooltipProvider>
                         <Tooltip>
                             <TooltipTrigger asChild>
@@ -45,7 +48,7 @@ export function DailyOrdersSidebar({
                                     variant="outline"
                                     pressed={showAllOrders}
                                     onPressedChange={onToggleAllOrders}
-                                    aria-label="Mostra tutti gli ordini"
+                                    aria-label={t('dailyOrders.showAllOrders')}
                                 >
                                     {showAllOrders ? (
                                         <CheckCheck className="h-4 w-4" />
@@ -55,19 +58,19 @@ export function DailyOrdersSidebar({
                                 </Toggle>
                             </TooltipTrigger>
                             <TooltipContent>
-                                <p>{showAllOrders ? 'Stai visualizzando tutti gli ordini' : 'Stai visualizzando solo gli ordini in attesa'}</p>
+                                <p>{showAllOrders ? t('dailyOrders.tooltipAll') : t('dailyOrders.tooltipPending')}</p>
                             </TooltipContent>
                         </Tooltip>
                     </TooltipProvider>
                 </div>
                 {/* Search Section */}
                 <div>
-                    <Label htmlFor="searchQuery" className="mb-2">Cerca Ordine</Label>
+                    <Label htmlFor="searchQuery" className="mb-2">{t('dailyOrders.searchOrder')}</Label>
                     <div className="mt-1">
                         <Input
                             autoComplete='off'
                             id="searchQuery"
-                            placeholder="Cerca per codice, tavolo o cliente..."
+                            placeholder={t('dailyOrders.searchPlaceholder')}
                             value={searchQuery}
                             onChange={(e) => onSearchChange(e.target.value)}
                         />
@@ -79,7 +82,7 @@ export function DailyOrdersSidebar({
                 <div className="p-4 space-y-3">
                     {orders.length === 0 ? (
                         <div className="text-center text-muted-foreground py-8 select-none">
-                            {loading ? 'Caricamento ordini...' : 'Nessun ordine trovato per oggi'}
+                            {loading ? t('dailyOrders.loading') : t('dailyOrders.noOrders')}
                         </div>
                     ) : (
                         orders.map((order) => (

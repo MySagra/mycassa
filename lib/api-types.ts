@@ -156,15 +156,15 @@ export interface FoodWithIngredients {
 
 // Confirm Order Types
 export interface ConfirmOrderRequest {
-  orderId: number;
+  orderId: string;
   paymentMethod: PaymentMethod;
   discount?: number;
   orderItems: OrderItem[];
 }
 
 export interface ConfirmedOrderResponse {
-  id: number;
-  orderId: number;
+  id: string;
+  orderId: string;
   ticketNumber: number | null;
   status: 'CONFIRMED' | 'COMPLETED' | 'PICKED_UP';
   paymentMethod: PaymentMethod;

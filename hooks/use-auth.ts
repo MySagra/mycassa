@@ -14,31 +14,26 @@ export interface UseAuthResult {
   isAuthenticated: boolean;
 }
 
-const USER_COOKIE_NAME = 'mysagra_user';
-
-function readUserCookie(): AuthUser | null {
-  if (typeof document === 'undefined') return null;
-  const match = document.cookie
-    .split('; ')
-    .find((row) => row.startsWith(`${USER_COOKIE_NAME}=`));
-  if (!match) return null;
+function readUserStorage(): AuthUser | null {
+  if (typeof window === 'undefined') return null;
   try {
-    return JSON.parse(decodeURIComponent(match.split('=').slice(1).join('=')));
+    const raw = localStorage.getItem('mycassa_user');
+    return raw ? JSON.parse(raw) : null;
   } catch {
     return null;
   }
 }
 
 /**
- * Hook per leggere i dati utente autenticato dal cookie mysagra_user.
- * Non effettua chiamate API: legge direttamente il cookie impostato al login.
+ * Hook per leggere i dati utente autenticato dal localStorage.
+ * Non effettua chiamate API: legge direttamente il valore impostato al login.
  */
 export function useAuth(): UseAuthResult {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const userData = readUserCookie();
+    const userData = readUserStorage();
     setUser(userData);
     setIsLoading(false);
   }, []);

@@ -3,8 +3,9 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { getCashRegisters } from '@/actions/cassa';
+import { getCashRegisters } from '@/actions/cashier';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 
 interface CashRegister {
     id: string;
@@ -23,6 +24,7 @@ export function ConfigurationDialog({ open, onOpenChange, onCashRegisterSelected
     const [cashRegisters, setCashRegisters] = useState<CashRegister[]>([]);
     const [selectedCashRegister, setSelectedCashRegister] = useState<string>('');
     const [loading, setLoading] = useState(true);
+    const { t } = useTranslation();
 
     // Fetch cash registers when dialog opens
     useEffect(() => {
@@ -33,11 +35,11 @@ export function ConfigurationDialog({ open, onOpenChange, onCashRegisterSelected
                     if (result.success) {
                         setCashRegisters((result.data as CashRegister[]).filter(cr => cr.enabled));
                     } else {
-                        toast.error(result.error || 'Errore nel caricamento delle casse');
+                        toast.error(result.error || t('configDialog.errorLoading'));
                     }
                 } catch (error: any) {
                     console.error('Error fetching cash registers:', error);
-                    toast.error(error.message || 'Errore nel caricamento delle casse');
+                    toast.error(error.message || t('configDialog.errorLoading'));
                 } finally {
                     setLoading(false);
                 }
@@ -48,7 +50,7 @@ export function ConfigurationDialog({ open, onOpenChange, onCashRegisterSelected
     }, [open]);
     const handleSave = () => {
         if (!selectedCashRegister) {
-            toast.error('Seleziona una cassa');
+            toast.error(t('configDialog.selectRegisterToast'));
             return;
         }
 
@@ -56,7 +58,7 @@ export function ConfigurationDialog({ open, onOpenChange, onCashRegisterSelected
         if (cashRegister) {
             localStorage.setItem('selectedCashRegister', selectedCashRegister);
             onCashRegisterSelected(selectedCashRegister, cashRegister.name);
-            toast.success('Cassa configurata con successo');
+            toast.success(t('configDialog.configuredToast'));
             onOpenChange(false);
         }
     };
@@ -65,22 +67,22 @@ export function ConfigurationDialog({ open, onOpenChange, onCashRegisterSelected
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                    <DialogTitle>Configurazione mancante</DialogTitle>
+                    <DialogTitle>{t('configDialog.title')}</DialogTitle>
                     <DialogDescription>
-                        Per utilizzare MyCassa devi prima configurare la cassa.
+                        {t('configDialog.description')}
                     </DialogDescription>
                 </DialogHeader>
 
                 <div className="space-y-4 py-4">
                     <div className="space-y-2">
-                        <Label htmlFor="cash-register">Seleziona cassa</Label>
+                        <Label htmlFor="cash-register">{t('configDialog.selectRegisterLabel')}</Label>
                         <Select
                             value={selectedCashRegister}
                             onValueChange={setSelectedCashRegister}
                             disabled={loading}
                         >
                             <SelectTrigger id="cash-register">
-                                <SelectValue placeholder={loading ? "Caricamento..." : "Seleziona una cassa"} />
+                                <SelectValue placeholder={loading ? t('configDialog.loading') : t('configDialog.selectRegisterPlaceholder')} />
                             </SelectTrigger>
                             <SelectContent >
                                 <SelectGroup>
@@ -97,7 +99,7 @@ export function ConfigurationDialog({ open, onOpenChange, onCashRegisterSelected
 
                 <DialogFooter>
                     <Button className='cursor-pointer' onClick={handleSave} disabled={!selectedCashRegister || loading}>
-                        Salva configurazione
+                        {t('configDialog.saveConfig')}
                     </Button>
                 </DialogFooter>
             </DialogContent>

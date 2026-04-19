@@ -1,6 +1,7 @@
 import { Category } from '@/lib/api-types';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useTranslation } from 'react-i18next';
 
 interface CategorySidebarProps {
     categories: Category[];
@@ -10,6 +11,8 @@ interface CategorySidebarProps {
 }
 
 export function CategorySidebar({ categories, selectedCategoryId, onSelectCategory, loading }: CategorySidebarProps) {
+    const { t } = useTranslation();
+
     return (
         <aside className="w-64 border-r bg-card hidden xl:block">
             <div className="p-2">
@@ -19,7 +22,7 @@ export function CategorySidebar({ categories, selectedCategoryId, onSelectCatego
                     onClick={() => onSelectCategory(null)}
                 >
                     <div className='text-lg select-none'>
-                        Tutte le categorie
+                        {t('categorySideBar.allCategories')}
                     </div>
                 </Button>
             </div>
@@ -28,17 +31,20 @@ export function CategorySidebar({ categories, selectedCategoryId, onSelectCatego
                 <div className="space-y-2.5 p-2">
                     {loading ? (
                         <div className="p-4 text-center text-sm text-muted-foreground">
-                            Caricamento...
+                            {t('categorySideBar.loading')}
                         </div>
                     ) : (
                         categories.map((category) => (
                             <Button
                                 key={category.id}
                                 variant={selectedCategoryId === category.id ? 'default' : 'outline'}
-                                className="w-full justify-start cursor-pointer select-none"
+                                className={`w-full justify-start cursor-pointer select-none ${category.available === false ? 'opacity-60' : ''}`}
                                 onClick={() => onSelectCategory(category.id)}
                             >
-                                {category.name}
+                                <span className="truncate">{category.name}</span>
+                                {category.available === false && (
+                                    <span className="ml-auto shrink-0 text-xs text-muted-foreground">{t('categorySideBar.notAvailable')}</span>
+                                )}
                             </Button>
                         ))
                     )}

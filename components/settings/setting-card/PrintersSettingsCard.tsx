@@ -4,7 +4,8 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectVa
 import { Printer } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
-import { getCashRegisters } from '@/actions/cassa';
+import { getCashRegisters } from '@/actions/cashier';
+import { useTranslation } from 'react-i18next';
 
 interface CashRegister {
     id: string;
@@ -17,6 +18,7 @@ export function PrintersSettingsCard() {
     const [cashRegisters, setCashRegisters] = useState<CashRegister[]>([]);
     const [selectedCashRegister, setSelectedCashRegister] = useState<string>('');
     const [loading, setLoading] = useState(true);
+    const { t } = useTranslation();
 
     // Load selected cash register from localStorage on mount
     useEffect(() => {
@@ -34,11 +36,11 @@ export function PrintersSettingsCard() {
                 if (result.success) {
                     setCashRegisters((result.data as CashRegister[]).filter(cr => cr.enabled));
                 } else {
-                    toast.error(result.error || 'Errore nel caricamento delle casse');
+                    toast.error(result.error || t('configDialog.errorLoading'));
                 }
             } catch (error: any) {
                 console.error('Error fetching cash registers:', error);
-                toast.error(error.message || 'Errore nel caricamento delle casse');
+                toast.error(error.message || t('configDialog.errorLoading'));
             } finally {
                 setLoading(false);
             }
@@ -50,7 +52,7 @@ export function PrintersSettingsCard() {
     const handleCashRegisterChange = (value: string) => {
         setSelectedCashRegister(value);
         localStorage.setItem('selectedCashRegister', value);
-        toast.success('Cassa selezionata salvata');
+        toast.success(t('settings.printers.toastSaved'));
     };
 
     return (
@@ -58,19 +60,19 @@ export function PrintersSettingsCard() {
             <CardHeader>
                 <div className="flex items-center gap-2 select-none">
                     <Printer className="h-5 w-5 text-amber-600" />
-                    <CardTitle>Stampanti</CardTitle>
+                    <CardTitle>{t('settings.printers.title')}</CardTitle>
                 </div>
                 <CardDescription className='select-none'>
-                    Configura le impostazioni delle stampanti connesse all'applicazione
+                    {t('settings.printers.description')}
                 </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
                 <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                        <Label className="mb-2">Seleziona cassa</Label>
+                    <div className="space-y-0.5 select-none">
+                        <Label className="mb-2">{t('settings.printers.selectRegister')}</Label>
                         <Select value={selectedCashRegister} onValueChange={handleCashRegisterChange} disabled={loading}>
                             <SelectTrigger className="w-[220px]">
-                                <SelectValue placeholder={loading ? "Caricamento..." : "Seleziona una cassa"} />
+                                <SelectValue placeholder={loading ? t('settings.printers.loading') : t('settings.printers.selectRegisterPlaceholder')} />
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectGroup>

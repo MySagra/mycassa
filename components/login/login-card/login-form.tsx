@@ -1,7 +1,8 @@
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { Field, FieldDescription, FieldGroup, FieldLabel, } from "@/components/ui/field"
+import { ButtonGroup } from "@/components/ui/button-group"
+import { Card, CardContent } from "@/components/ui/card"
+import { Field, FieldGroup, FieldLabel, } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { FormField, FormItem, FormControl } from "@/components/ui/form"
 import { useRouter } from "next/navigation";
@@ -10,15 +11,19 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm, FormProvider } from "react-hook-form"
 import { toast } from "sonner";
 import { login as loginAction } from "@/actions/auth";
+import { Eye, EyeOff } from "lucide-react";
 import z from "zod"
+import { useTranslation } from "react-i18next";
 
 export function LoginForm() {
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
+    const { t } = useTranslation();
 
     const formSchema = z.object({
-        username: z.string().min(1, "Username obbligatorio"),
-        password: z.string().min(1, "Password obbligatoria")
+        username: z.string().min(1, t('loginForm.usernameRequired')),
+        password: z.string().min(1, t('loginForm.passwordRequired'))
     });
 
     const form = useForm<z.input<typeof formSchema>>({
@@ -34,16 +39,17 @@ export function LoginForm() {
         try {
             const result = await loginAction(values.username, values.password);
             if (result.success) {
+                localStorage.setItem('mycassa_user', JSON.stringify(result.user));
                 // Wait a bit for session to be fully set
                 await new Promise(resolve => setTimeout(resolve, 100));
-                window.location.href = '/cassa'; // Force full page reload to ensure session is loaded
+                window.location.href = '/cashier'; // Force full page reload to ensure session is loaded
             } else {
-                toast.error(result.error || "Credenziali non valide");
+                toast.error(result.error || t('loginForm.invalidCredentials'));
                 form.reset();
             }
         } catch (error) {
             console.error('Login error:', error);
-            toast.error("Errore durante il login");
+            toast.error(t('loginForm.loginError'));
             form.reset();
         } finally {
             setIsLoading(false);
@@ -58,12 +64,12 @@ export function LoginForm() {
         const passwordError = (errors.password as any)?.message;
 
         if (usernameError && passwordError) {
-            toast.error(`Username e Password sono obbligatori`);
+            toast.error(t('loginForm.bothRequired'));
             return;
         }
 
         const first = Object.values(errors)[0];
-        const message = (first as any)?.message || 'Errore di validazione';
+        const message = (first as any)?.message || t('loginForm.validationError');
         toast.error(message);
     }
 
@@ -80,34 +86,45 @@ export function LoginForm() {
                                     className="mx-auto h-36 w-auto select-none"
                                 />
                                 <div className="flex flex-col items-center gap-2 text-center">
-                                    <h1 className="text-2xl font-bold select-none">Benvenuto!</h1>
+                                    <h1 className="text-2xl font-bold select-none">{t('loginForm.welcome')}</h1>
                                     <p className="text-muted-foreground text-balance select-none">
-                                        Esegui il login al tuo account MyCassa
+                                        {t('loginForm.subtitle')}
                                     </p>
                                 </div>
                                 <Field>
-                                    <FieldLabel htmlFor="username">Username</FieldLabel>
+                                    <FieldLabel htmlFor="username">{t('loginForm.usernameLabel')}</FieldLabel>
                                     <FormField
                                         control={form.control}
                                         name="username"
                                         render={({ field }) => (
                                             <FormItem>
                                                 <FormControl>
-                                                    <Input autoComplete="off" placeholder="Username o Email" {...field} />
+                                                    <Input autoComplete="off" placeholder={t('loginForm.usernamePlaceholder')} {...field} />
                                                 </FormControl>
                                             </FormItem>
                                         )}
                                     />
                                 </Field>
                                 <Field>
-                                    <FieldLabel htmlFor="password">Password</FieldLabel>
+                                    <FieldLabel htmlFor="password">{t('loginForm.passwordLabel')}</FieldLabel>
                                     <FormField
                                         control={form.control}
                                         name="password"
                                         render={({ field }) => (
                                             <FormItem>
                                                 <FormControl>
-                                                    <Input autoComplete="off" placeholder="La tua password" type="password" {...field} />
+                                                    <ButtonGroup className="w-full">
+                                                        <Input autoComplete="off" placeholder={t('loginForm.passwordPlaceholder')} type={showPassword ? "text" : "password"} {...field} />
+                                                        <Button
+                                                            type="button"
+                                                            variant="outline"
+                                                            size="icon"
+                                                            tabIndex={-1}
+                                                            onClick={() => setShowPassword(p => !p)}
+                                                        >
+                                                            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                                        </Button>
+                                                    </ButtonGroup>
                                                 </FormControl>
                                             </FormItem>
                                         )}
@@ -115,12 +132,12 @@ export function LoginForm() {
                                 </Field>
                                 <Field>
                                     <Button type="submit" disabled={isLoading} className="w-full select-none">
-                                        {isLoading ? "Accesso..." : "Accedi"}
+                                        {isLoading ? t('loginForm.loggingIn') : t('loginForm.loginButton')}
                                     </Button>
                                 </Field>
                             </FieldGroup>
                         </form>
-                        <div className="bg-white flex items-center justify-center h-150 w-full">
+                        <div className="hidden md:flex bg-white items-center justify-center h-150 w-full">
                             <img
                                 src="/placeholder.jpg"
                                 alt="Logo"

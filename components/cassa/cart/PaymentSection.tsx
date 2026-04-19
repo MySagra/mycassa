@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ButtonGroup } from '@/components/ui/button-group';
 import { CreditCard, Banknote } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface PaymentSectionProps {
     total: number;
@@ -28,13 +29,15 @@ export function PaymentSection({
     onUpdatePaymentMethod,
     onUpdatePaidAmount
 }: PaymentSectionProps) {
+    const { t } = useTranslation();
+
     return (
         <div className="space-y-2 p-4 pt-1.5">
             {/* Total */}
             <div className="text-xs mb-0.5">
                 {total - surcharges + discount !== total && (
                     <div className="flex items-center justify-between text-muted-foreground">
-                        <span>Subtotale:</span>
+                        <span>{t('payment.subtotal')}:</span>
                         <span className="font-semibold">
                             {(total - surcharges + discount).toFixed(2)} €
                         </span>
@@ -42,7 +45,7 @@ export function PaymentSection({
                 )}
                 {surcharges > 0 && (
                     <div className="flex items-center justify-between text-amber-600 dark:text-amber-500">
-                        <span>Sovrapprezzi totali:</span>
+                        <span>{t('payment.surcharges')}:</span>
                         <span className="font-semibold">
                             +{surcharges.toFixed(2)} €
                         </span>
@@ -50,7 +53,7 @@ export function PaymentSection({
                 )}
                 {discount > 0 && (
                     <div className="flex items-center justify-between text-green-600 dark:text-green-500">
-                        <span>Sconto applicato:</span>
+                        <span>{t('payment.discount')}:</span>
                         <span className="font-semibold">
                             -{discount.toFixed(2)} €
                         </span>
@@ -58,7 +61,7 @@ export function PaymentSection({
                 )}
             </div>
             <div className="flex items-center justify-between">
-                <span className="text-lg font-semibold select-none">TOTALE:</span>
+                <span className="text-lg font-semibold select-none">{t('payment.total')}:</span>
                 <span className="text-2xl font-bold text-amber-500 select-none">
                     {total.toFixed(2)} €
                 </span>
@@ -67,7 +70,7 @@ export function PaymentSection({
 
             {/* Payment Method */}
             <div>
-                <Label>Metodo Pagamento *</Label>
+                <Label>{t('payment.paymentMethod')} *</Label>
                 <ButtonGroup className="mt-2 w-full">
                     <Button
                         variant={paymentMethod === 'CASH' ? 'default' : 'outline'}
@@ -75,7 +78,7 @@ export function PaymentSection({
                         onClick={() => onUpdatePaymentMethod('CASH')}
                     >
                         <Banknote className="mr-2 h-4 w-4" />
-                        Contanti
+                        {t('payment.cash')}
                     </Button>
                     <Button
                         variant={paymentMethod === 'CARD' ? 'default' : 'outline'}
@@ -83,7 +86,7 @@ export function PaymentSection({
                         onClick={() => onUpdatePaymentMethod('CARD')}
                     >
                         <CreditCard className="mr-2 h-4 w-4" />
-                        Carta
+                        {t('payment.card')}
                     </Button>
                 </ButtonGroup>
             </div>
@@ -94,7 +97,7 @@ export function PaymentSection({
                     <div className="space-y-3 border rounded-lg p-3 bg-muted/30">
                         <div className="grid grid-cols-2 gap-4 item">
                             <div>
-                                <Label htmlFor="paidAmount" className='text-base'>Pagato dal cliente</Label>
+                                <Label htmlFor="paidAmount" className='text-base'>{t('payment.paidByCustomer')}</Label>
                                 <div className="relative mt-3">
                                     <Input
                                         autoComplete='off'
@@ -123,7 +126,7 @@ export function PaymentSection({
                                 )}
                             </div>
                             <div className="flex flex-col items-end space-y-1">
-                                <span className="text-base font-medium select-none">Resto</span>
+                                <span className="text-base font-medium select-none">{t('payment.change')}</span>
                                 <div className='w-full h-full flex place-content-end items-center select-none'>
                                     <span className={`text-2xl font-bold ${change >= 0 ? 'text-green-600 dark:text-green-500' : 'text-red-600 dark:text-red-500'}`}>
                                         {change.toFixed(2)} €

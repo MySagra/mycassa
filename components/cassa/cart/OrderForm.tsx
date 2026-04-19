@@ -2,12 +2,14 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search, Loader2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface OrderFormProps {
     displayCode: string;
     customer: string;
     table: string;
     enableTableInput: boolean;
+    tableInputDisabled?: boolean;
     validationErrors: { customer?: string; table?: string };
     onUpdateDisplayCode: (value: string) => void;
     onUpdateCustomer: (value: string) => void;
@@ -21,6 +23,7 @@ export function OrderForm({
     customer,
     table,
     enableTableInput,
+    tableInputDisabled,
     validationErrors,
     onUpdateDisplayCode,
     onUpdateCustomer,
@@ -28,16 +31,18 @@ export function OrderForm({
     onLoadOrder,
     loadingOrder
 }: OrderFormProps) {
+    const { t } = useTranslation();
+
     return (
         <div className="space-y-2 p-4">
             {/* Load Order */}
             <div>
-                <Label htmlFor="displayCode" className='mb-2'>Carica Ordine</Label>
+                <Label htmlFor="displayCode" className='mb-2'>{t('orderForm.loadOrder')}</Label>
                 <div className="mt-1 flex gap-2">
                     <Input
                         autoComplete='off'
                         id="displayCode"
-                        placeholder="CODICE ORDINE (ES. ABC)"
+                        placeholder={t('orderForm.orderCodePlaceholder')}
                         value={displayCode}
                         onChange={(e) => onUpdateDisplayCode(e.target.value.toUpperCase())}
                         maxLength={3}
@@ -61,11 +66,11 @@ export function OrderForm({
             {/* Customer and Table */}
             <div className='grid grid-cols-2 gap-4'>
                 <div>
-                    <Label htmlFor="customer" className='mb-2'>Cliente *</Label>
+                    <Label htmlFor="customer" className='mb-2'>{t('orderForm.customer')} *</Label>
                     <Input
                         autoComplete='off'
                         id="customer"
-                        placeholder="Es. Mario Rossi"
+                        placeholder={t('orderForm.customerPlaceholder')}
                         value={customer}
                         onChange={(e) => onUpdateCustomer(e.target.value)}
                         className={validationErrors.customer ? 'border-red-500' : ''}
@@ -75,16 +80,17 @@ export function OrderForm({
                     )}
                 </div>
 
-                {enableTableInput && (
+                {(enableTableInput || tableInputDisabled) && (
                     <div>
-                        <Label htmlFor="table" className='mb-2'>Tavolo *</Label>
+                        <Label htmlFor="table" className='mb-2'>{t('orderForm.table')} {tableInputDisabled ? '' : '*'}</Label>
                         <Input
                             autoComplete='off'
                             id="table"
-                            placeholder="Es. 12 o Tavolo A5"
-                            value={table}
+                            placeholder={t('orderForm.tablePlaceholder')}
+                            value={tableInputDisabled ? t('orderForm.tableDisabled') : table}
                             onChange={(e) => onUpdateTable(e.target.value)}
                             className={validationErrors.table ? 'border-red-500' : ''}
+                            disabled={tableInputDisabled}
                         />
                         {validationErrors.table && (
                             <p className="text-xs text-red-500 mt-1">{validationErrors.table}</p>

@@ -1,6 +1,6 @@
 const CACHE_NAME = "mycassa-v1";
 
-const PRECACHE_URLS = ["/cassa", "/login", "/logo.svg"];
+const PRECACHE_URLS = ["/cashier", "/login", "/logo.svg"];
 
 // Install: precache risorse essenziali
 self.addEventListener("install", (event) => {

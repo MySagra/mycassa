@@ -1,6 +1,7 @@
 import { cookies } from 'next/headers';
 
-export const AUTH_COOKIE_NAME = 'mysagra_token';
+export const COOKIE_STORE_NAME = 'mycassa_token'; // nome con cui viene salvato localmente
+export const AUTH_COOKIE_NAME = 'mysagra_token';  // nome con cui viene inviato al backend
 
 /**
  * Restituisce il token di autenticazione dal cookie HTTP-only.
@@ -8,5 +9,5 @@ export const AUTH_COOKIE_NAME = 'mysagra_token';
  */
 export async function getAuthToken(): Promise<string | null> {
   const cookieStore = await cookies();
-  return cookieStore.get(AUTH_COOKIE_NAME)?.value ?? null;
+  return cookieStore.get(COOKIE_STORE_NAME)?.value ?? null;
 }

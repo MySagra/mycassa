@@ -6,7 +6,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { useTheme } from 'next-themes';
 import { fetchEventSource } from '@microsoft/fetch-event-source';
 import { toast } from 'sonner';
-import { getCategories, getOrderByOrderId, confirmOrder as confirmOrderAction, createOrder, getTodayOrders, getAllTodayOrders, getFoodById, searchDailyOrders, searchAllDailyOrders, getOrderByCode, getCashRegisters, getAllIngredients } from '@/actions/cassa';
+import { getCategories, getOrderByOrderId, confirmOrder as confirmOrderAction, createOrder, getTodayOrders, getAllTodayOrders, getFoodById, searchDailyOrders, searchAllDailyOrders, getOrderByCode, getCashRegisters, getAllIngredients, getPrinterById, generalClosure } from '@/actions/cashier';
 import { logout as logoutAction } from '@/actions/auth';
 import { Category, Food, Ingredient, PaymentMethod, OrderDetailResponse, ExtendedCartItem } from '@/lib/api-types';
 import { DailyOrder } from '@/lib/cassa/types';
@@ -22,9 +22,10 @@ import { EditItemDialog } from '@/components/cassa/dialogs/EditItemDialog';
 import { DiscountDialog } from '@/components/cassa/dialogs/DiscountDialog';
 import { OrderDetailDialog } from '@/components/cassa/dialogs/OrderDetailDialog';
 import { ConfigurationDialog } from '@/components/cassa/dialogs/ConfigurationDialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { z } from 'zod';
 
-export default function CassaPage() {
+export default function CassaPage({ requiredTable }: { requiredTable: boolean }) {
     const router = useRouter();
     const { user, isLoading, isAuthenticated } = useAuth();
     const { theme, setTheme } = useTheme();
@@ -33,6 +34,7 @@ export default function CassaPage() {
     const lastEventRef = useRef<string | null>(null);
     const showAllOrdersRef = useRef<boolean>(false);
     const dailyOrdersRef = useRef<DailyOrder[]>([]);
+    const printerCacheRef = useRef<Map<string, { name: string; ip?: string | null }>>(new Map());
     const [categories, setCategories] = useState<Category[]>([]);
     const [foods, setFoods] = useState<Food[]>([]);
     const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
@@ -52,7 +54,7 @@ export default function CassaPage() {
     const [foodSearchQuery, setFoodSearchQuery] = useState('');
     const [openDiscountDialog, setOpenDiscountDialog] = useState(false);
     const [appliedDiscountAmount, setAppliedDiscountAmount] = useState<number>(0);
-    const [enableTableInput, setEnableTableInput] = useState(true);
+    const enableTableInput = requiredTable;
     const [dailyOrders, setDailyOrders] = useState<DailyOrder[]>([]);
     const [loadingDailyOrders, setLoadingDailyOrders] = useState(false);
     const [viewingOrderDetail, setViewingOrderDetail] = useState<OrderDetailResponse | null>(null);
@@ -62,6 +64,7 @@ export default function CassaPage() {
     const [loadingConfirmOrder, setLoadingConfirmOrder] = useState(false);
     const [showAllOrders, setShowAllOrders] = useState(false);
     const [allIngredients, setAllIngredients] = useState<Ingredient[]>([]);
+    const [showUnavailableDialog, setShowUnavailableDialog] = useState(false);
 
     // Keep ref in sync with state
     // Keep ref in sync with state
@@ -70,20 +73,7 @@ export default function CassaPage() {
         dailyOrdersRef.current = dailyOrders;
     }, [showAllOrders, dailyOrders]);
 
-    // Load enableTableInput from localStorage on mount
-    useEffect(() => {
-        const saved = localStorage.getItem('enableTableInput');
-        if (saved !== null) {
-            setEnableTableInput(JSON.parse(saved));
-        }
-    }, []);
 
-    // Save user ID to localStorage when user data is available
-    useEffect(() => {
-        if (user?.id) {
-            localStorage.setItem('userId', user.id);
-        }
-    }, [user]);
 
     // Load selected cash register name from localStorage
     useEffect(() => {
@@ -303,7 +293,7 @@ export default function CassaPage() {
                                             if (result.success) {
                                                 const newOrder = result.data;
                                                 const dailyOrder: DailyOrder = {
-                                                    id: parseInt(newOrder.id),
+                                                    id: newOrder.id,
                                                     displayCode: newOrder.displayCode,
                                                     table: newOrder.table,
                                                     customer: newOrder.customer,
@@ -334,62 +324,137 @@ export default function CassaPage() {
                         else if (event.event === 'food-availability-changed') {
                             try {
                                 const { id: foodId, available } = JSON.parse(event.data);
-                                let shouldShowToast = false;
 
                                 if (!available) {
-                                    // Food is no longer available - remove it from the foods list
-                                    setFoods((prevFoods) => {
-                                        const filteredFoods = prevFoods.filter(f => f.id !== foodId);
-                                        if (filteredFoods.length < prevFoods.length) {
-                                            shouldShowToast = true;
+                                    // Mark food as unavailable in state (keep it visible in grid)
+                                    let foodName = '';
+                                    setFoods((prevFoods) => prevFoods.map(f => {
+                                        if (f.id === foodId) {
+                                            foodName = f.name;
+                                            return { ...f, available: false };
                                         }
-                                        return filteredFoods;
-                                    });
-
-                                    if (shouldShowToast) {
-                                        toast.info('Cibo non disponibile');
-                                    }
+                                        return f;
+                                    }));
+                                    // Update matching cart items
+                                    setCart((prevCart) => prevCart.map(item =>
+                                        item.food.id === foodId
+                                            ? { ...item, food: { ...item.food, available: false } }
+                                            : item
+                                    ));
+                                    if (foodName) toast.warning(`"${foodName}" non è più disponibile`);
                                 } else {
-                                    // Food is now available - fetch it and add to the foods list
+                                    // Food is now available - fetch latest data and update state
                                     const fetchUpdatedFood = async () => {
                                         try {
                                             const result = await getFoodById(foodId);
-
                                             if (!result.success) {
                                                 console.error('[SSE] Errore fetchando cibo:', result.error);
                                                 return;
                                             }
-
                                             const updatedFood = result.data;
                                             let isNew = false;
-
                                             setFoods((prevFoods) => {
                                                 const existingIndex = prevFoods.findIndex(f => f.id === foodId);
-
                                                 if (existingIndex !== -1) {
-                                                    // Update existing food
                                                     const newFoods = [...prevFoods];
                                                     newFoods[existingIndex] = updatedFood;
                                                     return newFoods;
-                                                } else {
-                                                    // Add new food
-                                                    isNew = true;
-                                                    return [...prevFoods, updatedFood];
                                                 }
+                                                isNew = true;
+                                                return [...prevFoods, updatedFood];
                                             });
-
+                                            // Restore availability in cart items
+                                            setCart((prevCart) => prevCart.map(item =>
+                                                item.food.id === foodId
+                                                    ? { ...item, food: { ...item.food, available: true } }
+                                                    : item
+                                            ));
                                             if (isNew) {
-                                                toast.success(`Nuovo cibo disponibile: ${updatedFood.name}`);
+                                                toast.success(`"${updatedFood.name}" è ora disponibile`);
+                                            } else {
+                                                toast.success(`"${updatedFood.name}" è nuovamente disponibile`);
                                             }
                                         } catch (error) {
                                             console.error('[SSE] Errore fetchando cibo:', error);
                                         }
                                     };
-
                                     fetchUpdatedFood();
                                 }
                             } catch (error) {
                                 console.error('[SSE] Errore parsando food-availability-changed:', error);
+                            }
+                        }
+                        // Handle category-availability-changed event
+                        else if (event.event === 'category-availability-changed') {
+                            try {
+                                const { id: categoryId, available } = JSON.parse(event.data);
+                                let categoryName = '';
+
+                                // Update all foods belonging to this category
+                                setFoods((prevFoods) => prevFoods.map(f => {
+                                    if (String(f.categoryId) === String(categoryId) || String(f.category?.id) === String(categoryId)) {
+                                        if (!categoryName && f.category?.name) categoryName = f.category.name;
+                                        return { ...f, available };
+                                    }
+                                    return f;
+                                }));
+
+                                // Update the category itself
+                                setCategories((prevCategories) => prevCategories.map(cat => {
+                                    if (String(cat.id) === String(categoryId)) {
+                                        if (!categoryName) categoryName = cat.name;
+                                        return { ...cat, available };
+                                    }
+                                    return cat;
+                                }));
+
+                                // Update cart items whose food belongs to this category
+                                setCart((prevCart) => prevCart.map(item =>
+                                    String(item.food.categoryId) === String(categoryId)
+                                        ? { ...item, food: { ...item.food, available } }
+                                        : item
+                                ));
+
+                                if (categoryName) {
+                                    if (available) {
+                                        toast.success(`Categoria "${categoryName}" è ora disponibile`);
+                                    } else {
+                                        toast.warning(`Categoria "${categoryName}" non è più disponibile`);
+                                    }
+                                }
+                            } catch (error) {
+                                console.error('[SSE] Errore parsando category-availability-changed:', error);
+                            }
+                        }
+                        // Handle printer-status-changed event
+                        else if (event.event === 'printer-status-changed') {
+                            try {
+                                const { id: printerId, status } = JSON.parse(event.data);
+
+                                const fetchAndNotify = async () => {
+                                    let info = printerCacheRef.current.get(printerId);
+                                    if (!info) {
+                                        const result = await getPrinterById(printerId);
+                                        if (result.success) {
+                                            info = { name: result.data.name, ip: result.data.ip };
+                                            printerCacheRef.current.set(printerId, info);
+                                        }
+                                    }
+                                    const printerName = info?.name || `Stampante ${printerId}`;
+                                    const ipLabel = info?.ip ? ` (${info.ip})` : '';
+                                    const label = `${printerName}${ipLabel}`;
+
+                                    if (status === 'ONLINE') {
+                                        toast.success(`${label} è online`, { description: 'Stampante operativa' });
+                                    } else if (status === 'OFFLINE') {
+                                        toast.warning(`${label} è offline`, { description: 'Stampante non raggiungibile' });
+                                    } else {
+                                        toast.error(`${label} è in errore`, { description: `Stato: ${status}` });
+                                    }
+                                };
+                                fetchAndNotify();
+                            } catch (error) {
+                                console.error('[SSE] Errore parsando printer-status-changed:', error);
                             }
                         }
                         // Handle default/legacy message event
@@ -654,13 +719,14 @@ export default function CassaPage() {
             const cartItems: ExtendedCartItem[] = [];
             order.categorizedItems.forEach((catItem: any) => {
                 catItem.items.forEach((item: any) => {
+                    const currentFood = foods.find((f: Food) => f.id === item.food.id);
                     const food: Food = {
                         id: item.food.id,
                         name: item.food.name,
                         description: item.food.description,
                         price: parseFloat(item.food.price),
                         categoryId: catItem.category.id,
-                        available: item.food.available,
+                        available: currentFood !== undefined ? currentFood.available : item.food.available,
                         category: {
                             id: catItem.category.id,
                             name: catItem.category.name,
@@ -710,13 +776,14 @@ export default function CassaPage() {
             const cartItems: ExtendedCartItem[] = [];
             orderDetail.categorizedItems.forEach((catItem: any) => {
                 catItem.items.forEach((item: any) => {
+                    const currentFood = foods.find((f: Food) => f.id === item.food.id);
                     const food: Food = {
                         id: item.food.id,
                         name: item.food.name,
                         description: item.food.description,
                         price: parseFloat(item.food.price),
                         categoryId: catItem.category.id,
-                        available: item.food.available,
+                        available: currentFood !== undefined ? currentFood.available : item.food.available,
                         category: {
                             id: catItem.category.id,
                             name: catItem.category.name,
@@ -744,7 +811,7 @@ export default function CassaPage() {
     };
 
     // View order detail
-    const viewOrderDetail = async (orderId: number) => {
+    const viewOrderDetail = async (orderId: string) => {
         setLoadingOrderDetail(true);
         try {
             const result = await getOrderByOrderId(orderId);
@@ -761,30 +828,26 @@ export default function CassaPage() {
         }
     };
 
-    // Confirm order
+    // Validate order and check for unavailable items before submitting
     const confirmOrder = async () => {
         // Validate cash register is selected
         const selectedCashRegister = localStorage.getItem('selectedCashRegister');
         if (!selectedCashRegister) {
-            toast.error('Devi selezionare una cassa prima di confermare l\'ordine');
+            toast.error('Devi selezionare una cashier prima di confermare l\'ordine');
             setShowConfigDialog(true);
             return;
         }
 
         // Validate customer
         const customerValidation = orderSchema.shape.customer.safeParse(customer);
-
         if (!customerValidation.success) {
-            const error = customerValidation.error.issues[0].message;
-            setValidationErrors({ customer: error });
-            toast.error(error);
+            toast.error(customerValidation.error.issues[0].message);
             return;
         }
 
         // Validate table only if enabled
         if (enableTableInput) {
             const tableValidation = z.string().min(1, 'Il numero del tavolo è obbligatorio').safeParse(table);
-
             if (!tableValidation.success) {
                 const error = tableValidation.error.issues[0].message;
                 setValidationErrors({ table: error });
@@ -803,7 +866,6 @@ export default function CassaPage() {
             }
         }
 
-        // Clear validation errors if all is good
         setValidationErrors({});
 
         if (cart.length === 0) {
@@ -811,6 +873,19 @@ export default function CassaPage() {
             return;
         }
 
+        // Check for unavailable items in cart — ask for confirmation before proceeding
+        const hasUnavailable = cart.some(item => item.food.available === false);
+        if (hasUnavailable) {
+            setShowUnavailableDialog(true);
+            return;
+        }
+
+        await doConfirmOrder();
+    };
+
+    // The actual order submission — called after all validations pass
+    const doConfirmOrder = async () => {
+        setShowUnavailableDialog(false);
         setLoadingConfirmOrder(true);
         try {
             // Merge cart items with same foodId and notes
@@ -826,14 +901,16 @@ export default function CassaPage() {
                 }
 
                 const orderResponse = (result as any).data;
-                const orderId = parseInt(orderResponse.id);
+                const orderId = orderResponse.id;
+                const originalCustomerFromOrder = orderResponse.customer;
 
                 const confirmResult = await confirmOrderAction({
                     orderId,
                     paymentMethod,
-                    userId: localStorage.getItem('userId') || '',
+                    userId: user?.id || '',
                     cashRegisterId: localStorage.getItem('selectedCashRegister') || '',
                     discount: appliedDiscountAmount,
+                    customer: customer !== originalCustomerFromOrder ? customer : undefined,
                     orderItems: mergedOrderItems,
                 });
 
@@ -857,12 +934,12 @@ export default function CassaPage() {
             } else {
                 // Create new order with confirmation details
                 const createResult = await createOrder({
-                    table: enableTableInput && table.trim() ? table : "no table",
+                    table: enableTableInput && table.trim() ? table : "NO_TABLE_PRESET",
                     customer,
                     orderItems: mergedOrderItems,
                     confirm: {
                         paymentMethod,
-                        userId: localStorage.getItem('userId') || '',
+                        userId: user?.id || '',
                         cashRegisterId: localStorage.getItem('selectedCashRegister') || '',
                         discount: appliedDiscountAmount,
                     }
@@ -886,8 +963,23 @@ export default function CassaPage() {
     // Handle logout
     const handleLogout = async () => {
         await logoutAction();
+        localStorage.removeItem('mycassa_user');
         router.push('/login');
         router.refresh();
+    };
+
+    const handleGeneralClosure = async () => {
+        const cashRegisterId = localStorage.getItem('selectedCashRegister');
+        if (!cashRegisterId) {
+            toast.error('Nessuna cashier selezionata');
+            return;
+        }
+        const result = await generalClosure(cashRegisterId);
+        if (result.success) {
+            toast.success('Chiusura cashier eseguita con successo');
+        } else {
+            toast.error(result.error || 'Errore durante la chiusura cashier');
+        }
     };
 
     if (isLoading || !isAuthenticated) {
@@ -916,6 +1008,8 @@ export default function CassaPage() {
                     cashRegisterName={cashRegisterName}
                     foodSearchQuery={foodSearchQuery}
                     onFoodSearchChange={setFoodSearchQuery}
+                    user={user ?? undefined}
+                    onGeneralClosure={handleGeneralClosure}
                 />
 
                 <div className="flex flex-1 overflow-hidden">
@@ -948,6 +1042,7 @@ export default function CassaPage() {
                         table={table}
                         displayCode={displayCode}
                         enableTableInput={enableTableInput}
+                        tableInputDisabled={table === 'NO_TABLE_PRESET'}
                         paymentMethod={paymentMethod}
                         paidAmount={paidAmount}
                         appliedDiscount={appliedDiscountAmount}
@@ -1032,6 +1127,35 @@ export default function CassaPage() {
                 onOpenChange={setShowConfigDialog}
                 onCashRegisterSelected={handleCashRegisterSelected}
             />
+
+            {/* Unavailable items confirmation dialog */}
+            <AlertDialog open={showUnavailableDialog} onOpenChange={setShowUnavailableDialog}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Prodotti non disponibili</AlertDialogTitle>
+                        <AlertDialogDescription asChild>
+                            <div>
+                                <p className="mb-2">Il carrello contiene i seguenti prodotti non disponibili:</p>
+                                <ul className="list-disc list-inside space-y-1 text-sm text-destructive">
+                                    {cart.filter(item => !item.food.available).map(item => (
+                                        <li key={item.cartItemId}>{item.food.name}</li>
+                                    ))}
+                                </ul>
+                                <p className="mt-3">Vuoi creare l&apos;ordine comunque?</p>
+                            </div>
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Annulla</AlertDialogCancel>
+                        <AlertDialogAction
+                            className="bg-destructive text-white hover:bg-destructive/80"
+                            onClick={doConfirmOrder}
+                        >
+                            Crea ordine
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 }

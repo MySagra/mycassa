@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
 import { Plus, Minus, Search } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface EditItemDialogProps {
     item: ExtendedCartItem | null;
@@ -23,6 +24,7 @@ export function EditItemDialog({ item, open, onClose, onSave, allIngredients = [
     const [ingredientQuantities, setIngredientQuantities] = useState<Record<string, number>>({});
     const [extraIngredients, setExtraIngredients] = useState<Record<string, number>>({});
     const [extraSearch, setExtraSearch] = useState('');
+    const { t } = useTranslation();
 
     // Compute available extra ingredients (all ingredients minus those already in the food)
     const foodIngredientIds = new Set(item?.food.ingredients?.map((i) => i.id) ?? []);
@@ -79,7 +81,7 @@ export function EditItemDialog({ item, open, onClose, onSave, allIngredients = [
         <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
             <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                 <DialogHeader>
-                    <DialogTitle>Modifica Prodotto</DialogTitle>
+                    <DialogTitle>{t('editItemDialog.title')}</DialogTitle>
                     <DialogDescription>
                         <span className="text-sm text-muted-foreground">
                             {item.food.name}
@@ -89,7 +91,7 @@ export function EditItemDialog({ item, open, onClose, onSave, allIngredients = [
                 <div className="space-y-4">
                     {/* Quantity */}
                     <div className="space-y-2">
-                        <Label>Quantità con questa modifica</Label>
+                        <Label>{t('editItemDialog.quantityPrompt')}</Label>
                         <div className="flex items-center gap-2">
                             <Button
                                 variant="outline"
@@ -121,14 +123,14 @@ export function EditItemDialog({ item, open, onClose, onSave, allIngredients = [
                             </Button>
                         </div>
                         <p className="text-xs text-muted-foreground">
-                            Indica quante unità devono avere questa personalizzazione (max: {item.quantity})
+                            {t('editItemDialog.quantityHint', { max: item.quantity })}
                         </p>
                     </div>
 
                     {/* Ingredients */}
                     {(item.food.ingredients && item.food.ingredients.length > 0 || Object.keys(extraIngredients).length > 0) && (
                         <div className="space-y-2">
-                            <Label>Ingredienti</Label>
+                            <Label>{t('editItemDialog.ingredients')}</Label>
                             <div className="border rounded-md overflow-hidden">
                                 <div className="space-y-3 max-h-65 overflow-y-auto p-3">
                                     {/* Default food ingredients */}
@@ -204,7 +206,7 @@ export function EditItemDialog({ item, open, onClose, onSave, allIngredients = [
                                 </div>
                             </div>
                             <p className="text-xs text-muted-foreground">
-                                Imposta la quantità degli ingredienti (0 = nessuno)
+                                {t('editItemDialog.ingredientsHint')}
                             </p>
                         </div>
                     )}
@@ -214,14 +216,14 @@ export function EditItemDialog({ item, open, onClose, onSave, allIngredients = [
                         <Accordion type="single" collapsible className="border rounded-md p-3">
                             <AccordionItem value="extra-ingredients" className="border-b-0">
                                 <AccordionTrigger className="py-2 items-center focus-visible:ring-0 focus-visible:border-transparent">
-                                    <Label className="cursor-pointer shrink-0">Aggiungi Ingredienti</Label>
+                                    <Label className="cursor-pointer shrink-0">{t('editItemDialog.addIngredients')}</Label>
                                     <div
                                         className="relative flex-1 min-w-0 hidden [[data-state=open]>&]:block"
                                         onClick={(e) => e.stopPropagation()}
                                     >
                                         <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                                         <Input
-                                            placeholder="Cerca..."
+                                            placeholder={t('editItemDialog.searchPlaceholder')}
                                             value={extraSearch}
                                             onChange={(e) => setExtraSearch(e.target.value)}
                                             className="pl-8 h-7 text-xs"
@@ -253,10 +255,10 @@ export function EditItemDialog({ item, open, onClose, onSave, allIngredients = [
 
                     {/* Notes */}
                     <div className="space-y-2">
-                        <Label htmlFor="notes">Nota</Label>
+                        <Label htmlFor="notes">{t('editItemDialog.note')}</Label>
                         <Textarea
                             id="notes"
-                            placeholder="Aggiungi una nota per questo prodotto..."
+                            placeholder={t('editItemDialog.notePlaceholder')}
                             value={editNotes}
                             onChange={(e) => setEditNotes(e.target.value)}
                             rows={4}
@@ -270,13 +272,13 @@ export function EditItemDialog({ item, open, onClose, onSave, allIngredients = [
                         className='cursor-pointer'
                         onClick={onClose}
                     >
-                        Annulla
+                        {t('editItemDialog.cancel')}
                     </Button>
                     <Button
                         className="bg-amber-500 hover:bg-amber-600 cursor-pointer"
                         onClick={handleSave}
                     >
-                        Salva
+                        {t('editItemDialog.save')}
                     </Button>
                 </DialogFooter>
             </DialogContent>

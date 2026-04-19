@@ -67,7 +67,7 @@ function getDailyOrderDateRange() {
 export async function getCategories() {
   try {
     const headers = await authHeaders();
-    const response = await fetch(`${process.env.API_URL}/v1/categories?available=true&include=foods`, {
+    const response = await fetch(`${process.env.API_URL}/v1/categories?include=foods.ingredients`, {
       headers,
       cache: 'no-store',
     });
@@ -230,8 +230,8 @@ export async function getOrderByCode(code: string) {
   }
 }
 
-export async function getOrderByOrderId(orderId: number) {
-  if (!orderId || typeof orderId !== 'number') {
+export async function getOrderByOrderId(orderId: string) {
+  if (!orderId || typeof orderId !== 'string') {
     return { success: false, error: 'ID ordine non valido' };
   }
 
@@ -380,11 +380,12 @@ export async function createOrder(orderData: {
  * Confirm existing order
  */
 export async function confirmOrder(orderData: {
-  orderId: number;
+  orderId: string;
   paymentMethod: string;
   userId: string;
   cashRegisterId: string;
   discount: number;
+  customer?: string;
   orderItems: Array<{
     foodId: string;
     quantity: number;
@@ -451,6 +452,34 @@ export async function getCashRegisters() {
 }
 
 /**
+ * Get all users
+ */
+export async function getUsers() {
+  try {
+    const headers = await authHeaders();
+    const response = await fetch(`${process.env.API_URL}/v1/users`, {
+      headers,
+      cache: 'no-store',
+    });
+
+    handleAuthError(response.status);
+
+    if (!response.ok) {
+      return { success: false, error: 'Errore nel caricamento degli utenti' };
+    }
+
+    const data = await response.json();
+    return { success: true, data };
+  } catch (error: any) {
+    if (isRedirectError(error)) {
+      throw error;
+    }
+    console.error('getUsers error:', error);
+    return { success: false, error: error.message || 'Errore sconosciuto' };
+  }
+}
+
+/**
  * Get all ingredients
  */
 export async function getAllIngredients() {
@@ -511,10 +540,40 @@ export async function getPrinterById(printerId: string) {
 }
 
 /**
+ * General closure of the cash register
+ */
+export async function generalClosure(cashRegisterId: string) {
+  try {
+    const headers = await authHeaders();
+    const response = await fetch(`${process.env.API_URL}/v1/reports/general-closure`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ cashRegister: cashRegisterId }),
+    });
+
+    handleAuthError(response.status);
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      return { success: false, error: errorData.message || 'Impossibile eseguire la chiusura cashier' };
+    }
+
+    const data = await response.json().catch(() => ({}));
+    return { success: true, data };
+  } catch (error: any) {
+    if (isRedirectError(error)) {
+      throw error;
+    }
+    console.error('generalClosure error:', error);
+    return { success: false, error: error.message || 'Errore sconosciuto' };
+  }
+}
+
+/**
  * Reprint order to selected printers
  */
 export async function reprintOrder(orderId: string, body: {
-  orderItems: Array<{ id: string }>;
+  orderItems: string[];
   reprintReceipt: boolean;
 }) {
   try {
