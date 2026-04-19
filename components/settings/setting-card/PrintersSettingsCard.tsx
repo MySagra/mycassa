@@ -4,7 +4,7 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectVa
 import { Printer } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
-import { getCashRegisters } from '@/actions/cassa';
+import { getCashRegisters } from '@/actions/cashier';
 
 interface CashRegister {
     id: string;
@@ -70,7 +70,7 @@ export function PrintersSettingsCard() {
                         <Label className="mb-2">Seleziona cassa</Label>
                         <Select value={selectedCashRegister} onValueChange={handleCashRegisterChange} disabled={loading}>
                             <SelectTrigger className="w-[220px]">
-                                <SelectValue placeholder={loading ? "Caricamento..." : "Seleziona una cassa"} />
+                                <SelectValue placeholder={loading ? "Caricamento..." : "Seleziona una cashier"} />
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectGroup>

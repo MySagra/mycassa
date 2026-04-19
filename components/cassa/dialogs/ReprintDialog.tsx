@@ -13,7 +13,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Printer, Receipt, Loader2 } from 'lucide-react';
-import { getPrinterById, reprintOrder } from '@/actions/cassa';
+import { getPrinterById, reprintOrder } from '@/actions/cashier';
 import { toast } from 'sonner';
 
 interface PrinterInfo {

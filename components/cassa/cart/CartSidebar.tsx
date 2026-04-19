@@ -193,14 +193,14 @@ export function CartSidebar({
                 </AlertDialog>
 
                 <TooltipProvider>
-                    <Tooltip open={cart.length === 0 || !customer || (enableTableInput && !table) ? undefined : false}>
+                    <Tooltip>
                         <TooltipTrigger asChild>
                             <div className="flex-1">
                                 <Button
-                                    className="w-full bg-amber-500 text-lg font-semibold hover:bg-amber-600 select-none cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
+                                    className="w-full text-lg font-semibold select-none cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
                                     size="lg"
                                     onClick={onConfirmOrder}
-                                    disabled={cart.length === 0 || !customer || (enableTableInput && !table) || loadingConfirmOrder}
+                                    disabled={cart.length === 0 || !customer || customer.length < 2 || (enableTableInput && !table) || loadingConfirmOrder}
                                 >
                                     {loadingConfirmOrder ? (
                                         <>
@@ -213,7 +213,7 @@ export function CartSidebar({
                                 </Button>
                             </div>
                         </TooltipTrigger>
-                        {(cart.length === 0 || !customer || (enableTableInput && !table)) && validationMessage && (
+                        {validationMessage && (
                             <TooltipContent side="top" className="max-w-xs select-none">
                                 <ul className="list-disc list-inside space-y-1 text-sm">
                                     {validationMessage.map((error, index) => (

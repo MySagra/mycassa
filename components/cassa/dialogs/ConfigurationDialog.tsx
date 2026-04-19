@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { getCashRegisters } from '@/actions/cassa';
+import { getCashRegisters } from '@/actions/cashier';
 import { toast } from 'sonner';
 
 interface CashRegister {
@@ -48,7 +48,7 @@ export function ConfigurationDialog({ open, onOpenChange, onCashRegisterSelected
     }, [open]);
     const handleSave = () => {
         if (!selectedCashRegister) {
-            toast.error('Seleziona una cassa');
+            toast.error('Seleziona una cashier');
             return;
         }
 
@@ -80,7 +80,7 @@ export function ConfigurationDialog({ open, onOpenChange, onCashRegisterSelected
                             disabled={loading}
                         >
                             <SelectTrigger id="cash-register">
-                                <SelectValue placeholder={loading ? "Caricamento..." : "Seleziona una cassa"} />
+                                <SelectValue placeholder={loading ? "Caricamento..." : "Seleziona una cashier"} />
                             </SelectTrigger>
                             <SelectContent >
                                 <SelectGroup>

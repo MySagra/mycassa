@@ -385,6 +385,7 @@ export async function confirmOrder(orderData: {
   userId: string;
   cashRegisterId: string;
   discount: number;
+  customer?: string;
   orderItems: Array<{
     foodId: string;
     quantity: number;
@@ -554,7 +555,7 @@ export async function generalClosure(cashRegisterId: string) {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      return { success: false, error: errorData.message || 'Impossibile eseguire la chiusura cassa' };
+      return { success: false, error: errorData.message || 'Impossibile eseguire la chiusura cashier' };
     }
 
     const data = await response.json().catch(() => ({}));

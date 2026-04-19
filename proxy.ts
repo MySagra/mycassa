@@ -1,18 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { COOKIE_STORE_NAME } from '@/lib/auth';
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const token = request.cookies.get(COOKIE_STORE_NAME)?.value;
 
   const isRoot = pathname === '/';
   const isOnProtectedRoute =
-    pathname.startsWith('/cassa') || pathname.startsWith('/impostazioni') || pathname.startsWith('/settings');
+    pathname.startsWith('/cashier') || pathname.startsWith('/impostazioni') || pathname.startsWith('/settings');
   const isOnLogin = pathname.startsWith('/login');
 
   // Root redirect
   if (isRoot) {
-    return NextResponse.redirect(new URL(token ? '/cassa' : '/login', request.url));
+    return NextResponse.redirect(new URL(token ? '/cashier' : '/login', request.url));
   }
 
   if (isOnProtectedRoute && !token) {
@@ -21,8 +21,8 @@ export function middleware(request: NextRequest) {
   }
 
   if (isOnLogin && token) {
-    // Già autenticato: redirect alla cassa
-    return NextResponse.redirect(new URL('/cassa', request.url));
+    // Già autenticato: redirect alla cashier
+    return NextResponse.redirect(new URL('/cashier', request.url));
   }
 
   return NextResponse.next();

@@ -6,7 +6,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { useTheme } from 'next-themes';
 import { fetchEventSource } from '@microsoft/fetch-event-source';
 import { toast } from 'sonner';
-import { getCategories, getOrderByOrderId, confirmOrder as confirmOrderAction, createOrder, getTodayOrders, getAllTodayOrders, getFoodById, searchDailyOrders, searchAllDailyOrders, getOrderByCode, getCashRegisters, getAllIngredients, getPrinterById, generalClosure } from '@/actions/cassa';
+import { getCategories, getOrderByOrderId, confirmOrder as confirmOrderAction, createOrder, getTodayOrders, getAllTodayOrders, getFoodById, searchDailyOrders, searchAllDailyOrders, getOrderByCode, getCashRegisters, getAllIngredients, getPrinterById, generalClosure } from '@/actions/cashier';
 import { logout as logoutAction } from '@/actions/auth';
 import { Category, Food, Ingredient, PaymentMethod, OrderDetailResponse, ExtendedCartItem } from '@/lib/api-types';
 import { DailyOrder } from '@/lib/cassa/types';
@@ -833,7 +833,7 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
         // Validate cash register is selected
         const selectedCashRegister = localStorage.getItem('selectedCashRegister');
         if (!selectedCashRegister) {
-            toast.error('Devi selezionare una cassa prima di confermare l\'ordine');
+            toast.error('Devi selezionare una cashier prima di confermare l\'ordine');
             setShowConfigDialog(true);
             return;
         }
@@ -841,9 +841,7 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
         // Validate customer
         const customerValidation = orderSchema.shape.customer.safeParse(customer);
         if (!customerValidation.success) {
-            const error = customerValidation.error.issues[0].message;
-            setValidationErrors({ customer: error });
-            toast.error(error);
+            toast.error(customerValidation.error.issues[0].message);
             return;
         }
 
@@ -904,6 +902,7 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
 
                 const orderResponse = (result as any).data;
                 const orderId = orderResponse.id;
+                const originalCustomerFromOrder = orderResponse.customer;
 
                 const confirmResult = await confirmOrderAction({
                     orderId,
@@ -911,6 +910,7 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
                     userId: user?.id || '',
                     cashRegisterId: localStorage.getItem('selectedCashRegister') || '',
                     discount: appliedDiscountAmount,
+                    customer: customer !== originalCustomerFromOrder ? customer : undefined,
                     orderItems: mergedOrderItems,
                 });
 
@@ -971,14 +971,14 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
     const handleGeneralClosure = async () => {
         const cashRegisterId = localStorage.getItem('selectedCashRegister');
         if (!cashRegisterId) {
-            toast.error('Nessuna cassa selezionata');
+            toast.error('Nessuna cashier selezionata');
             return;
         }
         const result = await generalClosure(cashRegisterId);
         if (result.success) {
-            toast.success('Chiusura cassa eseguita con successo');
+            toast.success('Chiusura cashier eseguita con successo');
         } else {
-            toast.error(result.error || 'Errore durante la chiusura cassa');
+            toast.error(result.error || 'Errore durante la chiusura cashier');
         }
     };
 

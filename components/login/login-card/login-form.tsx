@@ -40,7 +40,7 @@ export function LoginForm() {
                 localStorage.setItem('mycassa_user', JSON.stringify(result.user));
                 // Wait a bit for session to be fully set
                 await new Promise(resolve => setTimeout(resolve, 100));
-                window.location.href = '/cassa'; // Force full page reload to ensure session is loaded
+                window.location.href = '/cashier'; // Force full page reload to ensure session is loaded
             } else {
                 toast.error(result.error || "Credenziali non valide");
                 form.reset();

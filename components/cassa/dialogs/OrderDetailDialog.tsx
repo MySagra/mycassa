@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { FileText, Printer } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { getCashRegisters, getUsers } from '@/actions/cassa';
+import { getCashRegisters, getUsers } from '@/actions/cashier';
 import { toast } from 'sonner';
 import { ReprintDialog } from './ReprintDialog';
 
