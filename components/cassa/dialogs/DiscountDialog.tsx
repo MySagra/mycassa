@@ -10,12 +10,13 @@ import { useTranslation } from 'react-i18next';
 interface DiscountDialogProps {
     open: boolean;
     currentDiscount: number;
+    orderTotal?: number;
     onClose: () => void;
     onApply: (amount: number) => void;
     onRemove: () => void;
 }
 
-export function DiscountDialog({ open, currentDiscount, onClose, onApply, onRemove }: DiscountDialogProps) {
+export function DiscountDialog({ open, currentDiscount, orderTotal, onClose, onApply, onRemove }: DiscountDialogProps) {
     const [discountAmount, setDiscountAmount] = useState<string>('');
     const [validationError, setValidationError] = useState<string | undefined>();
     const { t } = useTranslation();
@@ -43,9 +44,16 @@ export function DiscountDialog({ open, currentDiscount, onClose, onApply, onRemo
         }
 
         setValidationError(undefined);
-        onApply(result.data);
+
+        let finalAmount = result.data;
+        if (orderTotal !== undefined && finalAmount > orderTotal) {
+            finalAmount = orderTotal;
+            toast.warning(t('discountDialog.discountCapped', { amount: finalAmount.toFixed(2) }));
+        }
+
+        onApply(finalAmount);
         onClose();
-        toast.success(t('discountDialog.toastApplied', { amount: result.data.toFixed(2) }));
+        toast.success(t('discountDialog.toastApplied', { amount: finalAmount.toFixed(2) }));
     };
 
     const handleRemove = () => {
@@ -72,6 +80,7 @@ export function DiscountDialog({ open, currentDiscount, onClose, onApply, onRemo
                                 autoComplete='off'
                                 id="discountAmount"
                                 type="text"
+                                inputMode="decimal"
                                 placeholder="0.00"
                                 value={discountAmount}
                                 onChange={(e) => {
