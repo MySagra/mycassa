@@ -3,6 +3,7 @@
 import { useState, useCallback, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { MobileUserMenu } from './MobileUserMenu';
+import { useTranslation } from 'react-i18next';
 
 interface MobileCassaHeaderProps {
     onLogout: () => void;
@@ -28,6 +29,7 @@ export function MobileCassaHeader({
     onGeneralClosure,
     onVerificaClick,
 }: MobileCassaHeaderProps) {
+    const { t } = useTranslation();
     const [logoClickCount, setLogoClickCount] = useState(0);
     const easterEggActive = logoClickCount >= EASTER_EGG_CLICKS;
     const clickTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -63,7 +65,7 @@ export function MobileCassaHeader({
                             className="cursor-pointer select-none"
                             onClick={onVerificaClick}
                         >
-                            Verifica ordine
+                            {t('mobile.header.verifyOrder')}
                         </Button>
                     )}
 {user && (

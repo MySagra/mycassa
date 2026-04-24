@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -19,7 +19,7 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { Pencil, Trash2, Percent, Plus } from 'lucide-react';
+import { Pencil, Trash2, Percent, Plus, AlertTriangle, CheckCircle } from 'lucide-react';
 import { MobileCassaHeader } from './MobileCassaHeader';
 import { OrderForm } from '@/components/cassa/cart/OrderForm';
 import { PaymentSection } from '@/components/cassa/cart/PaymentSection';
@@ -28,6 +28,7 @@ import { MobileEditItemDrawer } from './MobileEditItemDrawer';
 import { MobileFoodPickerDrawer } from './MobileFoodPickerDrawer';
 import { MobileVerificaDrawer } from './MobileVerificaDrawer';
 import { MobileOrderDetailDrawer } from './MobileOrderDetailDrawer';
+import { MobileChangeCalculatorDrawer } from './MobileChangeCalculatorDrawer';
 import { CassaLayoutProps } from '@/components/cassa/desktop/DesktopCassaLayout';
 import { calculateIngredientSurcharge } from '@/lib/cassa/calculations';
 import { toast } from 'sonner';
@@ -52,11 +53,27 @@ export function MobileCassaLayout({
     const [foodPickerOpen, setFoodPickerOpen] = useState(false);
     const [openClearDialog, setOpenClearDialog] = useState(false);
     const [verificaOpen, setVerificaOpen] = useState(false);
+    const [calculatorOpen, setCalculatorOpen] = useState(false);
+    const [orderSuccess, setOrderSuccess] = useState(false);
+    const wasConfirmingRef = useRef(false);
     const { t } = useTranslation();
 
     useEffect(() => {
         if (editingItem !== null) setCartDrawerOpen(false);
     }, [editingItem]);
+
+    useEffect(() => {
+        if (loadingConfirmOrder) {
+            wasConfirmingRef.current = true;
+        } else if (wasConfirmingRef.current) {
+            wasConfirmingRef.current = false;
+            if (cart.length === 0) {
+                setOrderSuccess(true);
+                const t = setTimeout(() => setOrderSuccess(false), 3000);
+                return () => clearTimeout(t);
+            }
+        }
+    }, [loadingConfirmOrder, cart.length]);
 
     const handleClearCart = () => {
         onClearCart();
@@ -91,33 +108,6 @@ export function MobileCassaLayout({
                     onLoadOrder={onLoadOrder}
                     loadingOrder={loadingOrder}
                 />
-
-                {/* Cart + Add buttons */}
-                <div className="px-4 py-2 flex gap-2">
-                    <Button
-                        variant="outline"
-                        className="flex-1 cursor-pointer"
-                        size="lg"
-                        onClick={() => setCartDrawerOpen(true)}
-                    >
-                        <Pencil className="h-5 w-5 mr-2" />
-                        Modifica
-                        {cart.length > 0 && (
-                            <Badge className="ml-2 bg-amber-500 text-white hover:bg-amber-500">
-                                {cart.length}
-                            </Badge>
-                        )}
-                    </Button>
-                    <Button
-                        variant="outline"
-                        className="flex-1 cursor-pointer"
-                        size="lg"
-                        onClick={() => setFoodPickerOpen(true)}
-                    >
-                        <Plus className="h-5 w-5 mr-2" />
-                        Aggiungi
-                    </Button>
-                </div>
 
                 {/* Compact cart list */}
                 {cart.length > 0 && (
@@ -161,10 +151,11 @@ export function MobileCassaLayout({
                                                     }
                                                     if (item.notes) mods.push(item.notes);
 
+                                                    const unavailable = !item.food.available;
                                                     return (
                                                         <div
                                                             key={item.cartItemId}
-                                                            className="flex items-start justify-between px-3 py-2 gap-2"
+                                                            className={`flex items-start justify-between px-3 py-2 gap-2${unavailable ? ' opacity-60' : ''}`}
                                                         >
                                                             <div className="flex-1 min-w-0">
                                                                 <p className="text-sm font-medium truncate">
@@ -172,11 +163,17 @@ export function MobileCassaLayout({
                                                                         <span className="text-amber-500 font-bold mr-1">{item.quantity}×</span>
                                                                     )}
                                                                     {item.food.name}
+                                                                    {unavailable && (
+                                                                        <AlertTriangle className="inline ml-1.5 h-3.5 w-3.5 text-red-500 shrink-0" />
+                                                                    )}
                                                                 </p>
                                                                 {mods.length > 0 && (
                                                                     <p className="text-xs text-muted-foreground truncate mt-0.5">
                                                                         {mods.join(', ')}
                                                                     </p>
+                                                                )}
+                                                                {unavailable && (
+                                                                    <p className="text-xs text-red-500 mt-0.5">{t('cartItem.unavailable')}</p>
                                                                 )}
                                                             </div>
                                                             <span className="text-sm font-bold shrink-0 text-amber-500">
@@ -195,6 +192,35 @@ export function MobileCassaLayout({
                 )}
                 {cart.length === 0 && <div className="flex-1" />}
 
+                {/* Cart + Add buttons */}
+                <div className="px-4 py-2 flex gap-2 mb-1.5">
+                    <Button
+                        variant="outline"
+                        className="flex-1 cursor-pointer"
+                        size="lg"
+                        onClick={() => setCartDrawerOpen(true)}
+                    >
+                        <Pencil className="h-5 w-5 mr-2" />
+                        {t('mobile.layout.editCart')}
+                        {cart.length > 0 && (
+                            <Badge className="ml-2 bg-amber-500 text-white hover:bg-amber-500">
+                                {cart.length}
+                            </Badge>
+                        )}
+                    </Button>
+                    <Button
+                        variant="outline"
+                        className="flex-1 cursor-pointer"
+                        size="lg"
+                        onClick={() => setFoodPickerOpen(true)}
+                    >
+                        <Plus className="h-5 w-5 mr-2" />
+                        {t('mobile.layout.addProduct')}
+                    </Button>
+                </div>
+
+                <div className="border-t" />
+
                 <PaymentSection
                     total={total}
                     surcharges={surcharges}
@@ -205,6 +231,7 @@ export function MobileCassaLayout({
                     validationErrors={validationErrors}
                     onUpdatePaymentMethod={onUpdatePaymentMethod}
                     onUpdatePaidAmount={onUpdatePaidAmount}
+                    onOpenCalculator={() => setCalculatorOpen(true)}
                 />
 
                 <div className="flex items-center gap-2 p-4 pt-0">
@@ -244,10 +271,11 @@ export function MobileCassaLayout({
                             <TooltipTrigger asChild>
                                 <div className="flex-1">
                                     <Button
-                                        className="w-full text-lg font-semibold select-none cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
+                                        className={`w-full text-lg font-semibold select-none cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed transition-colors ${orderSuccess ? 'bg-green-500 hover:bg-green-500' : ''}`}
                                         size="lg"
                                         onClick={onConfirmOrder}
                                         disabled={
+                                            orderSuccess ||
                                             cart.length === 0 ||
                                             !customer ||
                                             customer.length < 2 ||
@@ -255,7 +283,12 @@ export function MobileCassaLayout({
                                             loadingConfirmOrder
                                         }
                                     >
-                                        {loadingConfirmOrder ? (
+                                        {orderSuccess ? (
+                                            <>
+                                                <CheckCircle className="h-5 w-5 mr-2" />
+                                                {t('mobile.orderConfirmed')}
+                                            </>
+                                        ) : loadingConfirmOrder ? (
                                             <>
                                                 <span className="inline-block h-4 w-4 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin" />
                                                 {t('cartSidebar.creatingOrder')}
@@ -344,6 +377,13 @@ export function MobileCassaLayout({
                 open={viewingOrderDetail !== null}
                 loading={loadingOrderDetail}
                 onClose={onCloseOrderDetail}
+            />
+
+            <MobileChangeCalculatorDrawer
+                open={calculatorOpen}
+                onOpenChange={setCalculatorOpen}
+                total={total}
+                onApply={onUpdatePaidAmount}
             />
         </div>
     );

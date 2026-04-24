@@ -70,11 +70,11 @@ export function MobileOrderDetailDrawer({ order, open, loading, onClose }: Mobil
             <Drawer open={open} onOpenChange={(isOpen) => { if (!isOpen) { (document.activeElement as HTMLElement)?.blur(); onClose(); } }}>
                 <DrawerContent className="flex flex-col" style={{ maxHeight: '92dvh' }}>
                     <DrawerHeader className="pb-2">
-                        <DrawerTitle className="flex items-center gap-2">
+                        <DrawerTitle className="flex items-center justify-center gap-2">
                             <FileText className="h-5 w-5" />
                             {t('orderDetailDialog.title')} {order?.displayCode}
                         </DrawerTitle>
-                        <DrawerDescription>{t('orderDetailDialog.description')}</DrawerDescription>
+                        <DrawerDescription className="text-center">{t('orderDetailDialog.description')}</DrawerDescription>
                     </DrawerHeader>
 
                     {loading ? (

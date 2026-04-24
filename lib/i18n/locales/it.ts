@@ -187,6 +187,29 @@ export const it = {
     },
     foods: {
       notAvailable: "Non disp."
+    },
+    mobile: {
+      header: {
+        verifyOrder: "Cerca ordini"
+      },
+      foodPicker: {
+        title: "Aggiungi prodotto",
+        noResults: "Nessun prodotto trovato",
+        addButton: "Aggiungi"
+      },
+      changeCalculator: {
+        title: "Calcolatore Resto",
+        totalLabel: "Totale da pagare",
+        applyButton: "Usa importo"
+      },
+      layout: {
+        editCart: "Modifica",
+        addProduct: "Aggiungi"
+      },
+      editItem: {
+        noIngredientFound: "Nessun ingrediente trovato"
+      },
+      orderConfirmed: "Ordine confermato!"
     }
   }
 };

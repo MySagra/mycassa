@@ -3,7 +3,7 @@
 import { ExtendedCartItem, Ingredient, Category } from '@/lib/api-types';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { CartItem } from '@/components/cassa/cart/CartItem';
+import { MobileCartItem } from './MobileCartItem';
 import { ShoppingBasket } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -69,11 +69,11 @@ export function MobileCartDrawer({
                                     </p>
                                     <div className="space-y-2">
                                         {group.items.map((item) => (
-                                            <CartItem
+                                            <MobileCartItem
                                                 key={item.cartItemId}
                                                 item={item}
                                                 allIngredients={allIngredients}
-                                                onUpdateQuantity={(delta) => onUpdateQuantity(item.cartItemId, delta)}
+                                                onUpdateQuantity={(delta: number) => onUpdateQuantity(item.cartItemId, delta)}
                                                 onRemove={() => onRemoveItem(item.cartItemId)}
                                                 onEdit={() => onEditItem(item)}
                                             />

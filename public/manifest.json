@@ -2,8 +2,10 @@
   "name": "MyCassa",
   "short_name": "MyCassa",
   "description": "Sistema di cassa",
-  "start_url": "/cassa",
+  "start_url": "/cashier",
+  "scope": "/",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
   "background_color": "#000000",
   "theme_color": "#000000",
   "orientation": "any",
@@ -12,7 +14,7 @@
       "src": "/logo.svg",
       "sizes": "any",
       "type": "image/svg+xml",
-      "purpose": "any"
+      "purpose": "any maskable"
     }
   ]
 }

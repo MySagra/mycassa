@@ -187,6 +187,29 @@ export const en = {
     },
     foods: {
       notAvailable: "N/A"
+    },
+    mobile: {
+      header: {
+        verifyOrder: "Search orders"
+      },
+      foodPicker: {
+        title: "Add product",
+        noResults: "No products found",
+        addButton: "Add"
+      },
+      changeCalculator: {
+        title: "Change Calculator",
+        totalLabel: "Total to pay",
+        applyButton: "Use amount"
+      },
+      layout: {
+        editCart: "Edit",
+        addProduct: "Add"
+      },
+      editItem: {
+        noIngredientFound: "No ingredient found"
+      },
+      orderConfirmed: "Order confirmed!"
     }
   }
 };

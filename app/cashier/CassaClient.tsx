@@ -263,7 +263,7 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
                                     }
                                 });
 
-                                if (isNew) {
+                                if (isNew && !isMobile) {
                                     toast.success(`Nuovo ordine: ${order.displayCode}`);
                                 }
                             } catch (error) {
@@ -315,7 +315,7 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
                                     });
                                 }
 
-                                toast.info(`Ordine confermato ${displayCode}`);
+                                if (!isMobile) toast.info(`Ordine confermato ${displayCode}`);
                             } catch (error) {
                                 console.error('[SSE] Errore parsando confirmed-order:', error);
                             }
@@ -476,7 +476,7 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
                                     }
                                 });
 
-                                if (isNew) {
+                                if (isNew && !isMobile) {
                                     toast.success(`Nuovo ordine: ${order.displayCode}`);
                                 }
                             } catch (error) {
@@ -594,11 +594,6 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
 
     // Cart operations
     const addToCart = (food: Food) => {
-        if (!food.available) {
-            toast.error(`${food.name} non è disponibile`);
-            return;
-        }
-
         setCart((prev) => {
             const existingItem = prev.find((item) =>
                 item.food.id === food.id &&

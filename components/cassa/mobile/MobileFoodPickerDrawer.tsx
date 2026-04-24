@@ -5,7 +5,7 @@ import { Food, Category } from '@/lib/api-types';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Minus, Plus } from 'lucide-react';
+import { Search, Minus, Plus, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 
@@ -69,6 +69,7 @@ export function MobileFoodPickerDrawer({
             for (let i = 0; i < qty; i++) onAddToCart(food);
         });
         setSelectedItems({});
+        handleClose(false);
     };
 
     const handleCancel = () => handleClose(false);
@@ -86,7 +87,7 @@ export function MobileFoodPickerDrawer({
         <Drawer open={open} onOpenChange={handleClose}>
             <DrawerContent className="flex flex-col h-[88dvh]">
                 <DrawerHeader className="pb-2 shrink-0">
-                    <DrawerTitle>Aggiungi prodotto</DrawerTitle>
+                    <DrawerTitle>{t('mobile.foodPicker.title')}</DrawerTitle>
                 </DrawerHeader>
 
                 <div className="px-4 pb-3 shrink-0">
@@ -96,16 +97,24 @@ export function MobileFoodPickerDrawer({
                             placeholder={t('header.searchFood')}
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
-                            className="pl-9"
+                            className="pl-9 pr-9"
                             autoComplete="off"
                         />
+                        {search && (
+                            <button
+                                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                onClick={() => setSearch('')}
+                            >
+                                <X className="h-4 w-4" />
+                            </button>
+                        )}
                     </div>
                 </div>
 
                 <div className="flex-1 min-h-0 overflow-y-auto px-4 pb-2">
                     {grouped.length === 0 ? (
                         <p className="text-sm text-muted-foreground text-center py-8">
-                            Nessun prodotto trovato
+                            {t('mobile.foodPicker.noResults')}
                         </p>
                     ) : (
                         <div className="space-y-4">
@@ -181,14 +190,14 @@ export function MobileFoodPickerDrawer({
                         className="flex-1 h-11 cursor-pointer"
                         onClick={handleCancel}
                     >
-                        Annulla
+                        {t('cartSidebar.cancel')}
                     </Button>
                     <Button
                         className="flex-1 h-11 bg-amber-500 hover:bg-amber-600 cursor-pointer"
                         onClick={handleSave}
                         disabled={totalSelected === 0}
                     >
-                        Aggiungi {totalSelected > 0 && `(${totalSelected})`}
+                        {t('mobile.foodPicker.addButton')} {totalSelected > 0 && `(${totalSelected})`}
                     </Button>
                 </div>
             </DrawerContent>

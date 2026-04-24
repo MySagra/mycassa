@@ -187,7 +187,6 @@ export function MobileEditItemDrawer({
                                                         size="icon"
                                                         className="h-8 w-8 cursor-pointer"
                                                         onClick={() => updateExtraIngredientQuantity(id, -1)}
-                                                        disabled={qty <= 1}
                                                     >
                                                         <Minus className="h-3.5 w-3.5" />
                                                     </Button>
@@ -228,7 +227,7 @@ export function MobileEditItemDrawer({
                                 {extraSearch.trim().length > 0 && (
                                     <div className="pt-1">
                                         {filteredExtras.length === 0 ? (
-                                            <p className="text-xs text-muted-foreground">Nessun ingrediente trovato</p>
+                                            <p className="text-xs text-muted-foreground">{t('mobile.editItem.noIngredientFound')}</p>
                                         ) : (
                                             <div className="flex flex-wrap gap-2 overflow-hidden" style={{ maxHeight: '2rem' }}>
                                                 {filteredExtras.map((ingredient) => {
