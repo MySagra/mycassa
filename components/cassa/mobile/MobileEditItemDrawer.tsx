@@ -70,10 +70,14 @@ export function MobileEditItemDrawer({
     };
 
     const updateExtraIngredientQuantity = (ingredientId: string, delta: number) => {
-        setExtraIngredients((prev) => ({
-            ...prev,
-            [ingredientId]: Math.max(1, (prev[ingredientId] ?? 1) + delta),
-        }));
+        setExtraIngredients((prev) => {
+            const newQty = (prev[ingredientId] ?? 1) + delta;
+            if (newQty <= 0) {
+                const { [ingredientId]: _, ...rest } = prev;
+                return rest;
+            }
+            return { ...prev, [ingredientId]: newQty };
+        });
     };
 
     const toggleExtraIngredient = (ingredientId: string) => {
@@ -95,19 +99,19 @@ export function MobileEditItemDrawer({
     );
 
     return (
-        <Drawer open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
+        <Drawer open={open} onOpenChange={(isOpen) => { if (!isOpen) { (document.activeElement as HTMLElement)?.blur(); onClose(); } }}>
             <DrawerContent className="flex flex-col" style={{ maxHeight: '92dvh' }}>
                 <DrawerHeader className="pb-2">
                     <DrawerTitle>{t('editItemDialog.title')}</DrawerTitle>
                     <DrawerDescription>{item.food.name}</DrawerDescription>
                 </DrawerHeader>
 
-                <ScrollArea className="flex-1 overflow-y-auto px-4">
+                <ScrollArea className="flex-1 min-w-0 px-4">
                     <div className="space-y-4 pb-2">
 
                         {/* Quantity */}
                         <div className="space-y-1.5">
-                            <Label>{t('editItemDialog.quantityPrompt')}</Label>
+                            <Label className='mb-4'>{t('editItemDialog.quantityPrompt')}</Label>
                             <div className="flex items-center gap-3">
                                 <Button
                                     variant="outline"
@@ -138,7 +142,7 @@ export function MobileEditItemDrawer({
                         {/* Existing ingredients + selected extras */}
                         {(hasIngredients || hasExtras) && (
                             <div className="space-y-1.5">
-                                <Label>{t('editItemDialog.ingredients')}</Label>
+                                <Label className='mb-4'>{t('editItemDialog.ingredients')}</Label>
                                 <div className="border rounded-lg divide-y">
                                     {item.food.ingredients?.map((ingredient) => {
                                         const qty = ingredientQuantities[ingredient.id] ?? 1;
@@ -208,10 +212,10 @@ export function MobileEditItemDrawer({
                             </div>
                         )}
 
-                        {/* Add extra ingredients - search + badges, no accordion */}
+                        {/* Add extra ingredients - search bar only, results appear while typing */}
                         {availableExtras.length > 0 && hasIngredients && (
                             <div className="space-y-1.5">
-                                <Label>{t('editItemDialog.addIngredients')}</Label>
+                                <Label className='mb-4'>{t('editItemDialog.addIngredients')}</Label>
                                 <div className="relative">
                                     <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                                     <Input
@@ -221,21 +225,32 @@ export function MobileEditItemDrawer({
                                         className="pl-8 h-8 text-sm"
                                     />
                                 </div>
-                                <div className="flex flex-wrap gap-2 pt-1">
-                                    {filteredExtras.map((ingredient) => {
-                                        const isSelected = extraIngredients[ingredient.id] !== undefined;
-                                        return (
-                                            <Badge
-                                                key={ingredient.id}
-                                                variant={isSelected ? 'default' : 'outline'}
-                                                className="cursor-pointer select-none py-1 px-2.5"
-                                                onClick={() => toggleExtraIngredient(ingredient.id)}
-                                            >
-                                                {ingredient.name}
-                                            </Badge>
-                                        );
-                                    })}
-                                </div>
+                                {extraSearch.trim().length > 0 && (
+                                    <div className="pt-1">
+                                        {filteredExtras.length === 0 ? (
+                                            <p className="text-xs text-muted-foreground">Nessun ingrediente trovato</p>
+                                        ) : (
+                                            <div className="flex flex-wrap gap-2 overflow-hidden" style={{ maxHeight: '2rem' }}>
+                                                {filteredExtras.map((ingredient) => {
+                                                    const isSelected = extraIngredients[ingredient.id] !== undefined;
+                                                    return (
+                                                        <Badge
+                                                            key={ingredient.id}
+                                                            variant={isSelected ? 'default' : 'outline'}
+                                                            className="cursor-pointer select-none py-1 px-2.5"
+                                                            onClick={() => {
+                                                                toggleExtraIngredient(ingredient.id);
+                                                                setExtraSearch('');
+                                                            }}
+                                                        >
+                                                            {ingredient.name}
+                                                        </Badge>
+                                                    );
+                                                })}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
                             </div>
                         )}
 

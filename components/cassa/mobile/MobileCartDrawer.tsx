@@ -47,7 +47,7 @@ export function MobileCartDrawer({
     const groups = Object.values(grouped);
 
     return (
-        <Drawer open={open} onOpenChange={onOpenChange}>
+        <Drawer open={open} onOpenChange={(val) => { if (!val) (document.activeElement as HTMLElement)?.blur(); onOpenChange(val); }}>
             <DrawerContent className="max-h-[85vh] flex flex-col">
                 <DrawerHeader>
                     <DrawerTitle>{t('cartSidebar.title')}</DrawerTitle>

@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { ExtendedCartItem, Category, Food, Ingredient, PaymentMethod } from '@/lib/api-types';
+import { ExtendedCartItem, Category, Food, Ingredient, PaymentMethod, OrderDetailResponse } from '@/lib/api-types';
 import { DailyOrder } from '@/lib/cassa/types';
 import { CassaHeader } from '@/components/cassa/header/CassaHeader';
 import { CategorySidebar } from '@/components/cassa/sidebar/CategorySidebar';
@@ -75,6 +75,10 @@ export interface CassaLayoutProps {
     onViewDetail: (orderId: string) => void;
     onLoadToCart: (order: DailyOrder) => void;
     onToggleAllOrders: () => void;
+    // Order detail (mobile uses its own drawer)
+    viewingOrderDetail: OrderDetailResponse | null;
+    loadingOrderDetail: boolean;
+    onCloseOrderDetail: () => void;
 }
 
 export function DesktopCassaLayout({

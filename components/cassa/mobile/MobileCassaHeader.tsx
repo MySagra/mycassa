@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback, useRef } from 'react';
+import { Button } from '@/components/ui/button';
 import { MobileUserMenu } from './MobileUserMenu';
 
 interface MobileCassaHeaderProps {
@@ -11,6 +12,7 @@ interface MobileCassaHeaderProps {
     cashRegisterName?: string;
     user?: { username: string; role: string };
     onGeneralClosure?: () => void;
+    onVerificaClick?: () => void;
 }
 
 const EASTER_EGG_CLICKS = 20;
@@ -24,6 +26,7 @@ export function MobileCassaHeader({
     cashRegisterName,
     user,
     onGeneralClosure,
+    onVerificaClick,
 }: MobileCassaHeaderProps) {
     const [logoClickCount, setLogoClickCount] = useState(0);
     const easterEggActive = logoClickCount >= EASTER_EGG_CLICKS;
@@ -53,12 +56,17 @@ export function MobileCassaHeader({
                 </div>
 
                 <div className="flex items-center gap-2">
-                    {cashRegisterName && (
-                        <span className="text-sm font-medium text-muted-foreground bg-muted px-3 py-1 rounded-full select-none">
-                            {cashRegisterName}
-                        </span>
+                    {onVerificaClick && (
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            className="cursor-pointer select-none"
+                            onClick={onVerificaClick}
+                        >
+                            Verifica ordine
+                        </Button>
                     )}
-                    {user && (
+{user && (
                         <MobileUserMenu
                             user={user}
                             onLogout={onLogout}
@@ -66,6 +74,7 @@ export function MobileCassaHeader({
                             theme={theme}
                             onThemeToggle={onThemeToggle}
                             onGeneralClosure={onGeneralClosure}
+                            cashRegisterName={cashRegisterName}
                         />
                     )}
                 </div>

@@ -17,7 +17,7 @@ export function SettingsHeader() {
                         className="mx-auto h-10 w-auto select-none cursor-pointer"
                         onClick={() => router.push('/cashier')}
                     />
-                    <h1 className="text-2xl font-bold select-none">{t('settings.header.title')}</h1>
+                    <h1 className="text-2xl font-bold select-none hidden md:block">{t('settings.header.title')}</h1>
                 </div>
 
                 <Button

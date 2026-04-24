@@ -549,7 +549,7 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
 
     // Search daily orders based on query
     useEffect(() => {
-        if (!isAuthenticated || !showDailyOrders) {
+        if (!isAuthenticated || (!showDailyOrders && !isMobile)) {
             return;
         }
 
@@ -590,7 +590,7 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
         }, 300); // Debounce 300ms
 
         return () => clearTimeout(debounceTimer);
-    }, [isAuthenticated, showDailyOrders, searchQuery, showAllOrders]);
+    }, [isAuthenticated, showDailyOrders, isMobile, searchQuery, showAllOrders]);
 
     // Cart operations
     const addToCart = (food: Food) => {
@@ -1061,6 +1061,9 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
         onViewDetail: viewOrderDetail,
         onLoadToCart: loadOrderToCart,
         onToggleAllOrders: () => setShowAllOrders(!showAllOrders),
+        viewingOrderDetail,
+        loadingOrderDetail,
+        onCloseOrderDetail: () => setViewingOrderDetail(null),
         editingItem,
         onSaveEditedItem: handleSaveEditedItem,
         onClearEditingItem: () => setEditingItem(null),
@@ -1091,12 +1094,14 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
                 onRemove={() => setAppliedDiscountAmount(0)}
             />
 
-            <OrderDetailDialog
-                order={viewingOrderDetail}
-                open={viewingOrderDetail !== null}
-                loading={loadingOrderDetail}
-                onClose={() => setViewingOrderDetail(null)}
-            />
+            {!isMobile && (
+                <OrderDetailDialog
+                    order={viewingOrderDetail}
+                    open={viewingOrderDetail !== null}
+                    loading={loadingOrderDetail}
+                    onClose={() => setViewingOrderDetail(null)}
+                />
+            )}
 
             <ConfigurationDialog
                 open={showConfigDialog}
