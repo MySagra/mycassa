@@ -113,6 +113,7 @@ export const it = {
     discountDialog: {
       toastApplied: "Sconto di {{amount}} € applicato",
       toastRemoved: "Sconto rimosso",
+      discountCapped: "Sconto ridotto a {{amount}} € (pari al totale dell'ordine)",
       title: "Applica Sconto",
       description: "Inserisci l'importo dello sconto da applicare al totale dell'ordine",
       discountLabel: "Sconto (€)",

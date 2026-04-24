@@ -113,6 +113,7 @@ export const en = {
     discountDialog: {
       toastApplied: "Discount of {{amount}} € applied",
       toastRemoved: "Discount removed",
+      discountCapped: "Discount reduced to {{amount}} € (equals the order total)",
       title: "Apply Discount",
       description: "Enter the discount amount to apply to the order total",
       discountLabel: "Discount (€)",

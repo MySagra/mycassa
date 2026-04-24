@@ -1084,6 +1084,7 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
             <DiscountDialog
                 open={openDiscountDialog}
                 currentDiscount={appliedDiscountAmount}
+                orderTotal={calculateTotal(cart, 0)}
                 onClose={() => setOpenDiscountDialog(false)}
                 onApply={setAppliedDiscountAmount}
                 onRemove={() => setAppliedDiscountAmount(0)}

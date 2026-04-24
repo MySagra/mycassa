@@ -222,6 +222,7 @@ export function MobileEditItemDrawer({
                                         value={extraSearch}
                                         onChange={(e) => setExtraSearch(e.target.value)}
                                         className="pl-8 h-8 text-sm"
+                                        style={{ fontSize: '16px' }}
                                     />
                                 </div>
                                 {extraSearch.trim().length > 0 && (
