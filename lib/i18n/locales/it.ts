@@ -113,6 +113,7 @@ export const it = {
     discountDialog: {
       toastApplied: "Sconto di {{amount}} € applicato",
       toastRemoved: "Sconto rimosso",
+      discountCapped: "Sconto ridotto a {{amount}} € (pari al totale dell'ordine)",
       title: "Applica Sconto",
       description: "Inserisci l'importo dello sconto da applicare al totale dell'ordine",
       discountLabel: "Sconto (€)",
@@ -187,6 +188,29 @@ export const it = {
     },
     foods: {
       notAvailable: "Non disp."
+    },
+    mobile: {
+      header: {
+        verifyOrder: "Cerca ordini"
+      },
+      foodPicker: {
+        title: "Aggiungi prodotto",
+        noResults: "Nessun prodotto trovato",
+        addButton: "Aggiungi"
+      },
+      changeCalculator: {
+        title: "Calcolatore Resto",
+        totalLabel: "Totale da pagare",
+        applyButton: "Usa importo"
+      },
+      layout: {
+        editCart: "Modifica",
+        addProduct: "Aggiungi"
+      },
+      editItem: {
+        noIngredientFound: "Nessun ingrediente trovato"
+      },
+      orderConfirmed: "Ordine confermato!"
     }
   }
 };

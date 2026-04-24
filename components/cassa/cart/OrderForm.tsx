@@ -64,7 +64,7 @@ export function OrderForm({
             </div>
 
             {/* Customer and Table */}
-            <div className='grid grid-cols-2 gap-4'>
+            <div className={`grid ${enableTableInput && !tableInputDisabled ? 'grid-cols-2' : 'grid-cols-1'} gap-4`}>
                 <div>
                     <Label htmlFor="customer" className='mb-2'>{t('orderForm.customer')} *</Label>
                     <Input
@@ -80,17 +80,16 @@ export function OrderForm({
                     )}
                 </div>
 
-                {(enableTableInput || tableInputDisabled) && (
+                {enableTableInput && !tableInputDisabled && (
                     <div>
-                        <Label htmlFor="table" className='mb-2'>{t('orderForm.table')} {tableInputDisabled ? '' : '*'}</Label>
+                        <Label htmlFor="table" className='mb-2'>{t('orderForm.table')} *</Label>
                         <Input
                             autoComplete='off'
                             id="table"
                             placeholder={t('orderForm.tablePlaceholder')}
-                            value={tableInputDisabled ? t('orderForm.tableDisabled') : table}
+                            value={table}
                             onChange={(e) => onUpdateTable(e.target.value)}
                             className={validationErrors.table ? 'border-red-500' : ''}
-                            disabled={tableInputDisabled}
                         />
                         {validationErrors.table && (
                             <p className="text-xs text-red-500 mt-1">{validationErrors.table}</p>
