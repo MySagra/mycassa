@@ -13,22 +13,22 @@ import { DailyOrder } from '@/lib/cassa/types';
 import { calculateTotal, calculateTotalSurcharges, calculateChange } from '@/lib/cassa/calculations';
 import { getOrderValidationMessage, orderSchema, paidAmountSchema } from '@/lib/cassa/validations';
 import { mergeCartItems } from '@/lib/cassa/cart-utils';
-import { CassaHeader } from '@/components/cassa/header/CassaHeader';
-import { CategorySidebar } from '@/components/cassa/sidebar/CategorySidebar';
-import { FoodGrid } from '@/components/cassa/food/FoodGrid';
-import { CartSidebar } from '@/components/cassa/cart/CartSidebar';
-import { DailyOrdersSidebar } from '@/components/cassa/daily-orders/DailyOrdersSidebar';
 import { EditItemDialog } from '@/components/cassa/dialogs/EditItemDialog';
+import { MobileEditItemDrawer } from '@/components/cassa/mobile/MobileEditItemDrawer';
 import { DiscountDialog } from '@/components/cassa/dialogs/DiscountDialog';
 import { OrderDetailDialog } from '@/components/cassa/dialogs/OrderDetailDialog';
 import { ConfigurationDialog } from '@/components/cassa/dialogs/ConfigurationDialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { DesktopCassaLayout, CassaLayoutProps } from '@/components/cassa/desktop/DesktopCassaLayout';
+import { MobileCassaLayout } from '@/components/cassa/mobile/MobileCassaLayout';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { z } from 'zod';
 
 export default function CassaPage({ requiredTable }: { requiredTable: boolean }) {
     const router = useRouter();
     const { user, isLoading, isAuthenticated } = useAuth();
     const { theme, setTheme } = useTheme();
+    const isMobile = useIsMobile();
     const cartScrollRef = useRef<HTMLDivElement>(null);
     const sseConnectionRef = useRef(false);
     const lastEventRef = useRef<string | null>(null);
@@ -995,116 +995,94 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
     const change = calculateChange(total, parseFloat(paidAmount) || 0);
     const validationMessage = getOrderValidationMessage(cart.length, customer, table, enableTableInput);
 
+    const layoutProps: CassaLayoutProps = {
+        theme,
+        onThemeToggle: () => setTheme(theme === 'dark' ? 'light' : 'dark'),
+        cashRegisterName,
+        foodSearchQuery,
+        onFoodSearchChange: setFoodSearchQuery,
+        user: user ?? undefined,
+        onLogout: handleLogout,
+        onSettingsClick: () => router.push('/settings'),
+        onGeneralClosure: handleGeneralClosure,
+        categories,
+        selectedCategoryId,
+        onSelectCategory: setSelectedCategoryId,
+        loadingCategories,
+        foods,
+        loadingFoods,
+        onAddToCart: addToCart,
+        cart,
+        allIngredients,
+        customer,
+        table,
+        displayCode,
+        enableTableInput,
+        tableInputDisabled: table === 'NO_TABLE_PRESET',
+        paymentMethod,
+        paidAmount,
+        appliedDiscount: appliedDiscountAmount,
+        total,
+        surcharges,
+        change,
+        validationErrors,
+        validationMessage,
+        onUpdateCustomer: (value) => {
+            setCustomer(value);
+            setValidationErrors(prev => ({ ...prev, customer: undefined }));
+        },
+        onUpdateTable: (value) => {
+            setTable(value);
+            setValidationErrors(prev => ({ ...prev, table: undefined }));
+        },
+        onUpdateDisplayCode: setDisplayCode,
+        onLoadOrder: loadOrderByCode,
+        loadingOrder,
+        onUpdateQuantity: updateQuantity,
+        onRemoveItem: removeFromCart,
+        onEditItem: setEditingItem,
+        onClearCart: clearCart,
+        onConfirmOrder: confirmOrder,
+        loadingConfirmOrder,
+        onOpenDiscount: () => setOpenDiscountDialog(true),
+        onUpdatePaymentMethod: setPaymentMethod,
+        onUpdatePaidAmount: (value) => {
+            setPaidAmount(value);
+            setValidationErrors(prev => ({ ...prev, paidAmount: undefined }));
+        },
+        showDailyOrders,
+        onToggleDailyOrders: () => setShowDailyOrders(!showDailyOrders),
+        cartScrollRef,
+        dailyOrders,
+        searchQuery,
+        loadingDailyOrders,
+        showAllOrders,
+        onSearchChange: setSearchQuery,
+        onViewDetail: viewOrderDetail,
+        onLoadToCart: loadOrderToCart,
+        onToggleAllOrders: () => setShowAllOrders(!showAllOrders),
+        editingItem,
+        onSaveEditedItem: handleSaveEditedItem,
+        onClearEditingItem: () => setEditingItem(null),
+    };
+
     return (
-        <div className="flex h-screen pt-16 bg-background">
-            {/* Main Content Area */}
-            <div className="flex-1 flex flex-col">
-                {/* Header */}
-                <CassaHeader
-                    onLogout={handleLogout}
-                    onSettingsClick={() => router.push('/settings')}
-                    theme={theme}
-                    onThemeToggle={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                    cashRegisterName={cashRegisterName}
-                    foodSearchQuery={foodSearchQuery}
-                    onFoodSearchChange={setFoodSearchQuery}
-                    user={user ?? undefined}
-                    onGeneralClosure={handleGeneralClosure}
+        <>
+            {isMobile
+                ? <MobileCassaLayout {...layoutProps} />
+                : <DesktopCassaLayout {...layoutProps} />
+            }
+
+            {!isMobile && (
+                <EditItemDialog
+                    item={editingItem}
+                    open={editingItem !== null}
+                    onClose={() => setEditingItem(null)}
+                    onSave={handleSaveEditedItem}
+                    allIngredients={allIngredients}
                 />
+            )}
 
-                <div className="flex flex-1 overflow-hidden">
-                    {/* Left Sidebar - Categories */}
-                    <CategorySidebar
-                        categories={categories}
-                        selectedCategoryId={selectedCategoryId}
-                        onSelectCategory={setSelectedCategoryId}
-                        loading={loadingCategories}
-                    />
-
-                    {/* Center - Food Grid */}
-                    <main className="flex-1 overflow-hidden">
-                        <FoodGrid
-                            foods={foods}
-                            categories={categories}
-                            selectedCategoryId={selectedCategoryId}
-                            onAddToCart={addToCart}
-                            loading={loadingFoods}
-                            showDailyOrders={showDailyOrders}
-                            foodSearchQuery={foodSearchQuery}
-                        />
-                    </main>
-
-                    {/* Right Sidebar - Cart */}
-                    <CartSidebar
-                        cart={cart}
-                        allIngredients={allIngredients}
-                        customer={customer}
-                        table={table}
-                        displayCode={displayCode}
-                        enableTableInput={enableTableInput}
-                        tableInputDisabled={table === 'NO_TABLE_PRESET'}
-                        paymentMethod={paymentMethod}
-                        paidAmount={paidAmount}
-                        appliedDiscount={appliedDiscountAmount}
-                        total={total}
-                        surcharges={surcharges}
-                        change={change}
-                        validationErrors={validationErrors}
-                        validationMessage={validationMessage}
-                        onUpdateCustomer={(value) => {
-                            setCustomer(value);
-                            setValidationErrors(prev => ({ ...prev, customer: undefined }));
-                        }}
-                        onUpdateTable={(value) => {
-                            setTable(value);
-                            setValidationErrors(prev => ({ ...prev, table: undefined }));
-                        }}
-                        onUpdateDisplayCode={setDisplayCode}
-                        onLoadOrder={loadOrderByCode}
-                        loadingOrder={loadingOrder}
-                        onUpdateQuantity={updateQuantity}
-                        onRemoveItem={removeFromCart}
-                        onEditItem={setEditingItem}
-                        onClearCart={clearCart}
-                        onConfirmOrder={confirmOrder}
-                        loadingConfirmOrder={loadingConfirmOrder}
-                        onOpenDiscount={() => setOpenDiscountDialog(true)}
-                        onUpdatePaymentMethod={setPaymentMethod}
-                        onUpdatePaidAmount={(value) => {
-                            setPaidAmount(value);
-                            setValidationErrors(prev => ({ ...prev, paidAmount: undefined }));
-                        }}
-                        showDailyOrders={showDailyOrders}
-                        onToggleDailyOrders={() => setShowDailyOrders(!showDailyOrders)}
-                        cartScrollRef={cartScrollRef}
-                    />
-
-                    {/* Daily Orders Sidebar - Sliding Panel */}
-                    {showDailyOrders && (
-                        <DailyOrdersSidebar
-                            orders={dailyOrders}
-                            searchQuery={searchQuery}
-                            loading={loadingDailyOrders}
-                            showAllOrders={showAllOrders}
-                            onSearchChange={setSearchQuery}
-                            onViewDetail={viewOrderDetail}
-                            onLoadToCart={loadOrderToCart}
-                            onToggleAllOrders={() => setShowAllOrders(!showAllOrders)}
-                        />
-                    )}
-                </div>
-            </div>
-
-            {/* Edit Item Dialog */}
-            <EditItemDialog
-                item={editingItem}
-                open={editingItem !== null}
-                onClose={() => setEditingItem(null)}
-                onSave={handleSaveEditedItem}
-                allIngredients={allIngredients}
-            />
-
-            {/* Discount Dialog */}
             <DiscountDialog
                 open={openDiscountDialog}
                 currentDiscount={appliedDiscountAmount}
@@ -1113,7 +1091,6 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
                 onRemove={() => setAppliedDiscountAmount(0)}
             />
 
-            {/* Order Detail Dialog */}
             <OrderDetailDialog
                 order={viewingOrderDetail}
                 open={viewingOrderDetail !== null}
@@ -1121,14 +1098,12 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
                 onClose={() => setViewingOrderDetail(null)}
             />
 
-            {/* Configuration Dialog */}
             <ConfigurationDialog
                 open={showConfigDialog}
                 onOpenChange={setShowConfigDialog}
                 onCashRegisterSelected={handleCashRegisterSelected}
             />
 
-            {/* Unavailable items confirmation dialog */}
             <AlertDialog open={showUnavailableDialog} onOpenChange={setShowUnavailableDialog}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
@@ -1156,6 +1131,6 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
-        </div>
+        </>
     );
 }

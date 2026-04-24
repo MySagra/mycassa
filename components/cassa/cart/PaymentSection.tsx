@@ -67,30 +67,6 @@ export function PaymentSection({
                 </span>
             </div>
 
-
-            {/* Payment Method */}
-            <div>
-                <Label>{t('payment.paymentMethod')} *</Label>
-                <ButtonGroup className="mt-2 w-full">
-                    <Button
-                        variant={paymentMethod === 'CASH' ? 'default' : 'outline'}
-                        className="flex-1 select-none cursor-pointer"
-                        onClick={() => onUpdatePaymentMethod('CASH')}
-                    >
-                        <Banknote className="mr-2 h-4 w-4" />
-                        {t('payment.cash')}
-                    </Button>
-                    <Button
-                        variant={paymentMethod === 'CARD' ? 'default' : 'outline'}
-                        className="flex-1 select-none cursor-pointer"
-                        onClick={() => onUpdatePaymentMethod('CARD')}
-                    >
-                        <CreditCard className="mr-2 h-4 w-4" />
-                        {t('payment.card')}
-                    </Button>
-                </ButtonGroup>
-            </div>
-
             {/* Cash Payment Details */}
             {
                 paymentMethod === 'CASH' && (
@@ -137,6 +113,29 @@ export function PaymentSection({
                     </div>
                 )
             }
+        {/* Payment Method */}
+            <div>
+                <Label>{t('payment.paymentMethod')} *</Label>
+                <ButtonGroup className="mt-2 w-full">
+                    <Button
+                        variant={paymentMethod === 'CASH' ? 'default' : 'outline'}
+                        className="flex-1 select-none cursor-pointer"
+                        onClick={() => onUpdatePaymentMethod('CASH')}
+                    >
+                        <Banknote className="mr-2 h-4 w-4" />
+                        {t('payment.cash')}
+                    </Button>
+                    <Button
+                        variant={paymentMethod === 'CARD' ? 'default' : 'outline'}
+                        className="flex-1 select-none cursor-pointer"
+                        onClick={() => onUpdatePaymentMethod('CARD')}
+                    >
+                        <CreditCard className="mr-2 h-4 w-4" />
+                        {t('payment.card')}
+                    </Button>
+                </ButtonGroup>
+            </div>
+
         </div >
     );
 }
