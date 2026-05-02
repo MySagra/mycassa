@@ -211,6 +211,36 @@ export const en = {
         noIngredientFound: "No ingredient found"
       },
       orderConfirmed: "Order confirmed!"
+    },
+    toast: {
+      newOrder: "New order: {{displayCode}}",
+      orderLoaded: "Order {{displayCode}} loaded successfully",
+      orderLoadedToCart: "Order {{displayCode}} loaded in cart",
+      orderCreated: "Order created successfully",
+      orderConfirmed: "Order confirmed successfully",
+      orderLoadError: "Unable to load order",
+      orderCodeRequired: "Enter an order code",
+      orderAlreadyConfirmed: "The order has already been confirmed",
+      emptyCart: "Cart is empty",
+      categoriesLoadError: "Unable to load categories",
+      foodUnavailable: "\"{{foodName}}\" is no longer available",
+      foodAvailable: "\"{{foodName}}\" is now available",
+      foodAvailableAgain: "\"{{foodName}}\" is available again",
+      categoryUnavailable: "Category \"{{categoryName}}\" is no longer available",
+      categoryAvailable: "Category \"{{categoryName}}\" is now available",
+      printerOnline: "{{label}} is online",
+      printerOnlineDesc: "Printer operational",
+      printerOffline: "{{label}} is offline",
+      printerOfflineDesc: "Printer unreachable",
+      printerError: "{{label}} is in error",
+      printerErrorDesc: "Status: {{status}}",
+      tokenExpired: "Token expired",
+      noCashRegisterSelected: "You must select a register before confirming the order",
+      cashierNotSelected: "No register selected",
+      generalClosureSuccess: "Register closure performed successfully",
+      generalClosureError: "Error during register closure",
+      authError401: "Session expired. Please log in again.",
+      authError403: "Access denied. Contact the administrator."
     }
   }
 };

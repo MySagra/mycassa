@@ -211,6 +211,36 @@ export const it = {
         noIngredientFound: "Nessun ingrediente trovato"
       },
       orderConfirmed: "Ordine confermato!"
+    },
+    toast: {
+      newOrder: "Nuovo ordine: {{displayCode}}",
+      orderLoaded: "Ordine {{displayCode}} caricato con successo",
+      orderLoadedToCart: "Ordine {{displayCode}} caricato nel carrello",
+      orderCreated: "Ordine creato con successo",
+      orderConfirmed: "Ordine confermato con successo",
+      orderLoadError: "Impossibile caricare l'ordine",
+      orderCodeRequired: "Inserisci un codice ordine",
+      orderAlreadyConfirmed: "L'ordine è stato già confermato",
+      emptyCart: "Il carrello è vuoto",
+      categoriesLoadError: "Impossibile caricare le categorie",
+      foodUnavailable: "\"{{foodName}}\" non è più disponibile",
+      foodAvailable: "\"{{foodName}}\" è ora disponibile",
+      foodAvailableAgain: "\"{{foodName}}\" è nuovamente disponibile",
+      categoryUnavailable: "Categoria \"{{categoryName}}\" non è più disponibile",
+      categoryAvailable: "Categoria \"{{categoryName}}\" è ora disponibile",
+      printerOnline: "{{label}} è online",
+      printerOnlineDesc: "Stampante operativa",
+      printerOffline: "{{label}} è offline",
+      printerOfflineDesc: "Stampante non raggiungibile",
+      printerError: "{{label}} è in errore",
+      printerErrorDesc: "Stato: {{status}}",
+      tokenExpired: "Token scaduto",
+      noCashRegisterSelected: "Devi selezionare una cashier prima di confermare l'ordine",
+      cashierNotSelected: "Nessuna cashier selezionata",
+      generalClosureSuccess: "Chiusura cashier eseguita con successo",
+      generalClosureError: "Errore durante la chiusura cashier",
+      authError401: "Sessione scaduta. Effettua il login nuovamente.",
+      authError403: "Accesso vietato. Contatta l'amministratore."
     }
   }
 };
