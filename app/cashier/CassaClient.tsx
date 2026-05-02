@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
 import { useTheme } from 'next-themes';
+import { useTranslation } from 'react-i18next';
 import { fetchEventSource } from '@microsoft/fetch-event-source';
 import { toast } from 'sonner';
 import { getCategories, getOrderByOrderId, confirmOrder as confirmOrderAction, createOrder, getTodayOrders, getAllTodayOrders, getFoodById, searchDailyOrders, searchAllDailyOrders, getOrderByCode, getCashRegisters, getAllIngredients, getPrinterById, generalClosure } from '@/actions/cashier';
@@ -28,6 +29,7 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
     const router = useRouter();
     const { user, isLoading, isAuthenticated } = useAuth();
     const { theme, setTheme } = useTheme();
+    const { t } = useTranslation();
     const isMobile = useIsMobile();
     const cartScrollRef = useRef<HTMLDivElement>(null);
     const sseConnectionRef = useRef(false);
@@ -35,6 +37,7 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
     const showAllOrdersRef = useRef<boolean>(false);
     const dailyOrdersRef = useRef<DailyOrder[]>([]);
     const printerCacheRef = useRef<Map<string, { name: string; ip?: string | null }>>(new Map());
+    const wasAuthenticatedRef = useRef(isAuthenticated);
     const [categories, setCategories] = useState<Category[]>([]);
     const [foods, setFoods] = useState<Food[]>([]);
     const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
@@ -65,6 +68,24 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
     const [showAllOrders, setShowAllOrders] = useState(false);
     const [allIngredients, setAllIngredients] = useState<Ingredient[]>([]);
     const [showUnavailableDialog, setShowUnavailableDialog] = useState(false);
+
+    // Clear localStorage and logout on auth errors
+    const handleAuthError = async () => {
+        localStorage.removeItem('mycassa_user');
+        localStorage.removeItem('selectedCashRegister');
+        await logoutAction();
+        router.push('/login');
+    };
+
+    // Clear localStorage when session expires
+    useEffect(() => {
+        if (wasAuthenticatedRef.current && !isAuthenticated && !isLoading) {
+            // Session was active but now expired
+            localStorage.removeItem('mycassa_user');
+            localStorage.removeItem('selectedCashRegister');
+        }
+        wasAuthenticatedRef.current = isAuthenticated;
+    }, [isAuthenticated, isLoading]);
 
     // Keep ref in sync with state
     // Keep ref in sync with state
@@ -122,7 +143,7 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
                 const result = await getCategories();
 
                 if (!result.success) {
-                    toast.error(result.error || 'Impossibile caricare le categorie');
+                    if (!isMobile) toast.error(result.error || t('toast.categoriesLoadError'));
                     return;
                 }
 
@@ -146,7 +167,7 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
                 setFoods(allFoods);
             } catch (error) {
                 console.error('Error loading categories:', error);
-                toast.error('Impossibile caricare le categorie');
+                if (!isMobile) toast.error(t('toast.categoriesLoadError'));
             } finally {
                 setLoadingCategories(false);
                 setLoadingFoods(false);
@@ -263,9 +284,6 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
                                     }
                                 });
 
-                                if (isNew && !isMobile) {
-                                    toast.success(`Nuovo ordine: ${order.displayCode}`);
-                                }
                             } catch (error) {
                                 console.error('[SSE] Errore parsando new-order:', error);
                             }
@@ -314,8 +332,6 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
                                         return prevOrders.filter(o => o.id !== id);
                                     });
                                 }
-
-                                if (!isMobile) toast.info(`Ordine confermato ${displayCode}`);
                             } catch (error) {
                                 console.error('[SSE] Errore parsando confirmed-order:', error);
                             }
@@ -341,7 +357,7 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
                                             ? { ...item, food: { ...item.food, available: false } }
                                             : item
                                     ));
-                                    if (foodName) toast.warning(`"${foodName}" non è più disponibile`);
+                                    if (foodName && !isMobile) toast.warning(t('toast.foodUnavailable', { foodName }));
                                 } else {
                                     // Food is now available - fetch latest data and update state
                                     const fetchUpdatedFood = async () => {
@@ -369,10 +385,10 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
                                                     ? { ...item, food: { ...item.food, available: true } }
                                                     : item
                                             ));
-                                            if (isNew) {
-                                                toast.success(`"${updatedFood.name}" è ora disponibile`);
-                                            } else {
-                                                toast.success(`"${updatedFood.name}" è nuovamente disponibile`);
+                                            if (isNew && !isMobile) {
+                                                toast.success(t('toast.foodAvailable', { foodName: updatedFood.name }));
+                                            } else if (!isMobile) {
+                                                toast.success(t('toast.foodAvailableAgain', { foodName: updatedFood.name }));
                                             }
                                         } catch (error) {
                                             console.error('[SSE] Errore fetchando cibo:', error);
@@ -415,11 +431,11 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
                                         : item
                                 ));
 
-                                if (categoryName) {
+                                if (categoryName && !isMobile) {
                                     if (available) {
-                                        toast.success(`Categoria "${categoryName}" è ora disponibile`);
+                                        toast.success(t('toast.categoryAvailable', { categoryName }));
                                     } else {
-                                        toast.warning(`Categoria "${categoryName}" non è più disponibile`);
+                                        toast.warning(t('toast.categoryUnavailable', { categoryName }));
                                     }
                                 }
                             } catch (error) {
@@ -444,12 +460,14 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
                                     const ipLabel = info?.ip ? ` (${info.ip})` : '';
                                     const label = `${printerName}${ipLabel}`;
 
-                                    if (status === 'ONLINE') {
-                                        toast.success(`${label} è online`, { description: 'Stampante operativa' });
-                                    } else if (status === 'OFFLINE') {
-                                        toast.warning(`${label} è offline`, { description: 'Stampante non raggiungibile' });
-                                    } else {
-                                        toast.error(`${label} è in errore`, { description: `Stato: ${status}` });
+                                    if (!isMobile) {
+                                        if (status === 'ONLINE') {
+                                            toast.success(t('toast.printerOnline', { label }), { description: t('toast.printerOnlineDesc') });
+                                        } else if (status === 'OFFLINE') {
+                                            toast.warning(t('toast.printerOffline', { label }), { description: t('toast.printerOfflineDesc') });
+                                        } else {
+                                            toast.error(t('toast.printerError', { label }), { description: t('toast.printerErrorDesc', { status }) });
+                                        }
                                     }
                                 };
                                 fetchAndNotify();
@@ -476,9 +494,6 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
                                     }
                                 });
 
-                                if (isNew && !isMobile) {
-                                    toast.success(`Nuovo ordine: ${order.displayCode}`);
-                                }
                             } catch (error) {
                                 console.error('[SSE] Errore parsando messaggio:', error);
                             }
@@ -492,9 +507,17 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
 
                     onerror(err) {
                         console.error('[SSE] Errore di rete:', err);
-                        if ((err as any).status === 401) {
+                        const status = (err as any).status;
+                        if (status === 401) {
                             console.error("[SSE] Errore 401 - Token scaduto");
-                            toast.error("Token scaduto");
+                            if (!isMobile) toast.error(t('toast.authError401'));
+                            handleAuthError();
+                            return;
+                        } else if (status === 403) {
+                            console.error("[SSE] Errore 403 - Accesso vietato");
+                            if (!isMobile) toast.error(t('toast.authError403'));
+                            handleAuthError();
+                            return;
                         }
                         sseConnectionRef.current = false;
                         // Throw error to trigger retry
@@ -534,11 +557,11 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
                 if (result.success) {
                     setDailyOrders(result.data);
                 } else {
-                    toast.error(result.error || 'Impossibile caricare gli ordini di oggi');
+                    if (!isMobile) toast.error(result.error || t('toast.orderLoadError'));
                 }
             } catch (error: any) {
                 console.error('[SSE] Errore caricamento ordini iniziali:', error);
-                toast.error(error.message || 'Impossibile caricare gli ordini di oggi');
+                if (!isMobile) toast.error(error.message || t('toast.orderLoadError'));
             } finally {
                 setLoadingDailyOrders(false);
             }
@@ -577,11 +600,11 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
                 if (result.success) {
                     setDailyOrders(result.data);
                 } else {
-                    toast.error(result.error || 'Errore nella ricerca degli ordini');
+                    if (!isMobile) toast.error(result.error || t('toast.orderLoadError'));
                 }
             } catch (error: any) {
                 console.error('Errore nella ricerca:', error);
-                toast.error(error.message || 'Errore nella ricerca degli ordini');
+                if (!isMobile) toast.error(error.message || t('toast.orderLoadError'));
             }
         };
 
@@ -685,7 +708,7 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
     // Load order by display code
     const loadOrderByCode = async () => {
         if (!displayCode.trim()) {
-            toast.error('Inserisci un codice ordine');
+            if (!isMobile) toast.error(t('toast.orderCodeRequired'));
             return;
         }
 
@@ -694,7 +717,7 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
             const result = await getOrderByCode(displayCode.toUpperCase());
 
             if (!result.success) {
-                toast.error(result.error || 'Impossibile caricare l\'ordine');
+                toast.error(result.error || t('toast.orderLoadError'));
                 return;
             }
 
@@ -702,7 +725,7 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
 
             // Check if order is pending
             if (order.status !== 'PENDING') {
-                toast.error('L\'ordine è stato già confermato');
+                if (!isMobile) toast.error(t('toast.orderAlreadyConfirmed'));
                 return;
             }
 
@@ -741,10 +764,10 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
 
             setCart(cartItems);
 
-            toast.success(`Ordine ${displayCode.toUpperCase()} caricato con successo`);
+            if (!isMobile) toast.success(t('toast.orderLoaded', { displayCode: displayCode.toUpperCase() }));
         } catch (error: any) {
             console.error('Error loading order:', error);
-            toast.error(error.message || 'Impossibile caricare l\'ordine');
+            if (!isMobile) toast.error(error.message || t('toast.orderLoadError'));
         } finally {
             setLoadingOrder(false);
         }
@@ -756,7 +779,7 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
             const result = await getOrderByOrderId(order.id);
 
             if (!result.success) {
-                toast.error(result.error || 'Impossibile caricare l\'ordine');
+                toast.error(result.error || t('toast.orderLoadError'));
                 return;
             }
 
@@ -798,10 +821,10 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
 
             setCart(cartItems);
 
-            toast.success(`Ordine ${order.displayCode} caricato nel carrello`);
+            if (!isMobile) toast.success(t('toast.orderLoadedToCart', { displayCode: order.displayCode }));
         } catch (error: any) {
             console.error('Error loading order to cart:', error);
-            toast.error(error.message || 'Impossibile caricare l\'ordine nel carrello');
+            if (!isMobile) toast.error(error.message || t('toast.orderLoadError'));
         }
     };
 
@@ -813,11 +836,11 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
             if (result.success) {
                 setViewingOrderDetail(result.data);
             } else {
-                toast.error(result.error || 'Impossibile caricare i dettagli dell\'ordine');
+                if (!isMobile) toast.error(result.error || t('toast.orderLoadError'));
             }
         } catch (error: any) {
             console.error('Error loading order detail:', error);
-            toast.error(error.message || 'Impossibile caricare i dettagli dell\'ordine');
+            if (!isMobile) toast.error(error.message || t('toast.orderLoadError'));
         } finally {
             setLoadingOrderDetail(false);
         }
@@ -828,7 +851,7 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
         // Validate cash register is selected
         const selectedCashRegister = localStorage.getItem('selectedCashRegister');
         if (!selectedCashRegister) {
-            toast.error('Devi selezionare una cashier prima di confermare l\'ordine');
+            if (!isMobile) toast.error(t('toast.noCashRegisterSelected'));
             setShowConfigDialog(true);
             return;
         }
@@ -864,7 +887,7 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
         setValidationErrors({});
 
         if (cart.length === 0) {
-            toast.error('Il carrello è vuoto');
+            if (!isMobile) toast.error(t('toast.emptyCart'));
             return;
         }
 
@@ -891,7 +914,7 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
                 const result = await getOrderByCode(displayCode.toUpperCase());
 
                 if (!result.success) {
-                    toast.error(result.error || 'Impossibile trovare l\'ordine');
+                    if (!isMobile) toast.error(result.error || t('toast.orderLoadError'));
                     return;
                 }
 
@@ -910,7 +933,7 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
                 });
 
                 if (!confirmResult.success) {
-                    toast.error(confirmResult.error || 'Impossibile confermare l\'ordine');
+                    if (!isMobile) toast.error(confirmResult.error || t('toast.orderConfirmed'));
                     return;
                 }
 
@@ -941,15 +964,18 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
                 });
 
                 if (!createResult.success) {
-                    toast.error(createResult.error || 'Impossibile creare l\'ordine');
+                    if (!isMobile) toast.error(createResult.error || t('toast.orderCreated'));
                     return;
                 }
             }
 
+            if (!isMobile) {
+                toast.success(t('toast.orderConfirmed'));
+            }
             clearCart();
         } catch (error: any) {
             console.error('Error confirming order:', error);
-            toast.error(error.message || 'Impossibile confermare l\'ordine');
+            if (!isMobile) toast.error(error.message || t('toast.orderConfirmed'));
         } finally {
             setLoadingConfirmOrder(false);
         }
@@ -959,6 +985,7 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
     const handleLogout = async () => {
         await logoutAction();
         localStorage.removeItem('mycassa_user');
+        localStorage.removeItem('selectedCashRegister');
         router.push('/login');
         router.refresh();
     };
@@ -966,14 +993,14 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
     const handleGeneralClosure = async () => {
         const cashRegisterId = localStorage.getItem('selectedCashRegister');
         if (!cashRegisterId) {
-            toast.error('Nessuna cashier selezionata');
+            if (!isMobile) toast.error(t('toast.cashierNotSelected'));
             return;
         }
         const result = await generalClosure(cashRegisterId);
         if (result.success) {
-            toast.success('Chiusura cashier eseguita con successo');
+            if (!isMobile) toast.success(t('toast.generalClosureSuccess'));
         } else {
-            toast.error(result.error || 'Errore durante la chiusura cashier');
+            if (!isMobile) toast.error(result.error || t('toast.generalClosureError'));
         }
     };
 
