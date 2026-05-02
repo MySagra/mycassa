@@ -284,9 +284,6 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
                                     }
                                 });
 
-                                if (isNew && !isMobile) {
-                                    toast.success(t('toast.newOrder', { displayCode: order.displayCode }));
-                                }
                             } catch (error) {
                                 console.error('[SSE] Errore parsando new-order:', error);
                             }
@@ -497,9 +494,6 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
                                     }
                                 });
 
-                                if (isNew && !isMobile) {
-                                    toast.success(t('toast.newOrder', { displayCode: order.displayCode }));
-                                }
                             } catch (error) {
                                 console.error('[SSE] Errore parsando messaggio:', error);
                             }
