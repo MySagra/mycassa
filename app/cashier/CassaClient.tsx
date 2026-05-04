@@ -475,6 +475,17 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
                                 console.error('[SSE] Errore parsando printer-status-changed:', error);
                             }
                         }
+                        // Handle order-status-update event
+                        else if (event.event === 'order-status-update') {
+                            try {
+                                const { id, status } = JSON.parse(event.data);
+                                setDailyOrders((prevOrders) => prevOrders.map(o =>
+                                    o.id === id ? { ...o, status } : o
+                                ));
+                            } catch (error) {
+                                console.error('[SSE] Errore parsando order-status-update:', error);
+                            }
+                        }
                         // Handle default/legacy message event
                         else {
                             try {
