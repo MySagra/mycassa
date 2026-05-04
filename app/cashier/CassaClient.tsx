@@ -63,6 +63,7 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
     const [viewingOrderDetail, setViewingOrderDetail] = useState<OrderDetailResponse | null>(null);
     const [loadingOrderDetail, setLoadingOrderDetail] = useState(false);
     const [cashRegisterName, setCashRegisterName] = useState<string>('');
+    const [cashRegisterInvalid, setCashRegisterInvalid] = useState(false);
     const [showConfigDialog, setShowConfigDialog] = useState(false);
     const [loadingConfirmOrder, setLoadingConfirmOrder] = useState(false);
     const [showAllOrders, setShowAllOrders] = useState(false);
@@ -108,6 +109,12 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
                         const selected = cashRegisters.find((cr: any) => cr.id === selectedId);
                         if (selected) {
                             setCashRegisterName(selected.name);
+                            setCashRegisterInvalid(false);
+                        } else {
+                            // ID saved in localStorage no longer exists in this system
+                            setCashRegisterInvalid(true);
+                            localStorage.removeItem('selectedCashRegister');
+                            setShowConfigDialog(true);
                         }
                     }
                 } catch (error) {
@@ -127,6 +134,7 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
     // Handle cash register selection from configuration dialog
     const handleCashRegisterSelected = (cashRegisterId: string, cashRegisterName: string) => {
         setCashRegisterName(cashRegisterName);
+        setCashRegisterInvalid(false);
     };
 
     // Redirect if not authenticated
@@ -874,12 +882,30 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
 
     // Validate order and check for unavailable items before submitting
     const confirmOrder = async () => {
-        // Validate cash register is selected
+        // Validate cash register is selected and still exists in the system
         const selectedCashRegister = localStorage.getItem('selectedCashRegister');
         if (!selectedCashRegister) {
             if (!isMobile) toast.error(t('toast.noCashRegisterSelected'));
             setShowConfigDialog(true);
             return;
+        }
+
+        try {
+            const registersResult = await getCashRegisters();
+            if (registersResult.success) {
+                const exists = registersResult.data.some((cr: any) => cr.id === selectedCashRegister);
+                if (!exists) {
+                    setCashRegisterInvalid(true);
+                    setCashRegisterName('');
+                    localStorage.removeItem('selectedCashRegister');
+                    if (!isMobile) toast.error(t('toast.noCashRegisterSelected'));
+                    setShowConfigDialog(true);
+                    return;
+                }
+                setCashRegisterInvalid(false);
+            }
+        } catch {
+            // Non-blocking: if validation fetch fails, proceed and let server error handle it
         }
 
         // Validate customer
@@ -1047,6 +1073,7 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
         theme,
         onThemeToggle: () => setTheme(theme === 'dark' ? 'light' : 'dark'),
         cashRegisterName,
+        cashRegisterInvalid,
         foodSearchQuery,
         onFoodSearchChange: setFoodSearchQuery,
         user: user ?? undefined,

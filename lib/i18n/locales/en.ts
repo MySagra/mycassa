@@ -148,7 +148,8 @@ export const en = {
       closureConfirmDesc: "Are you sure you want to perform the cash register closure? This operation cannot be undone.",
       cancel: "Cancel",
       confirm: "Confirm",
-      closureButton: "Register Closure"
+      closureButton: "Register Closure",
+      invalidCashRegister: "Invalid register"
     },
     settings: {
       printers: {

@@ -14,6 +14,7 @@ export interface CassaLayoutProps {
     theme: string | undefined;
     onThemeToggle: () => void;
     cashRegisterName: string;
+    cashRegisterInvalid?: boolean;
     foodSearchQuery: string;
     onFoodSearchChange: (value: string) => void;
     user: { username: string; role: string } | undefined;
@@ -83,7 +84,7 @@ export interface CassaLayoutProps {
 }
 
 export function DesktopCassaLayout({
-    theme, onThemeToggle, cashRegisterName, foodSearchQuery, onFoodSearchChange,
+    theme, onThemeToggle, cashRegisterName, cashRegisterInvalid, foodSearchQuery, onFoodSearchChange,
     user, onLogout, onSettingsClick, onGeneralClosure,
     categories, selectedCategoryId, onSelectCategory, loadingCategories,
     foods, loadingFoods, onAddToCart,
@@ -106,6 +107,7 @@ export function DesktopCassaLayout({
                     theme={theme}
                     onThemeToggle={onThemeToggle}
                     cashRegisterName={cashRegisterName}
+                    cashRegisterInvalid={cashRegisterInvalid}
                     foodSearchQuery={foodSearchQuery}
                     onFoodSearchChange={onFoodSearchChange}
                     user={user}

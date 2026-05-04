@@ -24,7 +24,7 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { ChevronDownIcon, LogOutIcon, Settings, Sun, Moon, Languages, ShieldAlert, Monitor } from "lucide-react"
+import { ChevronDownIcon, LogOutIcon, Settings, Sun, Moon, Languages, ShieldAlert, Monitor, AlertTriangle } from "lucide-react"
 import { useState, useEffect } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -36,6 +36,7 @@ interface MobileUserMenuProps {
     onThemeToggle: () => void;
     onGeneralClosure?: () => void;
     cashRegisterName?: string;
+    cashRegisterInvalid?: boolean;
 }
 
 function UserAvatar({ initials }: { initials: string }) {
@@ -54,6 +55,7 @@ export function MobileUserMenu({
     onThemeToggle,
     onGeneralClosure,
     cashRegisterName,
+    cashRegisterInvalid,
 }: MobileUserMenuProps) {
     const initials = user.username.slice(0, 2).toUpperCase();
     const { t, i18n } = useTranslation();
@@ -132,12 +134,17 @@ export function MobileUserMenu({
                             </DropdownMenuSubContent>
                         </DropdownMenuPortal>
                     </DropdownMenuSub>
-                    {cashRegisterName && (
+                    {cashRegisterInvalid ? (
+                        <DropdownMenuItem disabled className="cursor-default text-destructive">
+                            <AlertTriangle className="h-4 w-4" />
+                            {t('header.invalidCashRegister')}
+                        </DropdownMenuItem>
+                    ) : cashRegisterName ? (
                         <DropdownMenuItem disabled className="opacity-70 cursor-default">
                             <Monitor className="h-4 w-4" />
                             {cashRegisterName}
                         </DropdownMenuItem>
-                    )}
+                    ) : null}
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={onLogout} className="cursor-pointer">
                         <LogOutIcon className="h-4 w-4" />
