@@ -276,7 +276,7 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
 
                                     if (existingIndex !== -1) {
                                         const newOrders = [...prevOrders];
-                                        newOrders[existingIndex] = order;
+                                        newOrders[existingIndex] = { ...prevOrders[existingIndex], ...order };
                                         return newOrders;
                                     } else {
                                         isNew = true;
@@ -486,7 +486,7 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
 
                                     if (existingIndex !== -1) {
                                         const newOrders = [...prevOrders];
-                                        newOrders[existingIndex] = order;
+                                        newOrders[existingIndex] = { ...prevOrders[existingIndex], ...order };
                                         return newOrders;
                                     } else {
                                         isNew = true;
@@ -850,6 +850,7 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
         try {
             const result = await cancelOrderAction(orderId);
             if (result.success) {
+                setDailyOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'CANCELLED' } : o));
                 toast.success(t('toast.orderCancelled'));
             } else {
                 toast.error(result.error || t('toast.orderCancelError'));

@@ -202,7 +202,7 @@ export const API_ENDPOINTS = {
     TODAY: '/v1/orders/day/today',
     CONFIRM: '/v1/confirm-order',
     REPRINT: (id: string) => `/v1/orders/${id}/reprint`,
-    CANCEL: (id: string) => `/v1/orders/${id}`,
+    DELETE: (id: string) => `/v1/orders/${id}`,
   },
   USERS: '/v1/users',
   ROLES: '/v1/roles',

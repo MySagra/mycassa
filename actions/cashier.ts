@@ -576,9 +576,8 @@ export async function cancelOrder(orderId: string) {
   try {
     const headers = await authHeaders();
     const response = await fetch(`${process.env.API_URL}/v1/orders/${orderId}`, {
-      method: 'PATCH',
+      method: 'DELETE',
       headers,
-      body: JSON.stringify({ status: 'CANCELLED' }),
     });
 
     handleAuthError(response.status);
@@ -588,8 +587,7 @@ export async function cancelOrder(orderId: string) {
       return { success: false, error: errorData.message || 'Impossibile annullare l\'ordine' };
     }
 
-    const data = await response.json();
-    return { success: true, data };
+    return { success: true };
   } catch (error: any) {
     if (isRedirectError(error)) {
       throw error;
