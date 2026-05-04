@@ -3,6 +3,7 @@
 import { useState, useCallback, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { MobileUserMenu } from './MobileUserMenu';
+import { AlertTriangle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 interface MobileCassaHeaderProps {
@@ -11,6 +12,7 @@ interface MobileCassaHeaderProps {
     theme: string | undefined;
     onThemeToggle: () => void;
     cashRegisterName?: string;
+    cashRegisterInvalid?: boolean;
     user?: { username: string; role: string };
     onGeneralClosure?: () => void;
     onVerificaClick?: () => void;
@@ -25,6 +27,7 @@ export function MobileCassaHeader({
     theme,
     onThemeToggle,
     cashRegisterName,
+    cashRegisterInvalid,
     user,
     onGeneralClosure,
     onVerificaClick,
@@ -58,6 +61,12 @@ export function MobileCassaHeader({
                 </div>
 
                 <div className="flex items-center gap-2">
+                    {cashRegisterInvalid && (
+                        <span className="flex items-center gap-1 text-xs font-medium text-destructive bg-destructive/10 border border-destructive/30 px-2 py-1 rounded-full select-none">
+                            <AlertTriangle className="h-3 w-3" />
+                            {t('header.invalidCashRegister')}
+                        </span>
+                    )}
                     {onVerificaClick && (
                         <Button
                             variant="outline"
@@ -68,7 +77,7 @@ export function MobileCassaHeader({
                             {t('mobile.header.verifyOrder')}
                         </Button>
                     )}
-{user && (
+                    {user && (
                         <MobileUserMenu
                             user={user}
                             onLogout={onLogout}
@@ -77,6 +86,7 @@ export function MobileCassaHeader({
                             onThemeToggle={onThemeToggle}
                             onGeneralClosure={onGeneralClosure}
                             cashRegisterName={cashRegisterName}
+                            cashRegisterInvalid={cashRegisterInvalid}
                         />
                     )}
                 </div>

@@ -67,7 +67,7 @@ export function DailyOrderCard({ order, onViewDetail, onLoadToCart, onCancelOrde
     };
 
     const isPending = order.status === 'PENDING';
-    const isConfirmed = order.status === 'CONFIRMED';
+    const isCancellable = ['CONFIRMED', 'COMPLETED', 'PICKED_UP'].includes(order.status);
 
     return (
         <>
@@ -136,8 +136,8 @@ export function DailyOrderCard({ order, onViewDetail, onLoadToCart, onCancelOrde
                             size="sm"
                             className="select-none cursor-pointer"
                             onClick={() => setCancelDialogOpen(true)}
-                            disabled={!isConfirmed}
-                            title={!isConfirmed ? t('dailyOrderCard.tooltipCancelOnlyConfirmed') : ''}
+                            disabled={!isCancellable}
+                            title={!isCancellable ? t('dailyOrderCard.tooltipCancelOnlyConfirmed') : ''}
                         >
                             <X className="h-4 w-4" />
                         </Button>

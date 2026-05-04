@@ -148,7 +148,8 @@ export const it = {
       closureConfirmDesc: "Sei sicuro di voler eseguire la chiusura cassa? Questa operazione non può essere annullata.",
       cancel: "Annulla",
       confirm: "Conferma",
-      closureButton: "Chiusura Sagra"
+      closureButton: "Chiusura Sagra",
+      invalidCashRegister: "Cassa non valida"
     },
     settings: {
       printers: {

@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { ButtonGroup } from '@/components/ui/button-group';
-import { Settings, Moon, Sun, Search, X, Maximize, Minimize } from 'lucide-react';
+import { Settings, Moon, Sun, Search, X, Maximize, Minimize, AlertTriangle } from 'lucide-react';
 import { UserMenu } from './UserMenu';
 import { useState, useCallback, useRef } from 'react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
@@ -12,6 +12,7 @@ interface CassaHeaderProps {
     theme: string | undefined;
     onThemeToggle: () => void;
     cashRegisterName?: string;
+    cashRegisterInvalid?: boolean;
     foodSearchQuery: string;
     onFoodSearchChange: (query: string) => void;
     user?: { username: string; role: string };
@@ -21,7 +22,7 @@ interface CassaHeaderProps {
 const EASTER_EGG_CLICKS = 20;
 const EASTER_EGG_LOGO = 'https://mymagri.altervista.org/magri.jpg';
 
-export function CassaHeader({ onLogout, onSettingsClick, theme, onThemeToggle, cashRegisterName, foodSearchQuery, onFoodSearchChange, user, onGeneralClosure }: CassaHeaderProps) {
+export function CassaHeader({ onLogout, onSettingsClick, theme, onThemeToggle, cashRegisterName, cashRegisterInvalid, foodSearchQuery, onFoodSearchChange, user, onGeneralClosure }: CassaHeaderProps) {
     const [isFullscreen, setIsFullscreen] = useState(false);
     const [logoClickCount, setLogoClickCount] = useState(0);
     const [showClosureConfirm, setShowClosureConfirm] = useState(false);
@@ -91,13 +92,20 @@ export function CassaHeader({ onLogout, onSettingsClick, theme, onThemeToggle, c
 
                 {/* Right: Actions */}
                 <div className="flex items-center gap-2 shrink-0">
-                    {cashRegisterName && (
+                    {cashRegisterInvalid ? (
+                        <div className="flex items-center gap-2 ml-2">
+                            <span className="flex items-center gap-1.5 text-sm font-medium text-destructive bg-destructive/10 border border-destructive/30 px-3 py-1 rounded-full select-none">
+                                <AlertTriangle className="h-3.5 w-3.5" />
+                                {t('header.invalidCashRegister')}
+                            </span>
+                        </div>
+                    ) : cashRegisterName ? (
                         <div className="flex items-center gap-2 ml-2">
                             <span className="text-sm font-medium text-muted-foreground bg-muted px-3 py-1 rounded-full select-none">
                                 {cashRegisterName}
                             </span>
                         </div>
-                    )}
+                    ) : null}
                     {isAdminOrMaintainer && (
                         <Button
                             variant="destructive"
