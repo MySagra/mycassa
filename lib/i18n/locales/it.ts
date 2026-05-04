@@ -62,10 +62,17 @@ export const it = {
       statusConfirmed: "Confermato",
       statusCompleted: "Completato",
       statusPickedUp: "Ritirato",
+      statusCancelled: "Annullato",
       tablePrefix: "Tavolo",
       view: "Visualizza",
       load: "Carica",
-      tooltipLoadOnlyPending: "Solo gli ordini in attesa possono essere caricati"
+      cancel: "Annulla",
+      tooltipLoadOnlyPending: "Solo gli ordini in attesa possono essere caricati",
+      tooltipCancelOnlyConfirmed: "Solo gli ordini confermati possono essere annullati",
+      cancelDialogTitle: "Annulla ordine",
+      cancelDialogDesc: "Sei sicuro di voler annullare l'ordine {{displayCode}}? Questa operazione non può essere annullata.",
+      cancelDialogConfirm: "Annulla ordine",
+      cancelDialogCancel: "Indietro"
     },
     orderDetailDialog: {
       title: "Dettaglio Ordine",
@@ -240,7 +247,9 @@ export const it = {
       generalClosureSuccess: "Chiusura cashier eseguita con successo",
       generalClosureError: "Errore durante la chiusura cashier",
       authError401: "Sessione scaduta. Effettua il login nuovamente.",
-      authError403: "Accesso vietato. Contatta l'amministratore."
+      authError403: "Accesso vietato. Contatta l'amministratore.",
+      orderCancelled: "Ordine annullato con successo",
+      orderCancelError: "Impossibile annullare l'ordine"
     }
   }
 };

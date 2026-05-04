@@ -74,6 +74,7 @@ export interface CassaLayoutProps {
     onSearchChange: (value: string) => void;
     onViewDetail: (orderId: string) => void;
     onLoadToCart: (order: DailyOrder) => void;
+    onCancelOrder: (orderId: string) => void;
     onToggleAllOrders: () => void;
     // Order detail (mobile uses its own drawer)
     viewingOrderDetail: OrderDetailResponse | null;
@@ -94,7 +95,7 @@ export function DesktopCassaLayout({
     onOpenDiscount, onUpdatePaymentMethod, onUpdatePaidAmount,
     showDailyOrders, onToggleDailyOrders, cartScrollRef,
     dailyOrders, searchQuery, loadingDailyOrders, showAllOrders,
-    onSearchChange, onViewDetail, onLoadToCart, onToggleAllOrders,
+    onSearchChange, onViewDetail, onLoadToCart, onCancelOrder, onToggleAllOrders,
 }: CassaLayoutProps) {
     return (
         <div className="flex h-screen pt-16 bg-background">
@@ -171,6 +172,7 @@ export function DesktopCassaLayout({
                             onSearchChange={onSearchChange}
                             onViewDetail={onViewDetail}
                             onLoadToCart={onLoadToCart}
+                            onCancelOrder={onCancelOrder}
                             onToggleAllOrders={onToggleAllOrders}
                         />
                     )}

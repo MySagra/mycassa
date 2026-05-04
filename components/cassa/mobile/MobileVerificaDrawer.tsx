@@ -18,6 +18,7 @@ interface MobileVerificaDrawerProps {
     onSearchChange: (value: string) => void;
     onViewDetail: (orderId: string) => void;
     onLoadToCart: (order: DailyOrder) => void;
+    onCancelOrder: (orderId: string) => void;
     onToggleAllOrders: () => void;
 }
 
@@ -31,6 +32,7 @@ export function MobileVerificaDrawer({
     onSearchChange,
     onViewDetail,
     onLoadToCart,
+    onCancelOrder,
     onToggleAllOrders,
 }: MobileVerificaDrawerProps) {
     const { t } = useTranslation();
@@ -81,6 +83,7 @@ export function MobileVerificaDrawer({
                                     onLoadToCart(order);
                                     onOpenChange(false);
                                 }}
+                                onCancelOrder={() => onCancelOrder(order.id)}
                             />
                         ))
                     )}

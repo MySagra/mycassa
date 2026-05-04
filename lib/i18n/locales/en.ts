@@ -62,10 +62,17 @@ export const en = {
       statusConfirmed: "Confirmed",
       statusCompleted: "Completed",
       statusPickedUp: "Picked up",
+      statusCancelled: "Cancelled",
       tablePrefix: "Table",
       view: "View",
       load: "Load",
-      tooltipLoadOnlyPending: "Only pending orders can be loaded"
+      cancel: "Cancel",
+      tooltipLoadOnlyPending: "Only pending orders can be loaded",
+      tooltipCancelOnlyConfirmed: "Only confirmed orders can be cancelled",
+      cancelDialogTitle: "Cancel order",
+      cancelDialogDesc: "Are you sure you want to cancel order {{displayCode}}? This action cannot be undone.",
+      cancelDialogConfirm: "Cancel order",
+      cancelDialogCancel: "Go back"
     },
     orderDetailDialog: {
       title: "Order Detail",
@@ -240,7 +247,9 @@ export const en = {
       generalClosureSuccess: "Register closure performed successfully",
       generalClosureError: "Error during register closure",
       authError401: "Session expired. Please log in again.",
-      authError403: "Access denied. Contact the administrator."
+      authError403: "Access denied. Contact the administrator.",
+      orderCancelled: "Order cancelled successfully",
+      orderCancelError: "Unable to cancel the order"
     }
   }
 };

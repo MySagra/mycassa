@@ -21,6 +21,7 @@ interface DailyOrdersSidebarProps {
     onSearchChange: (query: string) => void;
     onViewDetail: (orderId: string) => void;
     onLoadToCart: (order: DailyOrder) => void;
+    onCancelOrder: (orderId: string) => void;
     onToggleAllOrders: () => void;
 }
 
@@ -32,6 +33,7 @@ export function DailyOrdersSidebar({
     onSearchChange,
     onViewDetail,
     onLoadToCart,
+    onCancelOrder,
     onToggleAllOrders,
 }: DailyOrdersSidebarProps) {
     const { t } = useTranslation();
@@ -89,9 +91,10 @@ export function DailyOrdersSidebar({
                             <DailyOrderCard
                                 key={order.id}
                                 order={order}
-                                searchQuery={searchQuery} // Pass searchQuery to DailyOrderCard
+                                searchQuery={searchQuery}
                                 onViewDetail={() => onViewDetail(order.id)}
                                 onLoadToCart={() => onLoadToCart(order)}
+                                onCancelOrder={() => onCancelOrder(order.id)}
                             />
                         ))
                     )}

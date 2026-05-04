@@ -7,7 +7,7 @@ import { useTheme } from 'next-themes';
 import { useTranslation } from 'react-i18next';
 import { fetchEventSource } from '@microsoft/fetch-event-source';
 import { toast } from 'sonner';
-import { getCategories, getOrderByOrderId, confirmOrder as confirmOrderAction, createOrder, getTodayOrders, getAllTodayOrders, getFoodById, searchDailyOrders, searchAllDailyOrders, getOrderByCode, getCashRegisters, getAllIngredients, getPrinterById, generalClosure } from '@/actions/cashier';
+import { getCategories, getOrderByOrderId, confirmOrder as confirmOrderAction, createOrder, getTodayOrders, getAllTodayOrders, getFoodById, searchDailyOrders, searchAllDailyOrders, getOrderByCode, getCashRegisters, getAllIngredients, getPrinterById, generalClosure, cancelOrder as cancelOrderAction } from '@/actions/cashier';
 import { logout as logoutAction } from '@/actions/auth';
 import { Category, Food, Ingredient, PaymentMethod, OrderDetailResponse, ExtendedCartItem } from '@/lib/api-types';
 import { DailyOrder } from '@/lib/cassa/types';
@@ -276,7 +276,7 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
 
                                     if (existingIndex !== -1) {
                                         const newOrders = [...prevOrders];
-                                        newOrders[existingIndex] = order;
+                                        newOrders[existingIndex] = { ...prevOrders[existingIndex], ...order };
                                         return newOrders;
                                     } else {
                                         isNew = true;
@@ -486,7 +486,7 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
 
                                     if (existingIndex !== -1) {
                                         const newOrders = [...prevOrders];
-                                        newOrders[existingIndex] = order;
+                                        newOrders[existingIndex] = { ...prevOrders[existingIndex], ...order };
                                         return newOrders;
                                     } else {
                                         isNew = true;
@@ -846,6 +846,21 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
         }
     };
 
+    const handleCancelOrder = async (orderId: string) => {
+        try {
+            const result = await cancelOrderAction(orderId);
+            if (result.success) {
+                setDailyOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'CANCELLED' } : o));
+                toast.success(t('toast.orderCancelled'));
+            } else {
+                toast.error(result.error || t('toast.orderCancelError'));
+            }
+        } catch (error: any) {
+            console.error('Error cancelling order:', error);
+            toast.error(error.message || t('toast.orderCancelError'));
+        }
+    };
+
     // Validate order and check for unavailable items before submitting
     const confirmOrder = async () => {
         // Validate cash register is selected
@@ -1082,6 +1097,7 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
         onSearchChange: setSearchQuery,
         onViewDetail: viewOrderDetail,
         onLoadToCart: loadOrderToCart,
+        onCancelOrder: handleCancelOrder,
         onToggleAllOrders: () => setShowAllOrders(!showAllOrders),
         viewingOrderDetail,
         loadingOrderDetail,

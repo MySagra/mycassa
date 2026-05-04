@@ -570,6 +570,34 @@ export async function generalClosure(cashRegisterId: string) {
 }
 
 /**
+ * Cancel an existing order
+ */
+export async function cancelOrder(orderId: string) {
+  try {
+    const headers = await authHeaders();
+    const response = await fetch(`${process.env.API_URL}/v1/orders/${orderId}`, {
+      method: 'DELETE',
+      headers,
+    });
+
+    handleAuthError(response.status);
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      return { success: false, error: errorData.message || 'Impossibile annullare l\'ordine' };
+    }
+
+    return { success: true };
+  } catch (error: any) {
+    if (isRedirectError(error)) {
+      throw error;
+    }
+    console.error('cancelOrder error:', error);
+    return { success: false, error: error.message || 'Errore sconosciuto' };
+  }
+}
+
+/**
  * Reprint order to selected printers
  */
 export async function reprintOrder(orderId: string, body: {
