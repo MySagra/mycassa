@@ -113,7 +113,7 @@ export interface OrderDetailResponse {
   subTotal: string;
   total: string;
   notes?: string;
-  status: 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'PICKED_UP';
+  status: 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'PICKED_UP' | 'CANCELLED';
   paymentMethod?: PaymentMethod;
   discount?: number;
   surcharge?: number;
@@ -202,6 +202,7 @@ export const API_ENDPOINTS = {
     TODAY: '/v1/orders/day/today',
     CONFIRM: '/v1/confirm-order',
     REPRINT: (id: string) => `/v1/orders/${id}/reprint`,
+    CANCEL: (id: string) => `/v1/orders/${id}`,
   },
   USERS: '/v1/users',
   ROLES: '/v1/roles',

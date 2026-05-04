@@ -46,7 +46,7 @@ export function MobileCassaLayout({
     onOpenDiscount, onUpdatePaymentMethod, onUpdatePaidAmount,
     editingItem, onSaveEditedItem, onClearEditingItem,
     dailyOrders, searchQuery, loadingDailyOrders, showAllOrders,
-    onSearchChange, onViewDetail, onLoadToCart, onToggleAllOrders,
+    onSearchChange, onViewDetail, onLoadToCart, onCancelOrder, onToggleAllOrders,
     viewingOrderDetail, loadingOrderDetail, onCloseOrderDetail,
 }: CassaLayoutProps) {
     const [cartDrawerOpen, setCartDrawerOpen] = useState(false);
@@ -369,6 +369,7 @@ export function MobileCassaLayout({
                     onViewDetail(orderId);
                 }}
                 onLoadToCart={onLoadToCart}
+                onCancelOrder={onCancelOrder}
                 onToggleAllOrders={onToggleAllOrders}
             />
 
