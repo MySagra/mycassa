@@ -72,7 +72,16 @@ export const en = {
       cancelDialogTitle: "Cancel order",
       cancelDialogDesc: "Are you sure you want to cancel order {{displayCode}}? This action cannot be undone.",
       cancelDialogConfirm: "Cancel order",
-      cancelDialogCancel: "Go back"
+      cancelDialogCancel: "Go back",
+      stationStates: "Station States",
+      codiceLabel: "Code",
+      numeroOrdineLabel: "Order number"
+    },
+    orderStationStatus: {
+      pending: "Pending",
+      completed: "Completed",
+      cancelled: "Cancelled",
+      partial: "Partial"
     },
     orderDetailDialog: {
       title: "Order Detail",

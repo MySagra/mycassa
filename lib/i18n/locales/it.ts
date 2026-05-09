@@ -72,7 +72,16 @@ export const it = {
       cancelDialogTitle: "Annulla ordine",
       cancelDialogDesc: "Sei sicuro di voler annullare l'ordine {{displayCode}}? Questa operazione non può essere annullata.",
       cancelDialogConfirm: "Annulla ordine",
-      cancelDialogCancel: "Indietro"
+      cancelDialogCancel: "Indietro",
+      stationStates: "Stati Postazioni",
+      codiceLabel: "Codice",
+      numeroOrdineLabel: "Numero ordine"
+    },
+    orderStationStatus: {
+      pending: "In attesa",
+      completed: "Completato",
+      cancelled: "Annullato",
+      partial: "Parziale"
     },
     orderDetailDialog: {
       title: "Dettaglio Ordine",

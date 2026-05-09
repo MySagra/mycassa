@@ -62,7 +62,36 @@ function getDailyOrderDateRange() {
 }
 
 /**
+ * Get stations with their categories and foods
+ */
+export async function getStations() {
+  try {
+    const headers = await authHeaders();
+    const response = await fetch(`${process.env.API_URL}/v1/stations?include=categories.foods.ingredients`, {
+      headers,
+      cache: 'no-store',
+    });
+
+    handleAuthError(response.status);
+
+    if (!response.ok) {
+      return { success: false, error: 'Errore nel caricamento delle stazioni' };
+    }
+
+    const data = await response.json();
+    return { success: true, data };
+  } catch (error: any) {
+    if (isRedirectError(error)) {
+      throw error;
+    }
+    console.error('getStations error:', error);
+    return { success: false, error: error.message || 'Errore sconosciuto' };
+  }
+}
+
+/**
  * Get categories available for current user
+ * @deprecated Use getStations instead
  */
 export async function getCategories() {
   try {

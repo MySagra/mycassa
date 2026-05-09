@@ -7,7 +7,7 @@ import { useTheme } from 'next-themes';
 import { useTranslation } from 'react-i18next';
 import { fetchEventSource } from '@microsoft/fetch-event-source';
 import { toast } from 'sonner';
-import { getCategories, getOrderByOrderId, confirmOrder as confirmOrderAction, createOrder, getTodayOrders, getAllTodayOrders, getFoodById, searchDailyOrders, searchAllDailyOrders, getOrderByCode, getCashRegisters, getAllIngredients, getPrinterById, generalClosure, cancelOrder as cancelOrderAction } from '@/actions/cashier';
+import { getStations, getOrderByOrderId, confirmOrder as confirmOrderAction, createOrder, getTodayOrders, getAllTodayOrders, getFoodById, searchDailyOrders, searchAllDailyOrders, getOrderByCode, getCashRegisters, getPrinterById, generalClosure, cancelOrder as cancelOrderAction } from '@/actions/cashier';
 import { logout as logoutAction } from '@/actions/auth';
 import { Category, Food, Ingredient, PaymentMethod, OrderDetailResponse, ExtendedCartItem } from '@/lib/api-types';
 import { DailyOrder } from '@/lib/cassa/types';
@@ -69,6 +69,7 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
     const [showAllOrders, setShowAllOrders] = useState(false);
     const [allIngredients, setAllIngredients] = useState<Ingredient[]>([]);
     const [showUnavailableDialog, setShowUnavailableDialog] = useState(false);
+    const [stationsMap, setStationsMap] = useState<Record<string, string>>({});
 
     // Clear localStorage and logout on auth errors
     const handleAuthError = async () => {
@@ -144,37 +145,68 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
         }
     }, [isAuthenticated, isLoading, router]);
 
-    // Load categories and foods
+    // Load stations with categories, foods and ingredients
     useEffect(() => {
-        const fetchCategories = async () => {
+        const fetchStations = async () => {
             try {
-                const result = await getCategories();
+                const result = await getStations();
 
                 if (!result.success) {
                     if (!isMobile) toast.error(result.error || t('toast.categoriesLoadError'));
                     return;
                 }
 
-                const data = result.data;
+                const stations = result.data;
 
-                // Sort categories by position before setting them
-                const sortedCategories = data.sort((a: Category, b: Category) => a.position - b.position);
-                setCategories(sortedCategories);
-
-                // Extract all foods from categories for the foods state
+                // Extract all categories and foods from stations
+                const allCategories: Category[] = [];
                 const allFoods: Food[] = [];
-                sortedCategories.forEach((cat: Category) => {
-                    if (cat.foods) {
-                        const foodsWithCategory = cat.foods.map(f => ({
-                            ...f,
-                            category: cat
-                        }));
-                        allFoods.push(...foodsWithCategory);
+                const allIngredientsSet = new Map<string, any>();
+                const stationIdToName: Record<string, string> = {};
+
+                stations.forEach((station: any) => {
+                    // Save station name mapping
+                    stationIdToName[station.id] = station.name;
+
+                    if (station.categories) {
+                        station.categories.forEach((cat: any) => {
+                            // Only add category if not already added
+                            if (!allCategories.find(c => c.id === cat.id)) {
+                                allCategories.push({
+                                    ...cat,
+                                    stationId: station.id
+                                });
+                            }
+
+                            // Extract foods from category
+                            if (cat.foods) {
+                                cat.foods.forEach((food: any) => {
+                                    const foodWithCategory: Food = {
+                                        ...food,
+                                        category: cat
+                                    };
+                                    allFoods.push(foodWithCategory);
+
+                                    // Extract ingredients from food
+                                    if (food.foodIngredients && Array.isArray(food.foodIngredients)) {
+                                        food.foodIngredients.forEach((fi: any) => {
+                                            allIngredientsSet.set(fi.ingredientId, fi);
+                                        });
+                                    }
+                                });
+                            }
+                        });
                     }
                 });
+
+                // Sort categories by position
+                const sortedCategories = allCategories.sort((a: Category, b: Category) => a.position - b.position);
+                setCategories(sortedCategories);
                 setFoods(allFoods);
+                setAllIngredients(Array.from(allIngredientsSet.values()));
+                setStationsMap(stationIdToName);
             } catch (error) {
-                console.error('Error loading categories:', error);
+                console.error('Error loading stations:', error);
                 if (!isMobile) toast.error(t('toast.categoriesLoadError'));
             } finally {
                 setLoadingCategories(false);
@@ -182,20 +214,8 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
             }
         };
 
-        const fetchIngredients = async () => {
-            try {
-                const result = await getAllIngredients();
-                if (result.success) {
-                    setAllIngredients(result.data);
-                }
-            } catch (error) {
-                console.error('Error loading ingredients:', error);
-            }
-        };
-
         if (isAuthenticated) {
-            fetchCategories();
-            fetchIngredients();
+            fetchStations();
         }
     }, [isAuthenticated]);
 
@@ -1177,6 +1197,7 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
                     open={viewingOrderDetail !== null}
                     loading={loadingOrderDetail}
                     onClose={() => setViewingOrderDetail(null)}
+                    stationsMap={stationsMap}
                 />
             )}
 

@@ -12,6 +12,7 @@ import {
     TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { useTranslation } from 'react-i18next';
+import { useEnv } from '@/lib/contexts/EnvContext';
 
 interface DailyOrdersSidebarProps {
     orders: DailyOrder[];
@@ -37,6 +38,7 @@ export function DailyOrdersSidebar({
     onToggleAllOrders,
 }: DailyOrdersSidebarProps) {
     const { t } = useTranslation();
+    const { showNumbers } = useEnv();
 
     return (
         <aside className="w-96 border-l flex flex-col bg-card h-screen animate-in">
@@ -72,7 +74,7 @@ export function DailyOrdersSidebar({
                         <Input
                             autoComplete='off'
                             id="searchQuery"
-                            placeholder={t('dailyOrders.searchPlaceholder')}
+                            placeholder={showNumbers ? t('dailyOrders.searchPlaceholder') + ', numero...' : t('dailyOrders.searchPlaceholder')}
                             value={searchQuery}
                             onChange={(e) => onSearchChange(e.target.value)}
                         />
