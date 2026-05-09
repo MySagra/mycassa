@@ -96,7 +96,7 @@ export function DailyOrderCard({ order, onViewDetail, onLoadToCart, onCancelOrde
                     {/* Header: Identifier + Price */}
                     <div className="flex items-baseline justify-between gap-2 select-none">
                         <div className="flex items-baseline gap-2 min-w-0">
-                            {showNumbers && order.ticketNumber ? (
+                            {showNumbers && order.ticketNumber && order.status !== 'PENDING' ? (
                                 <span
                                     className="font-mono font-bold text-lg text-amber-600 shrink-0"
                                     dangerouslySetInnerHTML={{ __html: highlightText(order.ticketNumber.toString()) }}
@@ -108,11 +108,11 @@ export function DailyOrderCard({ order, onViewDetail, onLoadToCart, onCancelOrde
                                 />
                             )}
                             <span className="text-xs text-muted-foreground">
-                                {showNumbers && order.ticketNumber ? (
+                                {showNumbers && order.ticketNumber && order.status !== 'PENDING' ? (
                                     <>
                                         {t('dailyOrderCard.codiceLabel')}: <span dangerouslySetInnerHTML={{ __html: highlightText(order.displayCode) }} />
                                     </>
-                                ) : order.ticketNumber ? (
+                                ) : order.ticketNumber && order.status !== 'PENDING' ? (
                                     <>
                                         {t('dailyOrderCard.numeroOrdineLabel')}: <span dangerouslySetInnerHTML={{ __html: highlightText(order.ticketNumber.toString()) }} />
                                     </>

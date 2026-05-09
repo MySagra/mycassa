@@ -287,7 +287,7 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
                         if (event.event === 'new-order') {
                             try {
                                 const order: DailyOrder = JSON.parse(event.data);
-                                let isNew = false;
+                                const isNewOrder = !dailyOrdersRef.current.some(o => o.id === order.id);
 
                                 setDailyOrders((prevOrders) => {
                                     const existingIndex = prevOrders.findIndex(o => o.id === order.id);
@@ -297,10 +297,35 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
                                         newOrders[existingIndex] = { ...prevOrders[existingIndex], ...order };
                                         return newOrders;
                                     } else {
-                                        isNew = true;
                                         return [order, ...prevOrders];
                                     }
                                 });
+
+                                // Fetch full order details for new orders to populate ticketNumber and source
+                                if (isNewOrder) {
+                                    try {
+                                        const result = await getOrderByOrderId(order.id);
+                                        if (result.success) {
+                                            const fullOrderDetail = result.data;
+                                            const fullOrder: DailyOrder = {
+                                                id: fullOrderDetail.id,
+                                                displayCode: fullOrderDetail.displayCode,
+                                                ticketNumber: fullOrderDetail.ticketNumber,
+                                                table: fullOrderDetail.table,
+                                                customer: fullOrderDetail.customer,
+                                                createdAt: fullOrderDetail.createdAt,
+                                                subTotal: fullOrderDetail.subTotal,
+                                                total: fullOrderDetail.total,
+                                                status: fullOrderDetail.status
+                                            };
+                                            setDailyOrders(prev =>
+                                                prev.map(o => o.id === order.id ? fullOrder : o)
+                                            );
+                                        }
+                                    } catch (error) {
+                                        console.error('[SSE] Error fetching full new order details:', error);
+                                    }
+                                }
 
                             } catch (error) {
                                 console.error('[SSE] Errore parsando new-order:', error);
@@ -312,43 +337,46 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
                             try {
                                 const { id, displayCode } = JSON.parse(event.data);
 
-                                // If showing all orders, update the order status instead of removing
-                                if (showAllOrdersRef.current) {
-                                    const orderExists = dailyOrdersRef.current.some(o => o.id === id);
+                                // Fetch full order details to get ticketNumber
+                                try {
+                                    const result = await getOrderByOrderId(id);
+                                    if (result.success) {
+                                        const newOrder = result.data;
+                                        const dailyOrder: DailyOrder = {
+                                            id: newOrder.id,
+                                            displayCode: newOrder.displayCode,
+                                            ticketNumber: (newOrder as any).ticketNumber,
+                                            table: newOrder.table,
+                                            customer: newOrder.customer,
+                                            createdAt: newOrder.createdAt,
+                                            subTotal: newOrder.subTotal,
+                                            total: newOrder.total,
+                                            status: 'CONFIRMED'
+                                        };
 
-                                    if (orderExists) {
-                                        setDailyOrders((prevOrders) => {
-                                            return prevOrders.map(o =>
-                                                o.id === id ? { ...o, status: 'CONFIRMED' } : o
-                                            );
-                                        });
-                                    } else {
-                                        // If order doesn't exist, fetch and add it
-                                        try {
-                                            const result = await getOrderByOrderId(id);
-                                            if (result.success) {
-                                                const newOrder = result.data;
-                                                const dailyOrder: DailyOrder = {
-                                                    id: newOrder.id,
-                                                    displayCode: newOrder.displayCode,
-                                                    table: newOrder.table,
-                                                    customer: newOrder.customer,
-                                                    createdAt: newOrder.createdAt,
-                                                    subTotal: newOrder.subTotal,
-                                                    total: newOrder.total,
-                                                    status: 'CONFIRMED'
-                                                };
+                                        // If showing all orders, update the order status instead of removing
+                                        if (showAllOrdersRef.current) {
+                                            const orderExists = dailyOrdersRef.current.some(o => o.id === id);
+
+                                            if (orderExists) {
+                                                setDailyOrders((prevOrders) => {
+                                                    return prevOrders.map(o =>
+                                                        o.id === id ? dailyOrder : o
+                                                    );
+                                                });
+                                            } else {
+                                                // If order doesn't exist, add it
                                                 setDailyOrders(prev => [dailyOrder, ...prev]);
                                             }
-                                        } catch (error) {
-                                            console.error('[SSE] Error fetching new confirmed order:', error);
+                                        } else {
+                                            // Only remove from list if showing pending orders only
+                                            setDailyOrders((prevOrders) => {
+                                                return prevOrders.filter(o => o.id !== id);
+                                            });
                                         }
                                     }
-                                } else {
-                                    // Only remove from list if showing pending orders only
-                                    setDailyOrders((prevOrders) => {
-                                        return prevOrders.filter(o => o.id !== id);
-                                    });
+                                } catch (error) {
+                                    console.error('[SSE] Error fetching confirmed order details:', error);
                                 }
                             } catch (error) {
                                 console.error('[SSE] Errore parsando confirmed-order:', error);
