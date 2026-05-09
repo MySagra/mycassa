@@ -92,62 +92,61 @@ export function DailyOrderCard({ order, onViewDetail, onLoadToCart, onCancelOrde
     return (
         <>
             <Card ref={cardRef} className="border hover:border-amber-500 transition-all duration-300">
-                <CardContent className="space-y-3">
-                    <div className="flex items-start justify-between select-none min-w-0">
-                        <div className="space-y-1 min-w-0 flex-1 mr-2">
-                            <div className="flex items-center gap-2 min-w-0">
-                                {showNumbers && order.ticketNumber ? (
-                                    <span
-                                        className="font-mono font-bold text-lg text-amber-600 shrink-0"
-                                        dangerouslySetInnerHTML={{ __html: highlightText(order.ticketNumber.toString()) }}
-                                    />
-                                ) : (
-                                    <span
-                                        className="font-mono font-bold text-lg text-amber-600 shrink-0"
-                                        dangerouslySetInnerHTML={{ __html: highlightText(order.displayCode) }}
-                                    />
-                                )}
-                                {order.table !== 'NO_TABLE_PRESET' && (
-                                    <span
-                                        className="text-sm text-muted-foreground truncate max-w-30"
-                                        dangerouslySetInnerHTML={{ __html: highlightText(`${t('dailyOrderCard.tablePrefix')} ${order.table}`) }}
-                                    />
-                                )}
-                            </div>
-                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <CardContent className="space-y-2">
+                    {/* Header: Identifier + Price */}
+                    <div className="flex items-baseline justify-between gap-2 select-none">
+                        <div className="flex items-baseline gap-2 min-w-0">
+                            {showNumbers && order.ticketNumber ? (
+                                <span
+                                    className="font-mono font-bold text-lg text-amber-600 shrink-0"
+                                    dangerouslySetInnerHTML={{ __html: highlightText(order.ticketNumber.toString()) }}
+                                />
+                            ) : (
+                                <span
+                                    className="font-mono font-bold text-lg text-amber-600 shrink-0"
+                                    dangerouslySetInnerHTML={{ __html: highlightText(order.displayCode) }}
+                                />
+                            )}
+                            <span className="text-xs text-muted-foreground">
                                 {showNumbers && order.ticketNumber ? (
                                     <>
-                                        <span>{t('dailyOrderCard.codiceLabel')}:</span>
-                                        <span dangerouslySetInnerHTML={{ __html: highlightText(order.displayCode) }} />
+                                        {t('dailyOrderCard.codiceLabel')}: <span dangerouslySetInnerHTML={{ __html: highlightText(order.displayCode) }} />
                                     </>
                                 ) : order.ticketNumber ? (
                                     <>
-                                        <span>{t('dailyOrderCard.numeroOrdineLabel')}:</span>
-                                        <span dangerouslySetInnerHTML={{ __html: highlightText(order.ticketNumber.toString()) }} />
+                                        {t('dailyOrderCard.numeroOrdineLabel')}: <span dangerouslySetInnerHTML={{ __html: highlightText(order.ticketNumber.toString()) }} />
                                     </>
                                 ) : null}
-                            </div>
-                            <p
-                                className="text-sm font-medium truncate max-w-45"
-                                dangerouslySetInnerHTML={{ __html: highlightText(order.customer) }}
-                            />
-                            <div className="flex items-center gap-2">
-                                <p className="text-xs text-muted-foreground">
-                                    {new Date(order.createdAt).toLocaleString('it-IT', {
-                                        day: '2-digit',
-                                        month: '2-digit',
-                                        year: 'numeric',
-                                        hour: '2-digit',
-                                        minute: '2-digit'
-                                    })}
-                                </p>
-                                {getStatusBadge(order.status)}
-                            </div>
+                            </span>
                         </div>
-                        <div className="text-right">
-                            <p className="text-lg font-bold text-amber-600">
-                                {parseFloat(order.total).toFixed(2)} €
+                        <p className="text-lg font-bold text-amber-600 shrink-0">
+                            {parseFloat(order.total).toFixed(2)} €
+                        </p>
+                    </div>
+
+                    {/* Table + Customer + Date */}
+                    <div className="space-y-1 min-w-0">
+                        {order.table !== 'NO_TABLE_PRESET' && (
+                            <span
+                                className="text-xs text-muted-foreground block"
+                                dangerouslySetInnerHTML={{ __html: highlightText(`${t('dailyOrderCard.tablePrefix')} ${order.table}`) }}
+                            />
+                        )}
+                        <p
+                            className="text-sm font-medium truncate"
+                            dangerouslySetInnerHTML={{ __html: highlightText(order.customer) }}
+                        />
+                        <div className="flex items-center gap-2 pt-1">
+                            <p className="text-xs text-muted-foreground">
+                                {new Date(order.createdAt).toLocaleString('it-IT', {
+                                    day: '2-digit',
+                                    month: '2-digit',
+                                    year: 'numeric',
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                })}
                             </p>
+                            {getStatusBadge(order.status)}
                         </div>
                     </div>
                     <div className="flex gap-2">

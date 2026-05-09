@@ -67,19 +67,29 @@ function getDailyOrderDateRange() {
 export async function getStations() {
   try {
     const headers = await authHeaders();
-    const response = await fetch(`${process.env.API_URL}/v1/stations?include=categories.foods.ingredients`, {
-      headers,
-      cache: 'no-store',
-    });
 
-    handleAuthError(response.status);
+    const [categoriesRes, stationsRes] = await Promise.all([
+      fetch(`${process.env.API_URL}/v1/categories?include=foods.ingredients&foodsAvailable=all`, {
+        headers,
+        cache: 'no-store',
+      }),
+      fetch(`${process.env.API_URL}/v1/stations`, {
+        headers,
+        cache: 'no-store',
+      }),
+    ]);
 
-    if (!response.ok) {
+    handleAuthError(categoriesRes.status);
+    handleAuthError(stationsRes.status);
+
+    if (!categoriesRes.ok || !stationsRes.ok) {
       return { success: false, error: 'Errore nel caricamento delle stazioni' };
     }
 
-    const data = await response.json();
-    return { success: true, data };
+    const categories = await categoriesRes.json();
+    const stations = await stationsRes.json();
+
+    return { success: true, data: { categories, stations } };
   } catch (error: any) {
     if (isRedirectError(error)) {
       throw error;

@@ -156,43 +156,33 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
                     return;
                 }
 
-                const stations = result.data;
+                const { categories: fetchedCategories, stations } = result.data;
 
-                // Extract all categories and foods from stations
-                const allCategories: Category[] = [];
+                // Extract all foods and ingredients from categories
                 const allFoods: Food[] = [];
                 const allIngredientsSet = new Map<string, any>();
                 const stationIdToName: Record<string, string> = {};
 
+                // Map stations to names
                 stations.forEach((station: any) => {
-                    // Save station name mapping
                     stationIdToName[station.id] = station.name;
+                });
 
-                    if (station.categories) {
-                        station.categories.forEach((cat: any) => {
-                            // Only add category if not already added
-                            if (!allCategories.find(c => c.id === cat.id)) {
-                                allCategories.push({
-                                    ...cat,
-                                    stationId: station.id
-                                });
-                            }
+                // Process categories with foods
+                fetchedCategories.forEach((cat: any) => {
+                    // Extract foods from category
+                    if (cat.foods) {
+                        cat.foods.forEach((food: any) => {
+                            const foodWithCategory: Food = {
+                                ...food,
+                                category: cat
+                            };
+                            allFoods.push(foodWithCategory);
 
-                            // Extract foods from category
-                            if (cat.foods) {
-                                cat.foods.forEach((food: any) => {
-                                    const foodWithCategory: Food = {
-                                        ...food,
-                                        category: cat
-                                    };
-                                    allFoods.push(foodWithCategory);
-
-                                    // Extract ingredients from food
-                                    if (food.foodIngredients && Array.isArray(food.foodIngredients)) {
-                                        food.foodIngredients.forEach((fi: any) => {
-                                            allIngredientsSet.set(fi.ingredientId, fi);
-                                        });
-                                    }
+                            // Extract ingredients from food
+                            if (food.foodIngredients && Array.isArray(food.foodIngredients)) {
+                                food.foodIngredients.forEach((fi: any) => {
+                                    allIngredientsSet.set(fi.ingredientId, fi);
                                 });
                             }
                         });
@@ -200,7 +190,7 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
                 });
 
                 // Sort categories by position
-                const sortedCategories = allCategories.sort((a: Category, b: Category) => a.position - b.position);
+                const sortedCategories = fetchedCategories.sort((a: Category, b: Category) => a.position - b.position);
                 setCategories(sortedCategories);
                 setFoods(allFoods);
                 setAllIngredients(Array.from(allIngredientsSet.values()));
