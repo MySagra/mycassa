@@ -151,7 +151,7 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
             try {
                 const result = await getStations();
 
-                if (!result.success) {
+                if (!result.success || !result.data) {
                     if (!isMobile) toast.error(result.error || t('toast.categoriesLoadError'));
                     return;
                 }
