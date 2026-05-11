@@ -24,6 +24,8 @@ export const it = {
       surcharges: "Sovrapprezzi totali",
       discount: "Sconto applicato",
       total: "TOTALE",
+      lastOrderTotal: "TOTALE ULTIMO ORDINE",
+      previousTotal: "Totale precedente",
       paymentMethod: "Metodo Pagamento",
       cash: "Contanti",
       card: "Carta",

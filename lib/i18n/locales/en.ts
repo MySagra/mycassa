@@ -24,6 +24,8 @@ export const en = {
       surcharges: "Total surcharges",
       discount: "Discount applied",
       total: "TOTAL",
+      lastOrderTotal: "LAST ORDER TOTAL",
+      previousTotal: "Previous total",
       paymentMethod: "Payment Method",
       cash: "Cash",
       card: "Card",

@@ -17,6 +17,8 @@ interface PaymentSectionProps {
     onUpdatePaymentMethod: (method: PaymentMethod) => void;
     onUpdatePaidAmount: (value: string) => void;
     onOpenCalculator?: () => void;
+    previousTotal?: number | null;
+    previousTotalProgress?: number;
 }
 
 export function PaymentSection({
@@ -30,7 +32,11 @@ export function PaymentSection({
     onUpdatePaymentMethod,
     onUpdatePaidAmount,
     onOpenCalculator,
+    previousTotal,
+    previousTotalProgress = 100,
 }: PaymentSectionProps) {
+    const displayTotal = previousTotal !== null ? previousTotal : (total || 0);
+    const displayChange = (parseFloat(paidAmount.replace(',', '.')) || 0) - (displayTotal || 0);
     const { t } = useTranslation();
 
     return (
@@ -62,10 +68,13 @@ export function PaymentSection({
                     </div>
                 )}
             </div>
+
             <div className="flex items-center justify-between">
-                <span className="text-lg font-semibold select-none">{t('payment.total')}:</span>
+                <span className="text-lg font-semibold select-none">
+                    {previousTotal !== null ? t('payment.lastOrderTotal') : t('payment.total')}:
+                </span>
                 <span className="text-2xl font-bold text-amber-500 select-none">
-                    {total.toFixed(2)} €
+                    {displayTotal.toFixed(2)} €
                 </span>
             </div>
 
@@ -103,8 +112,8 @@ export function PaymentSection({
                         <div className="flex flex-col items-end space-y-1">
                             <span className="text-base font-medium select-none">{t('payment.change')}</span>
                             <div className='w-full h-full flex place-content-end items-center select-none'>
-                                <span className={`text-2xl font-bold ${change >= 0 ? 'text-green-600 dark:text-green-500' : 'text-red-600 dark:text-red-500'}`}>
-                                    {change.toFixed(2)} €
+                                <span className={`text-2xl font-bold ${displayChange >= 0 ? 'text-green-600 dark:text-green-500' : 'text-red-600 dark:text-red-500'}`}>
+                                    {displayChange.toFixed(2)} €
                                 </span>
                             </div>
                         </div>
