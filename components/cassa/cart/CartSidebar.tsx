@@ -94,11 +94,12 @@ export function CartSidebar({
         setPreviousTotal(null);
         setPreviousTotalProgress(100);
         setWasOrderJustConfirmed(false);
+        onUpdatePaidAmount('');
         if (previousTotalTimerRef.current) {
             clearInterval(previousTotalTimerRef.current);
             previousTotalTimerRef.current = null;
         }
-    }, []);
+    }, [onUpdatePaidAmount]);
 
     // Salva ultimo totale non-zero quando cart ha items
     useEffect(() => {
