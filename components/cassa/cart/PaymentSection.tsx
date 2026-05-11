@@ -35,7 +35,7 @@ export function PaymentSection({
     previousTotal,
     previousTotalProgress = 100,
 }: PaymentSectionProps) {
-    const displayTotal = (previousTotal ?? total) || 0;
+    const displayTotal = previousTotal ?? total ?? 0;
     const displayChange = (parseFloat(paidAmount.replace(',', '.')) || 0) - (displayTotal || 0);
     const { t } = useTranslation();
 
