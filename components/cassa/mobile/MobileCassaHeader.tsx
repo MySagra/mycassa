@@ -1,10 +1,13 @@
 'use client';
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { MobileUserMenu } from './MobileUserMenu';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, Euro, DollarSign } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { openDrawer } from '@/actions/cashier';
+import { toast } from 'sonner';
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 
 interface MobileCassaHeaderProps {
     onLogout: () => void;
@@ -12,6 +15,7 @@ interface MobileCassaHeaderProps {
     theme: string | undefined;
     onThemeToggle: () => void;
     cashRegisterName?: string;
+    cashRegisterId?: string;
     cashRegisterInvalid?: boolean;
     user?: { username: string; role: string };
     onGeneralClosure?: () => void;
@@ -27,15 +31,21 @@ export function MobileCassaHeader({
     theme,
     onThemeToggle,
     cashRegisterName,
+    cashRegisterId,
     cashRegisterInvalid,
     user,
     onGeneralClosure,
     onVerificaClick,
 }: MobileCassaHeaderProps) {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const [logoClickCount, setLogoClickCount] = useState(0);
+    const [isOpeningDrawer, setIsOpeningDrawer] = useState(false);
     const easterEggActive = logoClickCount >= EASTER_EGG_CLICKS;
     const clickTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    const drawerIcon = useMemo(() => {
+        return i18n.language === 'it' ? <Euro className="h-5 w-5" /> : <DollarSign className="h-5 w-5" />;
+    }, [i18n.language]);
 
     const handleLogoClick = useCallback(() => {
         setLogoClickCount((prev: number) => {
@@ -47,6 +57,27 @@ export function MobileCassaHeader({
             return next;
         });
     }, []);
+
+    const handleOpenDrawer = useCallback(async () => {
+        if (!cashRegisterId) {
+            toast.error(t('toast.cashierNotSelected'));
+            return;
+        }
+
+        setIsOpeningDrawer(true);
+        try {
+            const result = await openDrawer(cashRegisterId);
+            if (result.success) {
+                toast.success(t('toast.drawerOpened'));
+            } else {
+                toast.error(result.error || t('toast.drawerOpenError'));
+            }
+        } catch (error: any) {
+            toast.error(error.message || t('toast.drawerOpenError'));
+        } finally {
+            setIsOpeningDrawer(false);
+        }
+    }, [cashRegisterId, t]);
 
     return (
         <header className="fixed top-0 w-full border-b bg-card z-50">
@@ -67,6 +98,23 @@ export function MobileCassaHeader({
                             {t('header.invalidCashRegister')}
                         </span>
                     )}
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Button
+                                variant="outline"
+                                size="icon"
+                                className="cursor-pointer select-none"
+                                onClick={handleOpenDrawer}
+                                disabled={isOpeningDrawer}
+                                aria-label={t('header.openDrawerButton')}
+                            >
+                                {drawerIcon}
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            {t('header.openDrawerTooltip')}
+                        </TooltipContent>
+                    </Tooltip>
                     {onVerificaClick && (
                         <Button
                             variant="outline"

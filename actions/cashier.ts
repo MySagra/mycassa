@@ -668,3 +668,32 @@ export async function reprintOrder(orderId: string, body: {
     return { success: false, error: error.message || 'Errore sconosciuto' };
   }
 }
+
+/**
+ * Open cash drawer
+ */
+export async function openDrawer(cashRegisterId: string) {
+  try {
+    const headers = await authHeaders();
+    const response = await fetch(`${process.env.API_URL}/v1/cash-registers/${cashRegisterId}/open-drawer`, {
+      method: 'POST',
+      headers,
+    });
+
+    handleAuthError(response.status);
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      return { success: false, error: errorData.message || 'Impossibile aprire il cassetto' };
+    }
+
+    const data = await response.json().catch(() => ({}));
+    return { success: true, data };
+  } catch (error: any) {
+    if (isRedirectError(error)) {
+      throw error;
+    }
+    console.error('openDrawer error:', error);
+    return { success: false, error: error.message || 'Errore sconosciuto' };
+  }
+}

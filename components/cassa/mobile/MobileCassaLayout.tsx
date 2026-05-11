@@ -35,7 +35,7 @@ import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 
 export function MobileCassaLayout({
-    theme, onThemeToggle, cashRegisterName, cashRegisterInvalid, foodSearchQuery, onFoodSearchChange,
+    theme, onThemeToggle, cashRegisterName, cashRegisterId, cashRegisterInvalid, foodSearchQuery, onFoodSearchChange,
     user, onLogout, onSettingsClick, onGeneralClosure,
     categories, foods, onAddToCart,
     cart, allIngredients, customer, table, displayCode, enableTableInput, tableInputDisabled,
@@ -89,6 +89,7 @@ export function MobileCassaLayout({
                 theme={theme}
                 onThemeToggle={onThemeToggle}
                 cashRegisterName={cashRegisterName}
+                cashRegisterId={cashRegisterId}
                 cashRegisterInvalid={cashRegisterInvalid}
                 user={user}
                 onGeneralClosure={onGeneralClosure}

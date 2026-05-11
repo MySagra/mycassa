@@ -158,7 +158,9 @@ export const it = {
       cancel: "Annulla",
       confirm: "Conferma",
       closureButton: "Chiusura Sagra",
-      invalidCashRegister: "Cassa non valida"
+      invalidCashRegister: "Cassa non valida",
+      openDrawerButton: "Apri cassetto",
+      openDrawerTooltip: "Apri il cassetto dei contanti"
     },
     settings: {
       printers: {
@@ -259,7 +261,10 @@ export const it = {
       authError401: "Sessione scaduta. Effettua il login nuovamente.",
       authError403: "Accesso vietato. Contatta l'amministratore.",
       orderCancelled: "Ordine annullato con successo",
-      orderCancelError: "Impossibile annullare l'ordine"
+      orderCancelError: "Impossibile annullare l'ordine",
+      drawerOpened: "Cassetto aperto con successo",
+      drawerOpenError: "Errore nell'apertura del cassetto",
+      loading: "Caricamento..."
     }
   }
 };

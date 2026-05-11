@@ -158,7 +158,9 @@ export const en = {
       cancel: "Cancel",
       confirm: "Confirm",
       closureButton: "Register Closure",
-      invalidCashRegister: "Invalid register"
+      invalidCashRegister: "Invalid register",
+      openDrawerButton: "Open Drawer",
+      openDrawerTooltip: "Open the cash drawer"
     },
     settings: {
       printers: {
@@ -259,7 +261,10 @@ export const en = {
       authError401: "Session expired. Please log in again.",
       authError403: "Access denied. Contact the administrator.",
       orderCancelled: "Order cancelled successfully",
-      orderCancelError: "Unable to cancel the order"
+      orderCancelError: "Unable to cancel the order",
+      drawerOpened: "Drawer opened successfully",
+      drawerOpenError: "Error opening the drawer",
+      loading: "Loading..."
     }
   }
 };

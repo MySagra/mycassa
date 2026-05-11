@@ -63,6 +63,7 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
     const [viewingOrderDetail, setViewingOrderDetail] = useState<OrderDetailResponse | null>(null);
     const [loadingOrderDetail, setLoadingOrderDetail] = useState(false);
     const [cashRegisterName, setCashRegisterName] = useState<string>('');
+    const [cashRegisterId, setCashRegisterId] = useState<string>('');
     const [cashRegisterInvalid, setCashRegisterInvalid] = useState(false);
     const [showConfigDialog, setShowConfigDialog] = useState(false);
     const [loadingConfirmOrder, setLoadingConfirmOrder] = useState(false);
@@ -109,6 +110,7 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
                         const cashRegisters = result.data;
                         const selected = cashRegisters.find((cr: any) => cr.id === selectedId);
                         if (selected) {
+                            setCashRegisterId(selected.id);
                             setCashRegisterName(selected.name);
                             setCashRegisterInvalid(false);
                         } else {
@@ -133,9 +135,11 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
     }, [isAuthenticated]);
 
     // Handle cash register selection from configuration dialog
-    const handleCashRegisterSelected = (cashRegisterId: string, cashRegisterName: string) => {
-        setCashRegisterName(cashRegisterName);
+    const handleCashRegisterSelected = (id: string, name: string) => {
+        setCashRegisterId(id);
+        setCashRegisterName(name);
         setCashRegisterInvalid(false);
+        localStorage.setItem('selectedCashRegister', id);
     };
 
     // Redirect if not authenticated
@@ -1111,6 +1115,7 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
         theme,
         onThemeToggle: () => setTheme(theme === 'dark' ? 'light' : 'dark'),
         cashRegisterName,
+        cashRegisterId,
         cashRegisterInvalid,
         foodSearchQuery,
         onFoodSearchChange: setFoodSearchQuery,
