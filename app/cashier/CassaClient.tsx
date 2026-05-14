@@ -184,9 +184,9 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
                             allFoods.push(foodWithCategory);
 
                             // Extract ingredients from food
-                            if (food.foodIngredients && Array.isArray(food.foodIngredients)) {
-                                food.foodIngredients.forEach((fi: any) => {
-                                    allIngredientsSet.set(fi.ingredientId, fi);
+                            if (food.ingredients && Array.isArray(food.ingredients)) {
+                                food.ingredients.forEach((ingredient: any) => {
+                                    allIngredientsSet.set(ingredient.id, ingredient);
                                 });
                             }
                         });
@@ -1106,8 +1106,8 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
         );
     }
 
-    const total = calculateTotal(cart, appliedDiscountAmount);
-    const surcharges = calculateTotalSurcharges(cart);
+    const total = calculateTotal(cart, appliedDiscountAmount, allIngredients);
+    const surcharges = calculateTotalSurcharges(cart, allIngredients);
     const change = calculateChange(total, parseFloat(paidAmount) || 0);
     const validationMessage = getOrderValidationMessage(cart.length, customer, table, enableTableInput);
 
@@ -1208,7 +1208,7 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
             <DiscountDialog
                 open={openDiscountDialog}
                 currentDiscount={appliedDiscountAmount}
-                orderTotal={calculateTotal(cart, 0)}
+                orderTotal={calculateTotal(cart, 0, allIngredients)}
                 onClose={() => setOpenDiscountDialog(false)}
                 onApply={setAppliedDiscountAmount}
                 onRemove={() => setAppliedDiscountAmount(0)}

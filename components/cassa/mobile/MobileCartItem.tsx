@@ -18,7 +18,7 @@ export function MobileCartItem({ item, allIngredients, onUpdateQuantity, onRemov
     const itemPrice = typeof item.food.price === 'number'
         ? item.food.price
         : parseFloat(item.food.price as unknown as string);
-    const itemSurcharge = calculateIngredientSurcharge(item);
+    const itemSurcharge = calculateIngredientSurcharge(item, allIngredients);
     const itemTotal = (itemPrice * item.quantity) + itemSurcharge;
     const isUnavailable = item.food.available === false;
     const { t } = useTranslation();

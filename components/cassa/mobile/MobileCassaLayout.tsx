@@ -136,7 +136,7 @@ export function MobileCassaLayout({
                                                     const price = typeof item.food.price === 'number'
                                                         ? item.food.price
                                                         : parseFloat(item.food.price as unknown as string);
-                                                    const surcharge = calculateIngredientSurcharge(item);
+                                                    const surcharge = calculateIngredientSurcharge(item, allIngredients);
                                                     const lineTotal = (price * item.quantity) + surcharge;
 
                                                     const mods: string[] = [];
