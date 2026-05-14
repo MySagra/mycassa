@@ -208,7 +208,8 @@ export const en = {
       notAvailable: "N/A"
     },
     foods: {
-      notAvailable: "N/A"
+      notAvailable: "N/A",
+      toggleUnavailable: "Show/hide unavailable foods"
     },
     mobile: {
       header: {

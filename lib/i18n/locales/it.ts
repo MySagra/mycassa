@@ -208,7 +208,8 @@ export const it = {
       notAvailable: "Non disp."
     },
     foods: {
-      notAvailable: "Non disp."
+      notAvailable: "Non disp.",
+      toggleUnavailable: "Mostra/nascondi cibi non disponibili"
     },
     mobile: {
       header: {
