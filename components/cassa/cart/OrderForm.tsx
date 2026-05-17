@@ -9,6 +9,7 @@ interface OrderFormProps {
     customer: string;
     table: string;
     enableTableInput: boolean;
+    requireCustomer: boolean;
     tableInputDisabled?: boolean;
     validationErrors: { customer?: string; table?: string };
     onUpdateDisplayCode: (value: string) => void;
@@ -23,6 +24,7 @@ export function OrderForm({
     customer,
     table,
     enableTableInput,
+    requireCustomer,
     tableInputDisabled,
     validationErrors,
     onUpdateDisplayCode,
@@ -66,7 +68,7 @@ export function OrderForm({
             {/* Customer and Table */}
             <div className={`grid ${enableTableInput && !tableInputDisabled ? 'grid-cols-2' : 'grid-cols-1'} gap-4`}>
                 <div>
-                    <Label htmlFor="customer" className='mb-2'>{t('orderForm.customer')} *</Label>
+                    <Label htmlFor="customer" className='mb-2'>{t('orderForm.customer')}{requireCustomer ? ' *' : ''}</Label>
                     <Input
                         autoComplete='off'
                         id="customer"

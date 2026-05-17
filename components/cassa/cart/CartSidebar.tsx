@@ -18,6 +18,7 @@ interface CartSidebarProps {
     table: string;
     displayCode: string;
     enableTableInput: boolean;
+    requireCustomer: boolean;
     tableInputDisabled?: boolean;
     paymentMethod: PaymentMethod;
     paidAmount: string;
@@ -53,6 +54,7 @@ export function CartSidebar({
     table,
     displayCode,
     enableTableInput,
+    requireCustomer,
     tableInputDisabled,
     paymentMethod,
     paidAmount,
@@ -183,6 +185,7 @@ export function CartSidebar({
                 customer={customer}
                 table={table}
                 enableTableInput={enableTableInput}
+                requireCustomer={requireCustomer}
                 tableInputDisabled={tableInputDisabled}
                 validationErrors={validationErrors}
                 onUpdateDisplayCode={onUpdateDisplayCode}
@@ -289,7 +292,7 @@ export function CartSidebar({
                                     className="w-full text-lg font-semibold select-none cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
                                     size="lg"
                                     onClick={handleConfirmOrder}
-                                    disabled={cart.length === 0 || !customer || customer.length < 2 || (enableTableInput && !table) || loadingConfirmOrder}
+                                    disabled={cart.length === 0 || (requireCustomer && (!customer || customer.length < 2)) || (enableTableInput && !table) || loadingConfirmOrder}
                                 >
                                     {loadingConfirmOrder ? (
                                         <>

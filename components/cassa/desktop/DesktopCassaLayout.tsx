@@ -38,6 +38,7 @@ export interface CassaLayoutProps {
     table: string;
     displayCode: string;
     enableTableInput: boolean;
+    requireCustomer: boolean;
     tableInputDisabled: boolean;
     paymentMethod: PaymentMethod;
     paidAmount: string;
@@ -89,7 +90,7 @@ export function DesktopCassaLayout({
     user, onLogout, onSettingsClick, onGeneralClosure,
     categories, selectedCategoryId, onSelectCategory, loadingCategories,
     foods, loadingFoods, onAddToCart,
-    cart, allIngredients, customer, table, displayCode, enableTableInput, tableInputDisabled,
+    cart, allIngredients, customer, table, displayCode, enableTableInput, requireCustomer, tableInputDisabled,
     paymentMethod, paidAmount, appliedDiscount, total, surcharges, change,
     validationErrors, validationMessage,
     onUpdateCustomer, onUpdateTable, onUpdateDisplayCode, onLoadOrder, loadingOrder,
@@ -140,6 +141,7 @@ export function DesktopCassaLayout({
                         table={table}
                         displayCode={displayCode}
                         enableTableInput={enableTableInput}
+                        requireCustomer={requireCustomer}
                         tableInputDisabled={tableInputDisabled}
                         paymentMethod={paymentMethod}
                         paidAmount={paidAmount}

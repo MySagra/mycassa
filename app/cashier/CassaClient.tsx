@@ -25,7 +25,7 @@ import { MobileCassaLayout } from '@/components/cassa/mobile/MobileCassaLayout';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { z } from 'zod';
 
-export default function CassaPage({ requiredTable }: { requiredTable: boolean }) {
+export default function CassaPage({ requiredTable, requireCustomer }: { requiredTable: boolean; requireCustomer: boolean }) {
     const router = useRouter();
     const { user, isLoading, isAuthenticated } = useAuth();
     const { theme, setTheme } = useTheme();
@@ -951,10 +951,12 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
         }
 
         // Validate customer
-        const customerValidation = orderSchema.shape.customer.safeParse(customer);
-        if (!customerValidation.success) {
-            toast.error(customerValidation.error.issues[0].message);
-            return;
+        if (requireCustomer) {
+            const customerValidation = orderSchema.shape.customer.safeParse(customer);
+            if (!customerValidation.success) {
+                toast.error(customerValidation.error.issues[0].message);
+                return;
+            }
         }
 
         // Validate table only if enabled
@@ -1000,6 +1002,7 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
         setShowUnavailableDialog(false);
         setLoadingConfirmOrder(true);
         try {
+            const effectiveCustomer = !requireCustomer && !customer.trim() ? 'NO CUSTOMER' : customer;
             // Merge cart items with same foodId and notes
             const mergedOrderItems = mergeCartItems(cart, allIngredients);
 
@@ -1022,7 +1025,7 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
                     userId: user?.id || '',
                     cashRegisterId: localStorage.getItem('selectedCashRegister') || '',
                     discount: appliedDiscountAmount,
-                    customer: customer !== originalCustomerFromOrder ? customer : undefined,
+                    customer: effectiveCustomer !== originalCustomerFromOrder ? effectiveCustomer : undefined,
                     orderItems: mergedOrderItems,
                 });
 
@@ -1047,7 +1050,7 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
                 // Create new order with confirmation details
                 const createResult = await createOrder({
                     table: enableTableInput && table.trim() ? table : "NO_TABLE_PRESET",
-                    customer,
+                    customer: effectiveCustomer,
                     orderItems: mergedOrderItems,
                     confirm: {
                         paymentMethod,
@@ -1109,7 +1112,7 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
     const total = calculateTotal(cart, appliedDiscountAmount, allIngredients);
     const surcharges = calculateTotalSurcharges(cart, allIngredients);
     const change = calculateChange(total, parseFloat(paidAmount) || 0);
-    const validationMessage = getOrderValidationMessage(cart.length, customer, table, enableTableInput);
+    const validationMessage = getOrderValidationMessage(cart.length, customer, table, enableTableInput, requireCustomer);
 
     const layoutProps: CassaLayoutProps = {
         theme,
@@ -1136,6 +1139,7 @@ export default function CassaPage({ requiredTable }: { requiredTable: boolean })
         table,
         displayCode,
         enableTableInput,
+        requireCustomer,
         tableInputDisabled: table === 'NO_TABLE_PRESET',
         paymentMethod,
         paidAmount,

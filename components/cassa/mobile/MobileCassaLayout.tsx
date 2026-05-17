@@ -38,7 +38,7 @@ export function MobileCassaLayout({
     theme, onThemeToggle, cashRegisterName, cashRegisterId, cashRegisterInvalid, foodSearchQuery, onFoodSearchChange,
     user, onLogout, onSettingsClick, onGeneralClosure,
     categories, foods, onAddToCart,
-    cart, allIngredients, customer, table, displayCode, enableTableInput, tableInputDisabled,
+    cart, allIngredients, customer, table, displayCode, enableTableInput, requireCustomer, tableInputDisabled,
     paymentMethod, paidAmount, appliedDiscount, total, surcharges, change,
     validationErrors, validationMessage,
     onUpdateCustomer, onUpdateTable, onUpdateDisplayCode, onLoadOrder, loadingOrder,
@@ -102,6 +102,7 @@ export function MobileCassaLayout({
                     customer={customer}
                     table={table}
                     enableTableInput={enableTableInput}
+                    requireCustomer={requireCustomer}
                     tableInputDisabled={tableInputDisabled}
                     validationErrors={validationErrors}
                     onUpdateDisplayCode={onUpdateDisplayCode}
@@ -279,8 +280,7 @@ export function MobileCassaLayout({
                                         disabled={
                                             orderSuccess ||
                                             cart.length === 0 ||
-                                            !customer ||
-                                            customer.length < 2 ||
+                                            (requireCustomer && (!customer || customer.length < 2)) ||
                                             (enableTableInput && !table) ||
                                             loadingConfirmOrder
                                         }
