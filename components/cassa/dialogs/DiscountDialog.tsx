@@ -117,17 +117,6 @@ export function DiscountDialog({ open, currentDiscount, orderTotal, onClose, onA
                 </div>
                 <DialogFooter>
                     <Button
-                        variant="outline"
-                        className='cursor-pointer'
-                        onClick={() => {
-                            onClose();
-                            setDiscountAmount('');
-                            setValidationError(undefined);
-                        }}
-                    >
-                        {t('discountDialog.cancel')}
-                    </Button>
-                    <Button
                         variant="destructive"
                         className='cursor-pointer'
                         onClick={handleRemove}

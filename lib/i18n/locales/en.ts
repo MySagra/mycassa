@@ -139,7 +139,7 @@ export const en = {
       currentDiscount: "Currently applied discount:",
       cancel: "Cancel",
       removeDiscount: "Remove Discount",
-      apply: "Apply"
+      apply: "Apply Discount"
     },
     configDialog: {
       errorLoading: "Error loading registers",

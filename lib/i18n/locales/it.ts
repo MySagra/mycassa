@@ -139,7 +139,7 @@ export const it = {
       currentDiscount: "Sconto attualmente applicato:",
       cancel: "Annulla",
       removeDiscount: "Rimuovi Sconto",
-      apply: "Applica"
+      apply: "Applica Sconto"
     },
     configDialog: {
       errorLoading: "Errore nel caricamento delle casse",
