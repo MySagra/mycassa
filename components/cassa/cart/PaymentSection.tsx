@@ -10,11 +10,11 @@ interface PaymentSectionProps {
     total: number;
     surcharges: number;
     discount: number;
-    paymentMethod: PaymentMethod;
+    paymentMethod: PaymentMethod | null;
     paidAmount: string;
     change: number;
     validationErrors: { paidAmount?: string };
-    onUpdatePaymentMethod: (method: PaymentMethod) => void;
+    onUpdatePaymentMethod: (method: PaymentMethod | null) => void;
     onUpdatePaidAmount: (value: string) => void;
     onOpenCalculator?: () => void;
     previousTotal?: number | null;

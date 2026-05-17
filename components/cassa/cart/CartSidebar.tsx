@@ -20,7 +20,7 @@ interface CartSidebarProps {
     enableTableInput: boolean;
     requireCustomer: boolean;
     tableInputDisabled?: boolean;
-    paymentMethod: PaymentMethod;
+    paymentMethod: PaymentMethod | null;
     paidAmount: string;
     appliedDiscount: number;
     total: number;
@@ -40,7 +40,7 @@ interface CartSidebarProps {
     onConfirmOrder: () => void;
     loadingConfirmOrder: boolean;
     onOpenDiscount: () => void;
-    onUpdatePaymentMethod: (method: PaymentMethod) => void;
+    onUpdatePaymentMethod: (method: PaymentMethod | null) => void;
     onUpdatePaidAmount: (value: string) => void;
     showDailyOrders: boolean;
     onToggleDailyOrders: () => void;
@@ -90,18 +90,19 @@ export function CartSidebar({
     const previousTotalTimerRef = useRef<NodeJS.Timeout | null>(null);
     const { t } = useTranslation();
 
-    const PREVIOUS_TOTAL_DURATION = 20000; // 20 secondi in ms
+    const PREVIOUS_TOTAL_DURATION = 45000; // 45 secondi in ms
 
     const clearPreviousTotal = useCallback(() => {
         setPreviousTotal(null);
         setPreviousTotalProgress(100);
         setWasOrderJustConfirmed(false);
         onUpdatePaidAmount('');
+        onUpdatePaymentMethod(null);
         if (previousTotalTimerRef.current) {
             clearInterval(previousTotalTimerRef.current);
             previousTotalTimerRef.current = null;
         }
-    }, [onUpdatePaidAmount]);
+    }, [onUpdatePaidAmount, onUpdatePaymentMethod]);
 
     // Salva ultimo totale non-zero quando cart ha items
     useEffect(() => {
@@ -292,7 +293,7 @@ export function CartSidebar({
                                     className="w-full text-lg font-semibold select-none cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
                                     size="lg"
                                     onClick={handleConfirmOrder}
-                                    disabled={cart.length === 0 || (requireCustomer && (!customer || customer.length < 2)) || (enableTableInput && !table) || loadingConfirmOrder}
+                                    disabled={cart.length === 0 || !paymentMethod || (requireCustomer && (!customer || customer.length < 2)) || (enableTableInput && !table) || loadingConfirmOrder}
                                 >
                                     {loadingConfirmOrder ? (
                                         <>

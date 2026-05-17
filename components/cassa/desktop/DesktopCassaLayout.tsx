@@ -40,7 +40,7 @@ export interface CassaLayoutProps {
     enableTableInput: boolean;
     requireCustomer: boolean;
     tableInputDisabled: boolean;
-    paymentMethod: PaymentMethod;
+    paymentMethod: PaymentMethod | null;
     paidAmount: string;
     appliedDiscount: number;
     total: number;
@@ -60,7 +60,7 @@ export interface CassaLayoutProps {
     onConfirmOrder: () => void;
     loadingConfirmOrder: boolean;
     onOpenDiscount: () => void;
-    onUpdatePaymentMethod: (method: PaymentMethod) => void;
+    onUpdatePaymentMethod: (method: PaymentMethod | null) => void;
     onUpdatePaidAmount: (value: string) => void;
     showDailyOrders: boolean;
     onToggleDailyOrders: () => void;

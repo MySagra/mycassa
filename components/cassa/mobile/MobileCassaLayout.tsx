@@ -280,6 +280,7 @@ export function MobileCassaLayout({
                                         disabled={
                                             orderSuccess ||
                                             cart.length === 0 ||
+                                            !paymentMethod ||
                                             (requireCustomer && (!customer || customer.length < 2)) ||
                                             (enableTableInput && !table) ||
                                             loadingConfirmOrder

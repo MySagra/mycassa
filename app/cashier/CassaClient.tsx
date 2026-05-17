@@ -45,7 +45,7 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
     const [displayCode, setDisplayCode] = useState('');
     const [customer, setCustomer] = useState('');
     const [table, setTable] = useState('');
-    const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('CASH');
+    const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | null>(null);
     const [paidAmount, setPaidAmount] = useState<string>('');
     const [showDailyOrders, setShowDailyOrders] = useState(false);
     const [loadingOrder, setLoadingOrder] = useState(false);
@@ -722,6 +722,16 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
         setTable('');
         setPaidAmount('');
         setAppliedDiscountAmount(0);
+        setPaymentMethod(null);
+    };
+
+    const resetAfterOrder = () => {
+        setCart([]);
+        setDisplayCode('');
+        setCustomer('');
+        setTable('');
+        setAppliedDiscountAmount(0);
+        // paidAmount and paymentMethod not cleared here — CartSidebar timer clears them when it expires
     };
 
     // Edit item
@@ -950,6 +960,12 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
             // Non-blocking: if validation fetch fails, proceed and let server error handle it
         }
 
+        // Validate payment method
+        if (!paymentMethod) {
+            toast.error('Seleziona un metodo di pagamento');
+            return;
+        }
+
         // Validate customer
         if (requireCustomer) {
             const customerValidation = orderSchema.shape.customer.safeParse(customer);
@@ -1069,7 +1085,11 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
             if (!isMobile) {
                 toast.success(t('toast.orderConfirmed'));
             }
-            clearCart();
+            if (isMobile) {
+                clearCart();
+            } else {
+                resetAfterOrder();
+            }
         } catch (error: any) {
             console.error('Error confirming order:', error);
             if (!isMobile) toast.error(error.message || t('toast.orderConfirmed'));
@@ -1112,7 +1132,10 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
     const total = calculateTotal(cart, appliedDiscountAmount, allIngredients);
     const surcharges = calculateTotalSurcharges(cart, allIngredients);
     const change = calculateChange(total, parseFloat(paidAmount) || 0);
-    const validationMessage = getOrderValidationMessage(cart.length, customer, table, enableTableInput, requireCustomer);
+    const baseValidation = getOrderValidationMessage(cart.length, customer, table, enableTableInput, requireCustomer);
+    const validationMessage = !paymentMethod
+        ? [...(baseValidation ?? []), 'Seleziona un metodo di pagamento']
+        : baseValidation;
 
     const layoutProps: CassaLayoutProps = {
         theme,
