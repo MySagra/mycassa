@@ -1037,7 +1037,7 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
 
                 const confirmResult = await confirmOrderAction({
                     orderId,
-                    paymentMethod,
+                    paymentMethod: paymentMethod!,
                     userId: user?.id || '',
                     cashRegisterId: localStorage.getItem('selectedCashRegister') || '',
                     discount: appliedDiscountAmount,
@@ -1069,7 +1069,7 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
                     customer: effectiveCustomer,
                     orderItems: mergedOrderItems,
                     confirm: {
-                        paymentMethod,
+                        paymentMethod: paymentMethod!,
                         userId: user?.id || '',
                         cashRegisterId: localStorage.getItem('selectedCashRegister') || '',
                         discount: appliedDiscountAmount,
