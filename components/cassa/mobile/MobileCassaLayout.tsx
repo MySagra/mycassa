@@ -35,10 +35,10 @@ import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 
 export function MobileCassaLayout({
-    theme, onThemeToggle, cashRegisterName, cashRegisterInvalid, foodSearchQuery, onFoodSearchChange,
+    theme, onThemeToggle, cashRegisterName, cashRegisterId, cashRegisterInvalid, foodSearchQuery, onFoodSearchChange,
     user, onLogout, onSettingsClick, onGeneralClosure,
     categories, foods, onAddToCart,
-    cart, allIngredients, customer, table, displayCode, enableTableInput, tableInputDisabled,
+    cart, allIngredients, customer, table, displayCode, enableTableInput, requireCustomer, tableInputDisabled,
     paymentMethod, paidAmount, appliedDiscount, total, surcharges, change,
     validationErrors, validationMessage,
     onUpdateCustomer, onUpdateTable, onUpdateDisplayCode, onLoadOrder, loadingOrder,
@@ -89,6 +89,7 @@ export function MobileCassaLayout({
                 theme={theme}
                 onThemeToggle={onThemeToggle}
                 cashRegisterName={cashRegisterName}
+                cashRegisterId={cashRegisterId}
                 cashRegisterInvalid={cashRegisterInvalid}
                 user={user}
                 onGeneralClosure={onGeneralClosure}
@@ -101,6 +102,7 @@ export function MobileCassaLayout({
                     customer={customer}
                     table={table}
                     enableTableInput={enableTableInput}
+                    requireCustomer={requireCustomer}
                     tableInputDisabled={tableInputDisabled}
                     validationErrors={validationErrors}
                     onUpdateDisplayCode={onUpdateDisplayCode}
@@ -135,7 +137,7 @@ export function MobileCassaLayout({
                                                     const price = typeof item.food.price === 'number'
                                                         ? item.food.price
                                                         : parseFloat(item.food.price as unknown as string);
-                                                    const surcharge = calculateIngredientSurcharge(item);
+                                                    const surcharge = calculateIngredientSurcharge(item, allIngredients);
                                                     const lineTotal = (price * item.quantity) + surcharge;
 
                                                     const mods: string[] = [];
@@ -278,8 +280,8 @@ export function MobileCassaLayout({
                                         disabled={
                                             orderSuccess ||
                                             cart.length === 0 ||
-                                            !customer ||
-                                            customer.length < 2 ||
+                                            !paymentMethod ||
+                                            (requireCustomer && (!customer || customer.length < 2)) ||
                                             (enableTableInput && !table) ||
                                             loadingConfirmOrder
                                         }

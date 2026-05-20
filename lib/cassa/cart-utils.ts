@@ -64,7 +64,7 @@ export function mergeCartItems(items: ExtendedCartItem[], allIngredients?: { id:
         }
 
         // Calculate surcharge for this item
-        const itemSurcharge = calculateIngredientSurcharge(item);
+        const itemSurcharge = calculateIngredientSurcharge(item, allIngredients);
 
         // Create unique key: foodId + notes (or empty string if no notes)
         const key = `${item.food.id}|${finalNotes}`;

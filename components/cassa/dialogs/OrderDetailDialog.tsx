@@ -15,6 +15,7 @@ interface OrderDetailDialogProps {
     open: boolean;
     loading: boolean;
     onClose: () => void;
+    stationsMap?: Record<string, string>;
 }
 
 interface CashRegister {
@@ -23,7 +24,7 @@ interface CashRegister {
     enabled: boolean;
 }
 
-export function OrderDetailDialog({ order, open, loading, onClose }: OrderDetailDialogProps) {
+export function OrderDetailDialog({ order, open, loading, onClose, stationsMap }: OrderDetailDialogProps) {
     const [cashRegisterName, setCashRegisterName] = useState<string>('');
     const [operatorName, setOperatorName] = useState<string>('');
     const [reprintOpen, setReprintOpen] = useState(false);
@@ -233,6 +234,33 @@ export function OrderDetailDialog({ order, open, loading, onClose }: OrderDetail
                                         </div>
                                     </div>
                                 </div>
+
+                                {/* Station States */}
+                                {order.orderStationStates && order.orderStationStates.length > 0 && (
+                                    <div className="space-y-2">
+                                        <h4 className="font-semibold">{t('dailyOrderCard.stationStates')}</h4>
+                                        <div className="space-y-2">
+                                            {order.orderStationStates.map((stationState) => {
+                                                const statusMap: Record<string, { label: string; className: string }> = {
+                                                    PENDING: { label: t('orderStationStatus.pending'), className: 'bg-yellow-500/20 text-yellow-700 dark:text-yellow-400' },
+                                                    COMPLETED: { label: t('orderStationStatus.completed'), className: 'bg-green-500/20 text-green-700 dark:text-green-400' },
+                                                    CANCELLED: { label: t('orderStationStatus.cancelled'), className: 'bg-red-500/20 text-red-700 dark:text-red-400' },
+                                                    PARTIAL: { label: t('orderStationStatus.partial'), className: 'bg-orange-500/20 text-orange-700 dark:text-orange-400' }
+                                                };
+                                                const statusInfo = statusMap[stationState.status] || { label: stationState.status, className: 'bg-gray-500/20 text-gray-700 dark:text-gray-400' };
+                                                const stationName = stationsMap?.[stationState.stationId] || `Station ${stationState.stationId}`;
+                                                return (
+                                                    <div key={stationState.id} className="flex items-center justify-between p-2 bg-muted dark:bg-muted/40 rounded-lg">
+                                                        <span className="text-sm font-medium">{stationName}</span>
+                                                        <span className={`text-xs px-3 py-1 rounded-full font-medium ${statusInfo.className}`}>
+                                                            {statusInfo.label}
+                                                        </span>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </ScrollArea>
                     ) : null}

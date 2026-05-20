@@ -14,6 +14,7 @@ export interface CassaLayoutProps {
     theme: string | undefined;
     onThemeToggle: () => void;
     cashRegisterName: string;
+    cashRegisterId: string;
     cashRegisterInvalid?: boolean;
     foodSearchQuery: string;
     onFoodSearchChange: (value: string) => void;
@@ -37,8 +38,9 @@ export interface CassaLayoutProps {
     table: string;
     displayCode: string;
     enableTableInput: boolean;
+    requireCustomer: boolean;
     tableInputDisabled: boolean;
-    paymentMethod: PaymentMethod;
+    paymentMethod: PaymentMethod | null;
     paidAmount: string;
     appliedDiscount: number;
     total: number;
@@ -58,7 +60,7 @@ export interface CassaLayoutProps {
     onConfirmOrder: () => void;
     loadingConfirmOrder: boolean;
     onOpenDiscount: () => void;
-    onUpdatePaymentMethod: (method: PaymentMethod) => void;
+    onUpdatePaymentMethod: (method: PaymentMethod | null) => void;
     onUpdatePaidAmount: (value: string) => void;
     showDailyOrders: boolean;
     onToggleDailyOrders: () => void;
@@ -84,11 +86,11 @@ export interface CassaLayoutProps {
 }
 
 export function DesktopCassaLayout({
-    theme, onThemeToggle, cashRegisterName, cashRegisterInvalid, foodSearchQuery, onFoodSearchChange,
+    theme, onThemeToggle, cashRegisterName, cashRegisterId, cashRegisterInvalid, foodSearchQuery, onFoodSearchChange,
     user, onLogout, onSettingsClick, onGeneralClosure,
     categories, selectedCategoryId, onSelectCategory, loadingCategories,
     foods, loadingFoods, onAddToCart,
-    cart, allIngredients, customer, table, displayCode, enableTableInput, tableInputDisabled,
+    cart, allIngredients, customer, table, displayCode, enableTableInput, requireCustomer, tableInputDisabled,
     paymentMethod, paidAmount, appliedDiscount, total, surcharges, change,
     validationErrors, validationMessage,
     onUpdateCustomer, onUpdateTable, onUpdateDisplayCode, onLoadOrder, loadingOrder,
@@ -107,6 +109,7 @@ export function DesktopCassaLayout({
                     theme={theme}
                     onThemeToggle={onThemeToggle}
                     cashRegisterName={cashRegisterName}
+                    cashRegisterId={cashRegisterId}
                     cashRegisterInvalid={cashRegisterInvalid}
                     foodSearchQuery={foodSearchQuery}
                     onFoodSearchChange={onFoodSearchChange}
@@ -138,6 +141,7 @@ export function DesktopCassaLayout({
                         table={table}
                         displayCode={displayCode}
                         enableTableInput={enableTableInput}
+                        requireCustomer={requireCustomer}
                         tableInputDisabled={tableInputDisabled}
                         paymentMethod={paymentMethod}
                         paidAmount={paidAmount}

@@ -24,6 +24,8 @@ export const it = {
       surcharges: "Sovrapprezzi totali",
       discount: "Sconto applicato",
       total: "TOTALE",
+      lastOrderTotal: "TOTALE ULTIMO ORDINE",
+      previousTotal: "Totale precedente",
       paymentMethod: "Metodo Pagamento",
       cash: "Contanti",
       card: "Carta",
@@ -72,7 +74,16 @@ export const it = {
       cancelDialogTitle: "Annulla ordine",
       cancelDialogDesc: "Sei sicuro di voler annullare l'ordine {{displayCode}}? Questa operazione non può essere annullata.",
       cancelDialogConfirm: "Annulla ordine",
-      cancelDialogCancel: "Indietro"
+      cancelDialogCancel: "Indietro",
+      stationStates: "Stati Postazioni",
+      codiceLabel: "Codice",
+      numeroOrdineLabel: "Numero ordine"
+    },
+    orderStationStatus: {
+      pending: "In attesa",
+      completed: "Completato",
+      cancelled: "Annullato",
+      partial: "Parziale"
     },
     orderDetailDialog: {
       title: "Dettaglio Ordine",
@@ -128,7 +139,7 @@ export const it = {
       currentDiscount: "Sconto attualmente applicato:",
       cancel: "Annulla",
       removeDiscount: "Rimuovi Sconto",
-      apply: "Applica"
+      apply: "Applica Sconto"
     },
     configDialog: {
       errorLoading: "Errore nel caricamento delle casse",
@@ -149,7 +160,9 @@ export const it = {
       cancel: "Annulla",
       confirm: "Conferma",
       closureButton: "Chiusura Sagra",
-      invalidCashRegister: "Cassa non valida"
+      invalidCashRegister: "Cassa non valida",
+      openDrawerButton: "Apri cassetto",
+      openDrawerTooltip: "Apri il cassetto dei contanti"
     },
     settings: {
       printers: {
@@ -195,7 +208,8 @@ export const it = {
       notAvailable: "Non disp."
     },
     foods: {
-      notAvailable: "Non disp."
+      notAvailable: "Non disp.",
+      toggleUnavailable: "Mostra/nascondi cibi non disponibili"
     },
     mobile: {
       header: {
@@ -250,7 +264,10 @@ export const it = {
       authError401: "Sessione scaduta. Effettua il login nuovamente.",
       authError403: "Accesso vietato. Contatta l'amministratore.",
       orderCancelled: "Ordine annullato con successo",
-      orderCancelError: "Impossibile annullare l'ordine"
+      orderCancelError: "Impossibile annullare l'ordine",
+      drawerOpened: "Cassetto aperto con successo",
+      drawerOpenError: "Errore nell'apertura del cassetto",
+      loading: "Caricamento..."
     }
   }
 };

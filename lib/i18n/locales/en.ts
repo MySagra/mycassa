@@ -24,6 +24,8 @@ export const en = {
       surcharges: "Total surcharges",
       discount: "Discount applied",
       total: "TOTAL",
+      lastOrderTotal: "LAST ORDER TOTAL",
+      previousTotal: "Previous total",
       paymentMethod: "Payment Method",
       cash: "Cash",
       card: "Card",
@@ -72,7 +74,16 @@ export const en = {
       cancelDialogTitle: "Cancel order",
       cancelDialogDesc: "Are you sure you want to cancel order {{displayCode}}? This action cannot be undone.",
       cancelDialogConfirm: "Cancel order",
-      cancelDialogCancel: "Go back"
+      cancelDialogCancel: "Go back",
+      stationStates: "Station States",
+      codiceLabel: "Code",
+      numeroOrdineLabel: "Order number"
+    },
+    orderStationStatus: {
+      pending: "Pending",
+      completed: "Completed",
+      cancelled: "Cancelled",
+      partial: "Partial"
     },
     orderDetailDialog: {
       title: "Order Detail",
@@ -128,7 +139,7 @@ export const en = {
       currentDiscount: "Currently applied discount:",
       cancel: "Cancel",
       removeDiscount: "Remove Discount",
-      apply: "Apply"
+      apply: "Apply Discount"
     },
     configDialog: {
       errorLoading: "Error loading registers",
@@ -149,7 +160,9 @@ export const en = {
       cancel: "Cancel",
       confirm: "Confirm",
       closureButton: "Register Closure",
-      invalidCashRegister: "Invalid register"
+      invalidCashRegister: "Invalid register",
+      openDrawerButton: "Open Drawer",
+      openDrawerTooltip: "Open the cash drawer"
     },
     settings: {
       printers: {
@@ -195,7 +208,8 @@ export const en = {
       notAvailable: "N/A"
     },
     foods: {
-      notAvailable: "N/A"
+      notAvailable: "N/A",
+      toggleUnavailable: "Show/hide unavailable foods"
     },
     mobile: {
       header: {
@@ -250,7 +264,10 @@ export const en = {
       authError401: "Session expired. Please log in again.",
       authError403: "Access denied. Contact the administrator.",
       orderCancelled: "Order cancelled successfully",
-      orderCancelError: "Unable to cancel the order"
+      orderCancelError: "Unable to cancel the order",
+      drawerOpened: "Drawer opened successfully",
+      drawerOpenError: "Error opening the drawer",
+      loading: "Loading..."
     }
   }
 };

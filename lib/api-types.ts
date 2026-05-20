@@ -64,6 +64,7 @@ export interface Food {
 export interface Ingredient {
   id: string;
   name: string;
+  surcharge?: string;
 }
 
 // Order Types
@@ -105,6 +106,13 @@ export interface OrderResponse {
   orderItems: boolean;
 }
 
+export interface OrderStationState {
+  id: string;
+  status: 'PENDING' | 'COMPLETED' | 'CANCELLED' | 'PARTIAL';
+  orderId: string;
+  stationId: string;
+}
+
 export interface OrderDetailResponse {
   id: string;
   displayCode: string;
@@ -122,7 +130,8 @@ export interface OrderDetailResponse {
   updatedAt: string;
   confirmedAt?: string;
   userId?: string;
-  cashRegisterId?: string; // This is just the ID, not the full object
+  cashRegisterId?: string;
+  orderStationStates?: OrderStationState[];
   categorizedItems: CategorizedItems[];
 }
 

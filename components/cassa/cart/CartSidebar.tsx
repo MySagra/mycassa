@@ -7,7 +7,7 @@ import { Trash2, Percent, ShoppingBasket } from 'lucide-react';
 import { OrderForm } from './OrderForm';
 import { PaymentSection } from './PaymentSection';
 import { CartItem } from './CartItem';
-import { useState } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 
@@ -18,8 +18,9 @@ interface CartSidebarProps {
     table: string;
     displayCode: string;
     enableTableInput: boolean;
+    requireCustomer: boolean;
     tableInputDisabled?: boolean;
-    paymentMethod: PaymentMethod;
+    paymentMethod: PaymentMethod | null;
     paidAmount: string;
     appliedDiscount: number;
     total: number;
@@ -39,7 +40,7 @@ interface CartSidebarProps {
     onConfirmOrder: () => void;
     loadingConfirmOrder: boolean;
     onOpenDiscount: () => void;
-    onUpdatePaymentMethod: (method: PaymentMethod) => void;
+    onUpdatePaymentMethod: (method: PaymentMethod | null) => void;
     onUpdatePaidAmount: (value: string) => void;
     showDailyOrders: boolean;
     onToggleDailyOrders: () => void;
@@ -53,6 +54,7 @@ export function CartSidebar({
     table,
     displayCode,
     enableTableInput,
+    requireCustomer,
     tableInputDisabled,
     paymentMethod,
     paidAmount,
@@ -81,13 +83,89 @@ export function CartSidebar({
     cartScrollRef
 }: CartSidebarProps) {
     const [openClearDialog, setOpenClearDialog] = useState(false);
+    const [previousTotal, setPreviousTotal] = useState<number | null>(null);
+    const [previousTotalProgress, setPreviousTotalProgress] = useState(100);
+    const [lastNonZeroTotal, setLastNonZeroTotal] = useState<number | null>(null);
+    const [wasOrderJustConfirmed, setWasOrderJustConfirmed] = useState(false);
+    const previousTotalTimerRef = useRef<NodeJS.Timeout | null>(null);
     const { t } = useTranslation();
+
+    const PREVIOUS_TOTAL_DURATION = 45000; // 45 secondi in ms
+
+    const clearPreviousTotal = useCallback(() => {
+        setPreviousTotal(null);
+        setPreviousTotalProgress(100);
+        setWasOrderJustConfirmed(false);
+        onUpdatePaidAmount('');
+        onUpdatePaymentMethod(null);
+        if (previousTotalTimerRef.current) {
+            clearInterval(previousTotalTimerRef.current);
+            previousTotalTimerRef.current = null;
+        }
+    }, [onUpdatePaidAmount, onUpdatePaymentMethod]);
+
+    // Salva ultimo totale non-zero quando cart ha items
+    useEffect(() => {
+        if (cart.length > 0 && total > 0) {
+            setLastNonZeroTotal(total);
+        }
+    }, [cart.length, total]);
+
+    // Mostra previousTotal solo se ordine è stato appena confermato
+    useEffect(() => {
+        if (cart.length === 0 && lastNonZeroTotal !== null && previousTotal === null && wasOrderJustConfirmed) {
+            setPreviousTotal(lastNonZeroTotal);
+            setPreviousTotalProgress(100);
+
+            if (previousTotalTimerRef.current) {
+                clearInterval(previousTotalTimerRef.current);
+            }
+
+            const startTime = Date.now();
+            previousTotalTimerRef.current = setInterval(() => {
+                const elapsed = Date.now() - startTime;
+                const progress = Math.max(0, 100 - (elapsed / PREVIOUS_TOTAL_DURATION) * 100);
+                setPreviousTotalProgress(progress);
+
+                if (progress <= 0) {
+                    clearPreviousTotal();
+                    return;
+                }
+            }, 50);
+        }
+    }, [cart.length, lastNonZeroTotal, previousTotal, wasOrderJustConfirmed, clearPreviousTotal]);
+
+    // Rimuovi previousTotal se viene aggiunto cibo
+    useEffect(() => {
+        if (cart.length > 0 && previousTotal !== null) {
+            clearPreviousTotal();
+        }
+    }, [cart.length, previousTotal, clearPreviousTotal]);
 
     const handleClearCart = () => {
         onClearCart();
         setOpenClearDialog(false);
         toast.success(t('cartSidebar.toastCleared'));
     };
+
+    const handleRemoveItem = (cartItemId: string) => {
+        clearPreviousTotal();
+        onRemoveItem(cartItemId);
+    };
+
+    const handleConfirmOrder = () => {
+        setWasOrderJustConfirmed(true);
+        onConfirmOrder();
+    };
+
+    // Cleanup timer on unmount
+    useEffect(() => {
+        return () => {
+            if (previousTotalTimerRef.current) {
+                clearInterval(previousTotalTimerRef.current);
+            }
+        };
+    }, []);
 
     return (
         <aside className="w-96 border-l bg-card flex flex-col">
@@ -108,6 +186,7 @@ export function CartSidebar({
                 customer={customer}
                 table={table}
                 enableTableInput={enableTableInput}
+                requireCustomer={requireCustomer}
                 tableInputDisabled={tableInputDisabled}
                 validationErrors={validationErrors}
                 onUpdateDisplayCode={onUpdateDisplayCode}
@@ -136,7 +215,7 @@ export function CartSidebar({
                                         item={item}
                                         allIngredients={allIngredients}
                                         onUpdateQuantity={(delta) => onUpdateQuantity(item.cartItemId, delta)}
-                                        onRemove={() => onRemoveItem(item.cartItemId)}
+                                        onRemove={() => handleRemoveItem(item.cartItemId)}
                                         onEdit={() => onEditItem(item)}
                                     />
                                 ))}
@@ -145,6 +224,16 @@ export function CartSidebar({
                     </div>
                 </ScrollArea>
             </div>
+
+            {/* Previous Total Progress Bar */}
+            {previousTotal !== null && (
+                <div className="w-full h-1 bg-muted overflow-hidden border-b">
+                    <div
+                        className="h-full bg-amber-500 transition-all ease-linear"
+                        style={{ width: `${previousTotalProgress}%` }}
+                    />
+                </div>
+            )}
 
             {/* Footer - Total & Payment */}
             <PaymentSection
@@ -157,6 +246,8 @@ export function CartSidebar({
                 validationErrors={validationErrors}
                 onUpdatePaymentMethod={onUpdatePaymentMethod}
                 onUpdatePaidAmount={onUpdatePaidAmount}
+                previousTotal={previousTotal}
+                previousTotalProgress={previousTotalProgress}
             />
 
             {/* Actions row: empty cart (icon) + confirm order */}
@@ -201,8 +292,8 @@ export function CartSidebar({
                                 <Button
                                     className="w-full text-lg font-semibold select-none cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
                                     size="lg"
-                                    onClick={onConfirmOrder}
-                                    disabled={cart.length === 0 || !customer || customer.length < 2 || (enableTableInput && !table) || loadingConfirmOrder}
+                                    onClick={handleConfirmOrder}
+                                    disabled={cart.length === 0 || !paymentMethod || (requireCustomer && (!customer || customer.length < 2)) || (enableTableInput && !table) || loadingConfirmOrder}
                                 >
                                     {loadingConfirmOrder ? (
                                         <>

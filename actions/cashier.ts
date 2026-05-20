@@ -62,7 +62,46 @@ function getDailyOrderDateRange() {
 }
 
 /**
+ * Get stations with their categories and foods
+ */
+export async function getStations() {
+  try {
+    const headers = await authHeaders();
+
+    const [categoriesRes, stationsRes] = await Promise.all([
+      fetch(`${process.env.API_URL}/v1/categories?include=foods.ingredients&foodsAvailable=all`, {
+        headers,
+        cache: 'no-store',
+      }),
+      fetch(`${process.env.API_URL}/v1/stations`, {
+        headers,
+        cache: 'no-store',
+      }),
+    ]);
+
+    handleAuthError(categoriesRes.status);
+    handleAuthError(stationsRes.status);
+
+    if (!categoriesRes.ok || !stationsRes.ok) {
+      return { success: false, error: 'Errore nel caricamento delle stazioni' };
+    }
+
+    const categories = await categoriesRes.json();
+    const stations = await stationsRes.json();
+
+    return { success: true, data: { categories, stations } };
+  } catch (error: any) {
+    if (isRedirectError(error)) {
+      throw error;
+    }
+    console.error('getStations error:', error);
+    return { success: false, error: error.message || 'Errore sconosciuto' };
+  }
+}
+
+/**
  * Get categories available for current user
+ * @deprecated Use getStations instead
  */
 export async function getCategories() {
   try {
@@ -626,6 +665,35 @@ export async function reprintOrder(orderId: string, body: {
       throw error;
     }
     console.error('reprintOrder error:', error);
+    return { success: false, error: error.message || 'Errore sconosciuto' };
+  }
+}
+
+/**
+ * Open cash drawer
+ */
+export async function openDrawer(cashRegisterId: string) {
+  try {
+    const headers = await authHeaders();
+    const response = await fetch(`${process.env.API_URL}/v1/cash-registers/${cashRegisterId}/open-drawer`, {
+      method: 'POST',
+      headers,
+    });
+
+    handleAuthError(response.status);
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      return { success: false, error: errorData.message || 'Impossibile aprire il cassetto' };
+    }
+
+    const data = await response.json().catch(() => ({}));
+    return { success: true, data };
+  } catch (error: any) {
+    if (isRedirectError(error)) {
+      throw error;
+    }
+    console.error('openDrawer error:', error);
     return { success: false, error: error.message || 'Errore sconosciuto' };
   }
 }

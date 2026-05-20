@@ -1,36 +1,34 @@
-import { ExtendedCartItem } from '@/lib/api-types';
+import { ExtendedCartItem, Ingredient } from '@/lib/api-types';
 
 /**
  * Calculate the total price of the cart including surcharges and discounts
  */
-export function calculateTotal(cart: ExtendedCartItem[], discount: number = 0): number {
+export function calculateTotal(cart: ExtendedCartItem[], discount: number = 0, allIngredients: Ingredient[] = []): number {
     const subtotal = cart.reduce((total, item) => {
         const price = typeof item.food.price === 'number'
             ? item.food.price
             : parseFloat(item.food.price as unknown as string);
         const itemTotal = price * item.quantity;
-        const surcharge = calculateIngredientSurcharge(item);
+        const surcharge = calculateIngredientSurcharge(item, allIngredients);
         return total + itemTotal + surcharge;
     }, 0);
 
-    // Apply discount (fixed amount)
     return Math.max(0, subtotal - discount);
 }
 
 /**
  * Calculate total surcharges from all cart items
  */
-export function calculateTotalSurcharges(cart: ExtendedCartItem[]): number {
+export function calculateTotalSurcharges(cart: ExtendedCartItem[], allIngredients: Ingredient[] = []): number {
     return cart.reduce((total, item) => {
-        return total + calculateIngredientSurcharge(item);
+        return total + calculateIngredientSurcharge(item, allIngredients);
     }, 0);
 }
 
 /**
- * Calculate ingredient surcharge for a single cart item
- * Extra ingredients cost 0.5€ each
+ * Calculate ingredient surcharge for a single cart item using per-ingredient surcharge rates
  */
-export function calculateIngredientSurcharge(item: ExtendedCartItem): number {
+export function calculateIngredientSurcharge(item: ExtendedCartItem, allIngredients: Ingredient[] = []): number {
     let surcharge = 0;
 
     // Surcharge for extra quantities of default ingredients
@@ -38,19 +36,22 @@ export function calculateIngredientSurcharge(item: ExtendedCartItem): number {
         item.food.ingredients.forEach((ingredient) => {
             const qty = item.ingredientQuantities?.[ingredient.id] ?? 1;
             if (qty > 1) {
-                surcharge += (qty - 1) * 0.5;
+                const rate = parseFloat(ingredient.surcharge ?? '0.5') || 0.5;
+                surcharge += (qty - 1) * rate;
             }
         });
     }
 
-    // Surcharge for added extra ingredients (0.5€ per unit)
+    // Surcharge for added extra ingredients using per-ingredient rate
     if (item.extraIngredients) {
-        for (const qty of Object.values(item.extraIngredients)) {
-            surcharge += qty * 0.5;
+        for (const [id, qty] of Object.entries(item.extraIngredients)) {
+            const ingredient = allIngredients.find((i) => i.id === id);
+            const rate = parseFloat(ingredient?.surcharge ?? '0.5') || 0.5;
+            surcharge += qty * rate;
         }
     }
 
-    return surcharge * item.quantity; // Multiply by item quantity
+    return surcharge * item.quantity;
 }
 
 /**

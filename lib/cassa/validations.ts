@@ -26,7 +26,8 @@ export function getOrderValidationMessage(
     cartLength: number,
     customer: string,
     table: string,
-    enableTableInput: boolean
+    enableTableInput: boolean,
+    requireCustomer: boolean = true
 ): string[] | null {
     const errors: string[] = [];
 
@@ -34,12 +35,14 @@ export function getOrderValidationMessage(
         errors.push('Il carrello è vuoto');
     }
 
-    if (!customer.trim()) {
-        errors.push('Inserisci il nome del cliente');
-    } else {
-        const result = orderSchema.shape.customer.safeParse(customer);
-        if (!result.success) {
-            errors.push(result.error.issues[0].message);
+    if (requireCustomer) {
+        if (!customer.trim()) {
+            errors.push('Inserisci il nome del cliente');
+        } else {
+            const result = orderSchema.shape.customer.safeParse(customer);
+            if (!result.success) {
+                errors.push(result.error.issues[0].message);
+            }
         }
     }
 
