@@ -30,12 +30,29 @@ export async function login(username: string, password: string) {
       const tokenMatch = setCookieHeader.match(/mysagra_token=([^;]+)/);
       if (tokenMatch) {
         const tokenValue = tokenMatch[1];
+
+        const FALLBACK_MAX_AGE = 60 * 60 * 12;
+        let maxAge = FALLBACK_MAX_AGE;
+
+        const maxAgeMatch = setCookieHeader.match(/[Mm]ax-[Aa]ge=(\d+)/);
+        if (maxAgeMatch) {
+          maxAge = parseInt(maxAgeMatch[1], 10);
+        } else {
+          const expiresMatch = setCookieHeader.match(/[Ee]xpires=([^;]+)/);
+          if (expiresMatch) {
+            const expiresMs = Date.parse(expiresMatch[1]);
+            if (!isNaN(expiresMs)) {
+              maxAge = Math.max(0, Math.floor((expiresMs - Date.now()) / 1000));
+            }
+          }
+        }
+
         cookieStore.set(COOKIE_STORE_NAME, tokenValue, {
           httpOnly: true,
           secure: process.env.NODE_ENV === 'production',
           sameSite: 'lax',
           path: '/',
-          maxAge: 60 * 60 * 6, // 6 ore
+          maxAge,
         });
       }
     }
