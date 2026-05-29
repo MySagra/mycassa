@@ -1,16 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAuthToken } from '@/lib/auth';
+import { auth } from '@/lib/auth';
 
 // In-memory storage for settings (in production, use a database)
-const globalSettings: Record<string, any> = {
+const globalSettings: Record<string, unknown> = {
     enableTableInput: true, // default value
 };
 
 export async function GET(request: NextRequest) {
     try {
-        const token = await getAuthToken();
-        
-        if (!token) {
+        const session = await auth();
+
+        if (!session) {
             return NextResponse.json({ error: 'Non autenticato' }, { status: 401 });
         }
 
@@ -30,9 +30,9 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
     try {
-        const token = await getAuthToken();
-        
-        if (!token) {
+        const session = await auth();
+
+        if (!session) {
             return NextResponse.json({ error: 'Non autenticato' }, { status: 401 });
         }
 

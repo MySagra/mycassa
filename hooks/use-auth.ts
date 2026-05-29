@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useSession } from 'next-auth/react';
 
 export interface AuthUser {
   id: string;
@@ -14,33 +14,24 @@ export interface UseAuthResult {
   isAuthenticated: boolean;
 }
 
-function readUserStorage(): AuthUser | null {
-  if (typeof window === 'undefined') return null;
-  try {
-    const raw = localStorage.getItem('mycassa_user');
-    return raw ? JSON.parse(raw) : null;
-  } catch {
-    return null;
-  }
-}
-
 /**
- * Hook per leggere i dati utente autenticato dal localStorage.
- * Non effettua chiamate API: legge direttamente il valore impostato al login.
+ * Hook per leggere l'utente autenticato dalla sessione NextAuth.
+ * Sostituisce la precedente lettura da localStorage.
  */
 export function useAuth(): UseAuthResult {
-  const [user, setUser] = useState<AuthUser | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const { data: session, status } = useSession();
 
-  useEffect(() => {
-    const userData = readUserStorage();
-    setUser(userData);
-    setIsLoading(false);
-  }, []);
+  const user: AuthUser | null = session?.user
+    ? {
+        id: session.user.id,
+        username: session.user.name ?? '',
+        role: session.user.role ?? '',
+      }
+    : null;
 
   return {
     user,
-    isLoading,
-    isAuthenticated: !!user,
+    isLoading: status === 'loading',
+    isAuthenticated: status === 'authenticated',
   };
 }

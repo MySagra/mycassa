@@ -1,39 +1,37 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { COOKIE_STORE_NAME } from '@/lib/auth';
+import { auth } from '@/lib/auth';
+import { NextResponse } from 'next/server';
 
-export function proxy(request: NextRequest) {
-  const { pathname } = request.nextUrl;
-  const token = request.cookies.get(COOKIE_STORE_NAME)?.value;
+const PUBLIC_PREFIXES = ['/login'];
 
-  const isRoot = pathname === '/';
-  const isOnProtectedRoute =
-    pathname.startsWith('/cashier') || pathname.startsWith('/impostazioni') || pathname.startsWith('/settings');
-  const isOnLogin = pathname.startsWith('/login');
+// Next.js 16: il file proxy.ts sostituisce il vecchio middleware.ts.
+export default auth((req) => {
+  const { nextUrl } = req;
+  const isLoggedIn = !!req.auth;
 
-  // Root redirect
-  if (isRoot) {
-    return NextResponse.redirect(new URL(token ? '/cashier' : '/login', request.url));
+  const isPublic = PUBLIC_PREFIXES.some(
+    (p) => nextUrl.pathname === p || nextUrl.pathname.startsWith(`${p}/`)
+  );
+
+  // Già autenticato e su /login → manda all'app.
+  if (isLoggedIn && isPublic) {
+    return NextResponse.redirect(new URL('/cashier', nextUrl));
   }
 
-  if (isOnProtectedRoute && !token) {
-    // Non autenticato: redirect al login
-    return NextResponse.redirect(new URL('/login', request.url));
-  }
-
-  if (isOnLogin && token) {
-    // Già autenticato: redirect alla cashier
-    return NextResponse.redirect(new URL('/cashier', request.url));
+  // Non autenticato su rotta protetta → /login, conservando la destinazione.
+  if (!isLoggedIn && !isPublic) {
+    const loginUrl = new URL('/login', nextUrl);
+    if (nextUrl.pathname !== '/') {
+      loginUrl.searchParams.set('callbackUrl', nextUrl.pathname + nextUrl.search);
+    }
+    return NextResponse.redirect(loginUrl);
   }
 
   return NextResponse.next();
-}
+});
 
 export const config = {
+  // Esegui sulle pagine; le route /api gestiscono l'auth da sé (ritornano 401).
   matcher: [
-    /*
-     * Escludi le route API interne di Next.js, i file statici e le favicon.
-     * Proteggi solo le pagine applicative.
-     */
-    '/((?!api|_next/static|_next/image|favicon.ico).*)',
+    '/((?!api|_next/static|_next/image|favicon.ico|manifest.json|sw.js|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)',
   ],
 };

@@ -1,6 +1,6 @@
 'use server';
 
-import { getAuthToken, AUTH_COOKIE_NAME } from '@/lib/auth';
+import { getBackendToken, BACKEND_COOKIE_NAME } from '@/lib/auth-token';
 import { redirect } from 'next/navigation';
 
 function isRedirectError(error: any) {
@@ -12,17 +12,18 @@ function isRedirectError(error: any) {
 
 /**
  * Intestazioni comuni per le chiamate API autenticate.
- * Il cookie mysagra_token viene inviato manualmente poiché le Server Actions
- * non propagano automaticamente i cookie del browser alle fetch verso API esterne.
+ * Il token backend mysagra_session viene estratto dalla sessione NextAuth e
+ * inviato manualmente: le Server Actions non propagano i cookie del browser
+ * alle fetch verso API esterne.
  */
 async function authHeaders(): Promise<HeadersInit> {
-  const token = await getAuthToken();
+  const token = await getBackendToken();
   if (!token) {
     redirect('/login');
   }
   return {
     'Content-Type': 'application/json',
-    'Cookie': `${AUTH_COOKIE_NAME}=${token}`,
+    'Cookie': `${BACKEND_COOKIE_NAME}=${token}`,
   };
 }
 

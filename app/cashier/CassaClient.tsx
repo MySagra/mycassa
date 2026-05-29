@@ -72,19 +72,16 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
     const [showUnavailableDialog, setShowUnavailableDialog] = useState(false);
     const [stationsMap, setStationsMap] = useState<Record<string, string>>({});
 
-    // Clear localStorage and logout on auth errors
+    // Logout on auth errors (session cleared by NextAuth)
     const handleAuthError = async () => {
-        localStorage.removeItem('mycassa_user');
         localStorage.removeItem('selectedCashRegister');
         await logoutAction();
         router.push('/login');
     };
 
-    // Clear localStorage when session expires
+    // Clear cash-register selection when the session expires
     useEffect(() => {
         if (wasAuthenticatedRef.current && !isAuthenticated && !isLoading) {
-            // Session was active but now expired
-            localStorage.removeItem('mycassa_user');
             localStorage.removeItem('selectedCashRegister');
         }
         wasAuthenticatedRef.current = isAuthenticated;
@@ -1101,7 +1098,6 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
     // Handle logout
     const handleLogout = async () => {
         await logoutAction();
-        localStorage.removeItem('mycassa_user');
         localStorage.removeItem('selectedCashRegister');
         router.push('/login');
         router.refresh();
