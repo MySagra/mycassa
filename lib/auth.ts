@@ -1,7 +1,7 @@
 import { cookies } from 'next/headers';
 
-export const COOKIE_STORE_NAME = 'mycassa_token'; // nome con cui viene salvato localmente
-export const AUTH_COOKIE_NAME = 'mysagra_token';  // nome con cui viene inviato al backend
+export const COOKIE_STORE_NAME = 'mycassa_session'; // nome con cui viene salvato localmente
+export const AUTH_COOKIE_NAME = 'mysagra_session';  // nome con cui viene inviato/ricevuto dal backend
 
 /**
  * Restituisce il token di autenticazione dal cookie HTTP-only.

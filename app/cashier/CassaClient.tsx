@@ -24,6 +24,14 @@ import { DesktopCassaLayout, CassaLayoutProps } from '@/components/cassa/desktop
 import { MobileCassaLayout } from '@/components/cassa/mobile/MobileCassaLayout';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { z } from 'zod';
+import { ApiError } from '@/lib/api-error';
+
+/** Solleva ApiError se l'action ha restituito un fallimento. */
+function throwIfActionError(result: { success: boolean; error?: string; status?: number; code?: string }) {
+    if (!result.success) {
+        throw new ApiError(result.status ?? 0, result.error, result.code);
+    }
+}
 
 export default function CassaPage({ requiredTable, requireCustomer }: { requiredTable: boolean; requireCustomer: boolean }) {
     const router = useRouter();
@@ -72,12 +80,12 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
     const [showUnavailableDialog, setShowUnavailableDialog] = useState(false);
     const [stationsMap, setStationsMap] = useState<Record<string, string>>({});
 
-    // Clear localStorage and logout on auth errors
-    const handleAuthError = async () => {
+    // Clear localStorage and logout on auth errors, redirecting to login with a reason code
+    const handleAuthError = async (code?: string) => {
         localStorage.removeItem('mycassa_user');
         localStorage.removeItem('selectedCashRegister');
         await logoutAction();
-        router.push('/login');
+        router.push(`/login?error=${encodeURIComponent(code ?? 'session_expired')}`);
     };
 
     // Clear localStorage when session expires
@@ -106,21 +114,23 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
             if (selectedId) {
                 try {
                     const result = await getCashRegisters();
-                    if (result.success) {
-                        const cashRegisters = result.data;
-                        const selected = cashRegisters.find((cr: any) => cr.id === selectedId);
-                        if (selected) {
-                            setCashRegisterId(selected.id);
-                            setCashRegisterName(selected.name);
-                            setCashRegisterInvalid(false);
-                        } else {
-                            // ID saved in localStorage no longer exists in this system
-                            setCashRegisterInvalid(true);
-                            localStorage.removeItem('selectedCashRegister');
-                            setShowConfigDialog(true);
-                        }
+                    throwIfActionError(result);
+                    const cashRegisters = result.data;
+                    const selected = cashRegisters.find((cr: any) => cr.id === selectedId);
+                    if (selected) {
+                        setCashRegisterId(selected.id);
+                        setCashRegisterName(selected.name);
+                        setCashRegisterInvalid(false);
+                    } else {
+                        setCashRegisterInvalid(true);
+                        localStorage.removeItem('selectedCashRegister');
+                        setShowConfigDialog(true);
                     }
-                } catch (error) {
+                } catch (error: any) {
+                    if (error instanceof ApiError && error.isAuthError) {
+                        await handleAuthError(error.code);
+                        return;
+                    }
                     console.error('Error loading cash register name:', error);
                 }
             } else {
@@ -154,11 +164,8 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
         const fetchStations = async () => {
             try {
                 const result = await getStations();
-
-                if (!result.success || !result.data) {
-                    if (!isMobile) toast.error(result.error || t('toast.categoriesLoadError'));
-                    return;
-                }
+                throwIfActionError(result);
+                if (!result.success) return;
 
                 const { categories: fetchedCategories, stations } = result.data;
 
@@ -199,7 +206,11 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
                 setFoods(allFoods);
                 setAllIngredients(Array.from(allIngredientsSet.values()));
                 setStationsMap(stationIdToName);
-            } catch (error) {
+            } catch (error: any) {
+                if (error instanceof ApiError && error.isAuthError) {
+                    await handleAuthError(error.code);
+                    return;
+                }
                 console.error('Error loading stations:', error);
                 if (!isMobile) toast.error(t('toast.categoriesLoadError'));
             } finally {
@@ -269,6 +280,9 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
                             } catch (error: any) {
                                 console.error('[SSE] Errore caricamento ordini iniziali:', error);
                             }
+                        } else if (response.status === 401 || response.status === 403) {
+                            abortController.abort();
+                            await handleAuthError('session_expired');
                         } else {
                             console.error(`[SSE] Errore di connessione: Status ${response.status}`);
                             throw new Error(`SSE connection failed with status ${response.status}`);
@@ -615,12 +629,13 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
             setLoadingDailyOrders(true);
             try {
                 const result = showAllOrders ? await getAllTodayOrders() : await getTodayOrders();
-                if (result.success) {
-                    setDailyOrders(result.data);
-                } else {
-                    if (!isMobile) toast.error(result.error || t('toast.orderLoadError'));
-                }
+                throwIfActionError(result);
+                if (result.success) setDailyOrders(result.data);
             } catch (error: any) {
+                if (error instanceof ApiError && error.isAuthError) {
+                    await handleAuthError(error.code);
+                    return;
+                }
                 console.error('[SSE] Errore caricamento ordini iniziali:', error);
                 if (!isMobile) toast.error(error.message || t('toast.orderLoadError'));
             } finally {
@@ -642,10 +657,13 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
             const loadInitialOrders = async () => {
                 try {
                     const result = showAllOrders ? await getAllTodayOrders() : await getTodayOrders();
-                    if (result.success) {
-                        setDailyOrders(result.data);
-                    }
+                    throwIfActionError(result);
+                    if (result.success) setDailyOrders(result.data);
                 } catch (error: any) {
+                    if (error instanceof ApiError && error.isAuthError) {
+                        await handleAuthError(error.code);
+                        return;
+                    }
                     console.error('Errore caricamento ordini:', error);
                 }
             };
@@ -658,12 +676,13 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
         const searchOrders = async () => {
             try {
                 const result = showAllOrders ? await searchAllDailyOrders(searchQuery) : await searchDailyOrders(searchQuery);
-                if (result.success) {
-                    setDailyOrders(result.data);
-                } else {
-                    if (!isMobile) toast.error(result.error || t('toast.orderLoadError'));
-                }
+                throwIfActionError(result);
+                if (result.success) setDailyOrders(result.data);
             } catch (error: any) {
+                if (error instanceof ApiError && error.isAuthError) {
+                    await handleAuthError(error.code);
+                    return;
+                }
                 console.error('Errore nella ricerca:', error);
                 if (!isMobile) toast.error(error.message || t('toast.orderLoadError'));
             }
@@ -786,13 +805,10 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
         setLoadingOrder(true);
         try {
             const result = await getOrderByCode(displayCode.toUpperCase());
+            throwIfActionError(result);
+            if (!result.success) return;
 
-            if (!result.success) {
-                toast.error(result.error || t('toast.orderLoadError'));
-                return;
-            }
-
-            const order = (result as any).data;
+            const order = result.data;
 
             // Check if order is pending
             if (order.status !== 'PENDING') {
@@ -837,6 +853,10 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
 
             if (!isMobile) toast.success(t('toast.orderLoaded', { displayCode: displayCode.toUpperCase() }));
         } catch (error: any) {
+            if (error instanceof ApiError && error.isAuthError) {
+                await handleAuthError(error.code);
+                return;
+            }
             console.error('Error loading order:', error);
             if (!isMobile) toast.error(error.message || t('toast.orderLoadError'));
         } finally {
@@ -848,11 +868,8 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
     const loadOrderToCart = async (order: DailyOrder) => {
         try {
             const result = await getOrderByOrderId(order.id);
-
-            if (!result.success) {
-                toast.error(result.error || t('toast.orderLoadError'));
-                return;
-            }
+            throwIfActionError(result);
+            if (!result.success) return;
 
             const orderDetail = result.data;
 
@@ -894,6 +911,10 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
 
             if (!isMobile) toast.success(t('toast.orderLoadedToCart', { displayCode: order.displayCode }));
         } catch (error: any) {
+            if (error instanceof ApiError && error.isAuthError) {
+                await handleAuthError(error.code);
+                return;
+            }
             console.error('Error loading order to cart:', error);
             if (!isMobile) toast.error(error.message || t('toast.orderLoadError'));
         }
@@ -904,12 +925,13 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
         setLoadingOrderDetail(true);
         try {
             const result = await getOrderByOrderId(orderId);
-            if (result.success) {
-                setViewingOrderDetail(result.data);
-            } else {
-                if (!isMobile) toast.error(result.error || t('toast.orderLoadError'));
-            }
+            throwIfActionError(result);
+            if (result.success) setViewingOrderDetail(result.data);
         } catch (error: any) {
+            if (error instanceof ApiError && error.isAuthError) {
+                await handleAuthError(error.code);
+                return;
+            }
             console.error('Error loading order detail:', error);
             if (!isMobile) toast.error(error.message || t('toast.orderLoadError'));
         } finally {
@@ -920,15 +942,16 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
     const handleCancelOrder = async (orderId: string) => {
         try {
             const result = await cancelOrderAction(orderId);
-            if (result.success) {
-                setDailyOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'CANCELLED' } : o));
-                toast.success(t('toast.orderCancelled'));
-            } else {
-                toast.error(result.error || t('toast.orderCancelError'));
-            }
+            throwIfActionError(result);
+            setDailyOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'CANCELLED' } : o));
+            toast.success(t('toast.orderCancelled'));
         } catch (error: any) {
+            if (error instanceof ApiError && error.isAuthError) {
+                await handleAuthError(error.code);
+                return;
+            }
             console.error('Error cancelling order:', error);
-            toast.error(error.message || t('toast.orderCancelError'));
+            toast.error(error instanceof ApiError ? error.message : t('toast.orderCancelError'));
         }
     };
 
@@ -1025,13 +1048,10 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
             // If displayCode exists, load the order to confirm it
             if (displayCode.trim()) {
                 const result = await getOrderByCode(displayCode.toUpperCase());
+                throwIfActionError(result);
+                if (!result.success) return;
 
-                if (!result.success) {
-                    if (!isMobile) toast.error(result.error || t('toast.orderLoadError'));
-                    return;
-                }
-
-                const orderResponse = (result as any).data;
+                const orderResponse = result.data;
                 const orderId = orderResponse.id;
                 const originalCustomerFromOrder = orderResponse.customer;
 
@@ -1046,8 +1066,7 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
                 });
 
                 if (!confirmResult.success) {
-                    if (!isMobile) toast.error(confirmResult.error || t('toast.orderConfirmed'));
-                    return;
+                    throw new ApiError(confirmResult.status ?? 0, confirmResult.error, (confirmResult as any).code);
                 }
 
                 // Update or remove the confirmed order from daily orders list
@@ -1077,8 +1096,7 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
                 });
 
                 if (!createResult.success) {
-                    if (!isMobile) toast.error(createResult.error || t('toast.orderCreated'));
-                    return;
+                    throw new ApiError(createResult.status ?? 0, createResult.error, (createResult as any).code);
                 }
             }
 
@@ -1091,8 +1109,14 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
                 resetAfterOrder();
             }
         } catch (error: any) {
+            // Errore di autenticazione: pulisci sessione e vai al login con il codice errore
+            if (error instanceof ApiError && error.isAuthError) {
+                await handleAuthError(error.code);
+                return;
+            }
             console.error('Error confirming order:', error);
-            if (!isMobile) toast.error(error.message || t('toast.orderConfirmed'));
+            const message = error instanceof ApiError ? error.message : t('toast.orderConfirmed');
+            if (!isMobile) toast.error(message);
         } finally {
             setLoadingConfirmOrder(false);
         }
@@ -1113,11 +1137,16 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
             if (!isMobile) toast.error(t('toast.cashierNotSelected'));
             return;
         }
-        const result = await generalClosure(cashRegisterId);
-        if (result.success) {
+        try {
+            const result = await generalClosure(cashRegisterId);
+            throwIfActionError(result);
             if (!isMobile) toast.success(t('toast.generalClosureSuccess'));
-        } else {
-            if (!isMobile) toast.error(result.error || t('toast.generalClosureError'));
+        } catch (error: any) {
+            if (error instanceof ApiError && error.isAuthError) {
+                await handleAuthError(error.code);
+                return;
+            }
+            if (!isMobile) toast.error(error instanceof ApiError ? error.message : t('toast.generalClosureError'));
         }
     };
 

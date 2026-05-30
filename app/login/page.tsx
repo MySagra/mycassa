@@ -6,15 +6,35 @@ import { Button } from "@/components/ui/button";
 import { LoginForm } from "@/components/login/login-card/login-form";
 import { useTheme } from 'next-themes';
 import { Moon, Sun, } from 'lucide-react';
+import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
+
+// Mappa codice errore (passato come ?error=) -> chiave di traduzione
+const ERROR_MESSAGE_KEYS: Record<string, string> = {
+  session_expired: 'loginForm.sessionExpired',
+  unauthorized: 'loginForm.sessionExpired',
+  forbidden: 'loginForm.accessDenied',
+};
 
 export default function LoginPage() {
   const { theme, setTheme } = useTheme();
+  const { t } = useTranslation();
   const [mounted, setMounted] = useState(false);
 
   // Prevent hydration mismatch by only rendering theme toggle after mount
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Mostra un messaggio se reindirizzati al login con un codice errore (?error=)
+  useEffect(() => {
+    const error = new URLSearchParams(window.location.search).get('error');
+    if (!error) return;
+    const key = ERROR_MESSAGE_KEYS[error] ?? 'loginForm.sessionExpired';
+    toast.error(t(key));
+    // Rimuovi il parametro dall'URL così il messaggio non riappare al refresh
+    window.history.replaceState({}, '', '/login');
+  }, [t]);
 
   return (
     <div className="bg-muted flex min-h-svh flex-col items-center justify-center p-6 md:p-10">

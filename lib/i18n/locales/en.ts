@@ -200,7 +200,9 @@ export const en = {
       passwordLabel: "Password",
       passwordPlaceholder: "Your password",
       loggingIn: "Logging in...",
-      loginButton: "Login"
+      loginButton: "Login",
+      sessionExpired: "Session expired, please log in again",
+      accessDenied: "Access denied: insufficient permissions"
     },
     categorySideBar: {
       allCategories: "All Categories",

@@ -200,7 +200,9 @@ export const it = {
       passwordLabel: "Password",
       passwordPlaceholder: "La tua password",
       loggingIn: "Accesso...",
-      loginButton: "Accedi"
+      loginButton: "Accedi",
+      sessionExpired: "Sessione scaduta, effettua di nuovo il login",
+      accessDenied: "Accesso negato: permessi insufficienti"
     },
     categorySideBar: {
       allCategories: "Tutte le Categorie",
