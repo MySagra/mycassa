@@ -184,6 +184,13 @@ export const it = {
       header: {
         title: "Impostazioni",
         backToCashier: "Torna alla cassa"
+      },
+      categoryVisibility: {
+        title: "Categorie visibili",
+        description: "Seleziona le categorie di cibi che vuoi vedere nella pagina della cassa",
+        selectAll: "Seleziona tutte",
+        deselectAll: "Deseleziona tutte",
+        loading: "Caricamento categorie..."
       }
     },
     loginForm: {

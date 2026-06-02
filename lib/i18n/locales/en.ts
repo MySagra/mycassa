@@ -184,6 +184,13 @@ export const en = {
       header: {
         title: "Settings",
         backToCashier: "Back to Register"
+      },
+      categoryVisibility: {
+        title: "Visible categories",
+        description: "Select the food categories you want to see on the register page",
+        selectAll: "Select all",
+        deselectAll: "Deselect all",
+        loading: "Loading categories..."
       }
     },
     loginForm: {

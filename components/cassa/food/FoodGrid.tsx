@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Eye, EyeOff, Search, X } from 'lucide-react';
 import { Category, Food } from '@/lib/api-types';
@@ -11,6 +11,7 @@ import { FoodCard } from './FoodCard';
 
 const LS_KEY = 'foodgrid_hide_unavailable';
 const LS_ACCORDION_KEY = 'foodgrid_accordion_state';
+const LS_HIDDEN_CATS_KEY = 'foodgrid_hidden_categories';
 
 interface FoodGridProps {
     foods: Food[];
@@ -27,36 +28,56 @@ export function FoodGrid({ foods, categories, selectedCategoryId, onAddToCart, l
     const { t } = useTranslation();
     const isSearching = foodSearchQuery.trim() !== '';
 
-    const [hideUnavailable, setHideUnavailable] = useState<Record<string, boolean>>(() => {
+    const [hiddenCategoryIds, setHiddenCategoryIds] = useState<number[]>(() => {
+        try {
+            const stored = localStorage.getItem(LS_HIDDEN_CATS_KEY);
+            return stored ? JSON.parse(stored) : [];
+        } catch {
+            return [];
+        }
+    });
+
+    useEffect(() => {
+        const handler = () => {
+            try {
+                const stored = localStorage.getItem(LS_HIDDEN_CATS_KEY);
+                setHiddenCategoryIds(stored ? JSON.parse(stored) : []);
+            } catch { /* noop */ }
+        };
+        window.addEventListener('storage', handler);
+        return () => window.removeEventListener('storage', handler);
+    }, []);
+
+    const [hideUnavailableIds, setHideUnavailableIds] = useState<number[]>(() => {
         try {
             const stored = localStorage.getItem(LS_KEY);
-            return stored ? JSON.parse(stored) : {};
+            return stored ? JSON.parse(stored) : [];
         } catch {
-            return {};
+            return [];
         }
     });
 
-    const [openAccordions, setOpenAccordions] = useState<Record<string, string>>(() => {
+    const [closedCategoryIds, setClosedCategoryIds] = useState<number[]>(() => {
         try {
             const stored = localStorage.getItem(LS_ACCORDION_KEY);
-            return stored ? JSON.parse(stored) : {};
+            return stored ? JSON.parse(stored) : [];
         } catch {
-            return {};
+            return [];
         }
     });
 
-    const handleAccordionChange = useCallback((categoryName: string, value: string) => {
-        setOpenAccordions(prev => {
-            const next = { ...prev, [categoryName]: value };
+    const handleAccordionChange = useCallback((categoryId: number, value: string) => {
+        setClosedCategoryIds(prev => {
+            const next = value === '' ? [...prev, categoryId] : prev.filter(id => id !== categoryId);
             try { localStorage.setItem(LS_ACCORDION_KEY, JSON.stringify(next)); } catch { /* noop */ }
             return next;
         });
     }, []);
 
-    const toggleHideUnavailable = useCallback((categoryName: string, e: React.MouseEvent) => {
+    const toggleHideUnavailable = useCallback((catId: number, e: React.MouseEvent) => {
         e.stopPropagation();
-        setHideUnavailable(prev => {
-            const next = { ...prev, [categoryName]: !prev[categoryName] };
+        setHideUnavailableIds(prev => {
+            const next = prev.includes(catId) ? prev.filter(id => id !== catId) : [...prev, catId];
             try { localStorage.setItem(LS_KEY, JSON.stringify(next)); } catch { /* noop */ }
             return next;
         });
@@ -99,23 +120,21 @@ export function FoodGrid({ foods, categories, selectedCategoryId, onAddToCart, l
             return acc;
         }, {} as Record<string, Food[]>);
 
-    const categoriesWithUnavailable = selectedCategoryId === null
+    const categoriesWithUnavailableIds = selectedCategoryId === null
         ? Object.entries(sortedFoodsByCategory)
             .filter(([, categoryFoods]) => categoryFoods.some(f => f.available === false))
-            .map(([name]) => name)
+            .map(([name]) => categories.find(c => c.name === name)?.id)
+            .filter((id): id is number => id !== undefined)
         : [];
 
-    const allHiding = categoriesWithUnavailable.length > 0 &&
-        categoriesWithUnavailable.every(name => !!hideUnavailable[name]);
+    const allHiding = categoriesWithUnavailableIds.length > 0 &&
+        categoriesWithUnavailableIds.every(id => hideUnavailableIds.includes(id));
 
     const toggleAllUnavailable = () => {
-        setHideUnavailable(prev => {
-            const next = { ...prev };
-            if (allHiding) {
-                categoriesWithUnavailable.forEach(name => { delete next[name]; });
-            } else {
-                categoriesWithUnavailable.forEach(name => { next[name] = true; });
-            }
+        setHideUnavailableIds(prev => {
+            const next = allHiding
+                ? prev.filter(id => !categoriesWithUnavailableIds.includes(id))
+                : [...new Set([...prev, ...categoriesWithUnavailableIds])];
             try { localStorage.setItem(LS_KEY, JSON.stringify(next)); } catch { /* noop */ }
             return next;
         });
@@ -159,9 +178,9 @@ export function FoodGrid({ foods, categories, selectedCategoryId, onAddToCart, l
                         <TooltipTrigger asChild>
                             <button
                                 onClick={toggleAllUnavailable}
-                                disabled={categoriesWithUnavailable.length === 0}
+                                disabled={categoriesWithUnavailableIds.length === 0}
                                 className={`flex items-center justify-center gap-1.5 h-9 w-52 rounded-md border text-sm font-medium transition-colors shrink-0 ${
-                                    categoriesWithUnavailable.length === 0
+                                    categoriesWithUnavailableIds.length === 0
                                         ? 'opacity-40 cursor-not-allowed bg-background border-input text-muted-foreground'
                                         : allHiding
                                             ? 'cursor-pointer bg-amber-100 border-amber-300 text-amber-700 hover:bg-amber-200 dark:bg-amber-900/40 dark:border-amber-600/60 dark:text-amber-400 dark:hover:bg-amber-900/60'
@@ -185,10 +204,15 @@ export function FoodGrid({ foods, categories, selectedCategoryId, onAddToCart, l
                         {Object.entries(sortedFoodsByCategory)
                             .filter(([categoryName]) => {
                                 const cat = categories.find((c) => c.name === categoryName);
-                                return cat ? cat.available !== false : true;
+                                if (!cat) return true;
+                                if (cat.available === false) return false;
+                                return !hiddenCategoryIds.includes(cat.id);
                             })
                             .map(([categoryName, categoryFoods]) => {
-                                const hiding = !!hideUnavailable[categoryName];
+                                const cat = categories.find(c => c.name === categoryName);
+                                const catId = cat?.id ?? -1;
+                                const isClosed = closedCategoryIds.includes(catId);
+                                const hiding = hideUnavailableIds.includes(catId);
                                 const visibleFoods = hiding
                                     ? categoryFoods.filter(f => f.available !== false)
                                     : categoryFoods;
@@ -200,8 +224,8 @@ export function FoodGrid({ foods, categories, selectedCategoryId, onAddToCart, l
                                     type="single"
                                     collapsible
                                     className="w-full bg-card/60 rounded-lg border"
-                                    value={isSearching ? categoryName : (openAccordions[categoryName] !== undefined ? openAccordions[categoryName] : categoryName)}
-                                    onValueChange={(val) => handleAccordionChange(categoryName, val)}
+                                    value={isSearching ? categoryName : (isClosed ? '' : categoryName)}
+                                    onValueChange={(val) => handleAccordionChange(catId, val)}
                                 >
                                     <AccordionItem value={categoryName} className="border-none select-none">
                                         <AccordionTrigger
@@ -212,7 +236,7 @@ export function FoodGrid({ foods, categories, selectedCategoryId, onAddToCart, l
                                                         <TooltipTrigger asChild>
                                                             <button
                                                                 className="mr-3 p-1 rounded hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
-                                                                onClick={(e) => toggleHideUnavailable(categoryName, e)}
+                                                                onClick={(e) => toggleHideUnavailable(catId, e)}
                                                             >
                                                                 {hiding
                                                                     ? <EyeOff className="size-4" />

@@ -7,6 +7,7 @@ import { useTheme } from 'next-themes';
 import { SettingsHeader } from '@/components/settings/header/SettingsHeader';
 import { PrintersSettingsCard } from '../../components/settings/setting-card/PrintersSettingsCard';
 import { AppearanceSettingsCard } from '../../components/settings/setting-card/AppearanceSettingsCard';
+import { CategoryVisibilitySettingsCard } from '../../components/settings/setting-card/CategoryVisibilitySettingsCard';
 
 export default function SettingsPage() {
     const router = useRouter();
@@ -36,6 +37,7 @@ export default function SettingsPage() {
             <SettingsHeader />
             <main className="container max-w-4xl mx-auto p-6 space-y-6">
                 <PrintersSettingsCard />
+                <CategoryVisibilitySettingsCard />
                 <AppearanceSettingsCard
                     theme={theme}
                     setTheme={setTheme}

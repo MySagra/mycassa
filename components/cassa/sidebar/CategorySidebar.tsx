@@ -2,6 +2,9 @@ import { Category } from '@/lib/api-types';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useTranslation } from 'react-i18next';
+import { useState, useEffect } from 'react';
+
+const LS_HIDDEN_CATS_KEY = 'foodgrid_hidden_categories';
 
 interface CategorySidebarProps {
     categories: Category[];
@@ -12,6 +15,26 @@ interface CategorySidebarProps {
 
 export function CategorySidebar({ categories, selectedCategoryId, onSelectCategory, loading }: CategorySidebarProps) {
     const { t } = useTranslation();
+
+    const [hiddenIds, setHiddenIds] = useState<number[]>(() => {
+        try {
+            const stored = localStorage.getItem(LS_HIDDEN_CATS_KEY);
+            return stored ? JSON.parse(stored) : [];
+        } catch { return []; }
+    });
+
+    useEffect(() => {
+        const handler = () => {
+            try {
+                const stored = localStorage.getItem(LS_HIDDEN_CATS_KEY);
+                setHiddenIds(stored ? JSON.parse(stored) : []);
+            } catch { /* noop */ }
+        };
+        window.addEventListener('storage', handler);
+        return () => window.removeEventListener('storage', handler);
+    }, []);
+
+    const visibleCategories = categories.filter(c => !hiddenIds.includes(c.id));
 
     return (
         <aside className="w-64 border-r bg-card hidden xl:block">
@@ -34,7 +57,7 @@ export function CategorySidebar({ categories, selectedCategoryId, onSelectCatego
                             {t('categorySideBar.loading')}
                         </div>
                     ) : (
-                        categories.map((category) => (
+                        visibleCategories.map((category) => (
                             <Button
                                 key={category.id}
                                 variant={selectedCategoryId === category.id ? 'default' : 'outline'}
