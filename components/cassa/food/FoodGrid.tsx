@@ -10,6 +10,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { FoodCard } from './FoodCard';
 
 const LS_KEY = 'foodgrid_hide_unavailable';
+const LS_ACCORDION_KEY = 'foodgrid_accordion_state';
 
 interface FoodGridProps {
     foods: Food[];
@@ -34,6 +35,23 @@ export function FoodGrid({ foods, categories, selectedCategoryId, onAddToCart, l
             return {};
         }
     });
+
+    const [openAccordions, setOpenAccordions] = useState<Record<string, string>>(() => {
+        try {
+            const stored = localStorage.getItem(LS_ACCORDION_KEY);
+            return stored ? JSON.parse(stored) : {};
+        } catch {
+            return {};
+        }
+    });
+
+    const handleAccordionChange = useCallback((categoryName: string, value: string) => {
+        setOpenAccordions(prev => {
+            const next = { ...prev, [categoryName]: value };
+            try { localStorage.setItem(LS_ACCORDION_KEY, JSON.stringify(next)); } catch { /* noop */ }
+            return next;
+        });
+    }, []);
 
     const toggleHideUnavailable = useCallback((categoryName: string, e: React.MouseEvent) => {
         e.stopPropagation();
@@ -182,8 +200,8 @@ export function FoodGrid({ foods, categories, selectedCategoryId, onAddToCart, l
                                     type="single"
                                     collapsible
                                     className="w-full bg-card/60 rounded-lg border"
-                                    defaultValue={categoryName}
-                                    value={isSearching ? categoryName : undefined}
+                                    value={isSearching ? categoryName : (openAccordions[categoryName] !== undefined ? openAccordions[categoryName] : categoryName)}
+                                    onValueChange={(val) => handleAccordionChange(categoryName, val)}
                                 >
                                     <AccordionItem value={categoryName} className="border-none select-none">
                                         <AccordionTrigger
