@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, Search, X } from 'lucide-react';
 import { Category, Food } from '@/lib/api-types';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
@@ -19,9 +19,10 @@ interface FoodGridProps {
     loading: boolean;
     showDailyOrders: boolean;
     foodSearchQuery?: string;
+    onFoodSearchChange?: (value: string) => void;
 }
 
-export function FoodGrid({ foods, categories, selectedCategoryId, onAddToCart, loading, showDailyOrders, foodSearchQuery = '' }: FoodGridProps) {
+export function FoodGrid({ foods, categories, selectedCategoryId, onAddToCart, loading, showDailyOrders, foodSearchQuery = '', onFoodSearchChange }: FoodGridProps) {
     const { t } = useTranslation();
     const isSearching = foodSearchQuery.trim() !== '';
 
@@ -80,6 +81,28 @@ export function FoodGrid({ foods, categories, selectedCategoryId, onAddToCart, l
             return acc;
         }, {} as Record<string, Food[]>);
 
+    const categoriesWithUnavailable = selectedCategoryId === null
+        ? Object.entries(sortedFoodsByCategory)
+            .filter(([, categoryFoods]) => categoryFoods.some(f => f.available === false))
+            .map(([name]) => name)
+        : [];
+
+    const allHiding = categoriesWithUnavailable.length > 0 &&
+        categoriesWithUnavailable.every(name => !!hideUnavailable[name]);
+
+    const toggleAllUnavailable = () => {
+        setHideUnavailable(prev => {
+            const next = { ...prev };
+            if (allHiding) {
+                categoriesWithUnavailable.forEach(name => { delete next[name]; });
+            } else {
+                categoriesWithUnavailable.forEach(name => { next[name] = true; });
+            }
+            try { localStorage.setItem(LS_KEY, JSON.stringify(next)); } catch { /* noop */ }
+            return next;
+        });
+    };
+
     if (loading) {
         return (
             <div className="flex h-64 items-center justify-center">
@@ -94,7 +117,51 @@ export function FoodGrid({ foods, categories, selectedCategoryId, onAddToCart, l
 
     return (
         <ScrollArea className="h-full">
-            <div className="space-y-8 p-6">
+            {onFoodSearchChange && (
+                <div className="sticky top-0 z-10 flex items-center gap-2 px-6 py-3 border-b bg-background">
+                    <div className="relative flex-1">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                        <input
+                            type="text"
+                            value={foodSearchQuery}
+                            onChange={(e) => onFoodSearchChange(e.target.value)}
+                            placeholder={t('header.searchFood')}
+                            className="w-full h-9 rounded-md border border-input bg-background pl-9 pr-9 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                        />
+                        {foodSearchQuery && (
+                            <button
+                                onClick={() => onFoodSearchChange('')}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                            >
+                                <X className="h-4 w-4" />
+                            </button>
+                        )}
+                    </div>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <button
+                                onClick={toggleAllUnavailable}
+                                disabled={categoriesWithUnavailable.length === 0}
+                                className={`flex items-center justify-center gap-1.5 h-9 w-52 rounded-md border text-sm font-medium transition-colors shrink-0 ${
+                                    categoriesWithUnavailable.length === 0
+                                        ? 'opacity-40 cursor-not-allowed bg-background border-input text-muted-foreground'
+                                        : allHiding
+                                            ? 'cursor-pointer bg-amber-100 border-amber-300 text-amber-700 hover:bg-amber-200 dark:bg-amber-900/40 dark:border-amber-600/60 dark:text-amber-400 dark:hover:bg-amber-900/60'
+                                            : 'cursor-pointer bg-background border-input text-muted-foreground hover:text-foreground hover:bg-muted'
+                                }`}
+                            >
+                                {allHiding ? <EyeOff className="h-4 w-4 shrink-0" /> : <Eye className="h-4 w-4 shrink-0" />}
+                                <span className="truncate">{allHiding ? t('foods.showUnavailable') : t('foods.hideUnavailable')}</span>
+                            </button>
+                        </TooltipTrigger>
+                        <TooltipContent side="bottom">
+                            {t('foods.toggleUnavailable')}
+                        </TooltipContent>
+                    </Tooltip>
+                </div>
+            )}
+            <div className="space-y-4 p-6">
+            <div className="space-y-4">
                 {selectedCategoryId === null ? (
                     <div className="space-y-4">
                         {Object.entries(sortedFoodsByCategory)
@@ -190,6 +257,7 @@ export function FoodGrid({ foods, categories, selectedCategoryId, onAddToCart, l
                         )}
                     </>
                 )}
+            </div>
             </div>
         </ScrollArea>
     );

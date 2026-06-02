@@ -211,7 +211,9 @@ export const en = {
     },
     foods: {
       notAvailable: "N/A",
-      toggleUnavailable: "Show/hide unavailable foods"
+      toggleUnavailable: "Show/hide unavailable foods",
+      hideUnavailable: "Hide unavailable",
+      showUnavailable: "Show unavailable"
     },
     mobile: {
       header: {
