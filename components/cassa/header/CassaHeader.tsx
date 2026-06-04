@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { ButtonGroup } from '@/components/ui/button-group';
-import { Settings, Moon, Sun, Search, X, Maximize, Minimize, AlertTriangle, Euro, DollarSign } from 'lucide-react';
+import { Settings, Moon, Sun, Maximize, Minimize, AlertTriangle, Euro, DollarSign } from 'lucide-react';
 import { UserMenu } from './UserMenu';
 import { useState, useCallback, useRef, useMemo } from 'react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
@@ -18,8 +18,6 @@ interface CassaHeaderProps {
     cashRegisterName?: string;
     cashRegisterId?: string;
     cashRegisterInvalid?: boolean;
-    foodSearchQuery: string;
-    onFoodSearchChange: (query: string) => void;
     user?: { username: string; role: string };
     onGeneralClosure?: () => void;
 }
@@ -27,7 +25,7 @@ interface CassaHeaderProps {
 const EASTER_EGG_CLICKS = 20;
 const EASTER_EGG_LOGO = 'https://mymagri.altervista.org/magri.jpg';
 
-export function CassaHeader({ onLogout, onSettingsClick, theme, onThemeToggle, cashRegisterName, cashRegisterId, cashRegisterInvalid, foodSearchQuery, onFoodSearchChange, user, onGeneralClosure }: CassaHeaderProps) {
+export function CassaHeader({ onLogout, onSettingsClick, theme, onThemeToggle, cashRegisterName, cashRegisterId, cashRegisterInvalid, user, onGeneralClosure }: CassaHeaderProps) {
     const [isFullscreen, setIsFullscreen] = useState(false);
     const [logoClickCount, setLogoClickCount] = useState(0);
     const [showClosureConfirm, setShowClosureConfirm] = useState(false);
@@ -97,29 +95,6 @@ export function CassaHeader({ onLogout, onSettingsClick, theme, onThemeToggle, c
                         onClick={handleLogoClick}
                     />
                     <h1 className="text-2xl font-bold select-none">{easterEggActive ? 'MaiMagri' : 'MyCassa'}</h1>
-                </div>
-
-                {/* Center: Food Search Bar */}
-                <div className="flex-1 flex justify-center px-8 max-w-xl mx-auto">
-                    <div className="relative w-full">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-                        <input
-                            type="text"
-                            value={foodSearchQuery}
-                            onChange={(e) => onFoodSearchChange(e.target.value)}
-                            placeholder={t('header.searchFood')}
-                            className="w-full h-9 rounded-md border border-input bg-background pl-9 pr-9 text-sm shadow-sm transition-colors select-none placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                        />
-                        {foodSearchQuery && (
-                            <button
-                                onClick={() => onFoodSearchChange('')}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-                                aria-label={t('header.clearSearch')}
-                            >
-                                <X className="h-4 w-4" />
-                            </button>
-                        )}
-                    </div>
                 </div>
 
                 {/* Right: Actions */}

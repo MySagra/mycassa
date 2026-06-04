@@ -184,6 +184,13 @@ export const it = {
       header: {
         title: "Impostazioni",
         backToCashier: "Torna alla cassa"
+      },
+      categoryVisibility: {
+        title: "Categorie visibili",
+        description: "Seleziona le categorie di cibi che vuoi vedere nella pagina della cassa",
+        selectAll: "Seleziona tutte",
+        deselectAll: "Deseleziona tutte",
+        loading: "Caricamento categorie..."
       }
     },
     loginForm: {
@@ -211,7 +218,9 @@ export const it = {
     },
     foods: {
       notAvailable: "Non disp.",
-      toggleUnavailable: "Mostra/nascondi cibi non disponibili"
+      toggleUnavailable: "Mostra/nascondi cibi non disponibili",
+      hideUnavailable: "Nascondi non disponibili",
+      showUnavailable: "Mostra non disponibili"
     },
     mobile: {
       header: {
