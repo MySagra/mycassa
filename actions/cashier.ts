@@ -340,6 +340,7 @@ export async function confirmOrder(orderData: {
   cashRegisterId: string;
   discount: number;
   customer?: string;
+  table?: string;
   orderItems: Array<{
     foodId: string;
     quantity: number;

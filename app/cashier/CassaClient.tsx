@@ -1054,6 +1054,7 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
                 const orderResponse = result.data;
                 const orderId = orderResponse.id;
                 const originalCustomerFromOrder = orderResponse.customer;
+                const originalTableFromOrder = orderResponse.table;
 
                 const confirmResult = await confirmOrderAction({
                     orderId,
@@ -1062,6 +1063,7 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
                     cashRegisterId: localStorage.getItem('selectedCashRegister') || '',
                     discount: appliedDiscountAmount,
                     customer: effectiveCustomer !== originalCustomerFromOrder ? effectiveCustomer : undefined,
+                    table: table !== originalTableFromOrder ? table : undefined,
                     orderItems: mergedOrderItems,
                 });
 
