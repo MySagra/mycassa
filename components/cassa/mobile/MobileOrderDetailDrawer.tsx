@@ -1,11 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { OrderDetailResponse } from '@/lib/api-types';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription } from '@/components/ui/drawer';
 import { Button } from '@/components/ui/button';
 import { FileText, Printer } from 'lucide-react';
-import { getCashRegisters, getUsers } from '@/actions/cashier';
 import { ReprintDialog } from '@/components/cassa/dialogs/ReprintDialog';
 import { useTranslation } from 'react-i18next';
 
@@ -16,54 +15,9 @@ interface MobileOrderDetailDrawerProps {
     onClose: () => void;
 }
 
-interface CashRegister {
-    id: string;
-    name: string;
-    enabled: boolean;
-}
-
 export function MobileOrderDetailDrawer({ order, open, loading, onClose }: MobileOrderDetailDrawerProps) {
-    const [cashRegisterName, setCashRegisterName] = useState<string>('');
-    const [operatorName, setOperatorName] = useState<string>('');
     const [reprintOpen, setReprintOpen] = useState(false);
     const { t } = useTranslation();
-
-    useEffect(() => {
-        if (!order) return;
-        const fetchCashRegisterName = async () => {
-            if (order.cashRegisterId) {
-                try {
-                    const result = await getCashRegisters();
-                    if (result.success) {
-                        const cashRegisters = result.data as CashRegister[];
-                        const cr = cashRegisters.find((c) => c.id === order.cashRegisterId);
-                        setCashRegisterName(cr?.name ?? 'N/A');
-                    } else {
-                        setCashRegisterName('N/A');
-                    }
-                } catch {
-                    setCashRegisterName('N/A');
-                }
-            } else {
-                setCashRegisterName('N/A');
-            }
-        };
-        const fetchOperatorName = async () => {
-            if (order.userId) {
-                const result = await getUsers();
-                if (result.success) {
-                    const user = (result.data as { id: string; username: string }[]).find((u) => u.id === order.userId);
-                    setOperatorName(user?.username ?? 'N/A');
-                } else {
-                    setOperatorName('N/A');
-                }
-            } else {
-                setOperatorName('N/A');
-            }
-        };
-        fetchCashRegisterName();
-        fetchOperatorName();
-    }, [order]);
 
     return (
         <>
@@ -135,11 +89,11 @@ export function MobileOrderDetailDrawer({ order, open, loading, onClose }: Mobil
                                     </div>
                                     <div>
                                         <p className="text-xs text-muted-foreground">{t('orderDetailDialog.cashRegister')}</p>
-                                        <p className="text-sm font-bold text-amber-600">{cashRegisterName}</p>
+                                        <p className="text-sm font-bold text-amber-600">{order.cashRegister?.name ?? 'N/A'}</p>
                                     </div>
                                     <div>
                                         <p className="text-xs text-muted-foreground">{t('orderDetailDialog.operator')}</p>
-                                        <p className="text-sm font-bold text-amber-600">{operatorName}</p>
+                                        <p className="text-sm font-bold text-amber-600">{order.user?.username ?? 'N/A'}</p>
                                     </div>
                                 </div>
 
