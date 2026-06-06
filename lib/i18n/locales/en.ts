@@ -57,7 +57,9 @@ export const en = {
       searchOrder: "Search Order",
       searchPlaceholder: "Search by code, table or customer...",
       loading: "Loading orders...",
-      noOrders: "No orders found for today"
+      noOrders: "No orders found for today",
+      filterPending: "PENDING ONLY",
+      filterAll: "ALL ORDERS"
     },
     dailyOrderCard: {
       statusPending: "Pending",

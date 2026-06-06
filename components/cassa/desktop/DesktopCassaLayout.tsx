@@ -179,6 +179,7 @@ export function DesktopCassaLayout({
                             onLoadToCart={onLoadToCart}
                             onCancelOrder={onCancelOrder}
                             onToggleAllOrders={onToggleAllOrders}
+                            onClose={onToggleDailyOrders}
                         />
                     )}
                 </div>

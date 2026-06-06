@@ -57,7 +57,9 @@ export const it = {
       searchOrder: "Cerca Ordine",
       searchPlaceholder: "Cerca per codice, tavolo o cliente...",
       loading: "Caricamento ordini...",
-      noOrders: "Nessun ordine trovato per oggi"
+      noOrders: "Nessun ordine trovato per oggi",
+      filterPending: "SOLO IN ATTESA",
+      filterAll: "TUTTI GLI ORDINI"
     },
     dailyOrderCard: {
       statusPending: "In attesa",
