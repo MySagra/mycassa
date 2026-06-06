@@ -1,8 +1,11 @@
+"use client";
+
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search, Loader2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useState, useEffect } from 'react';
 
 interface OrderFormProps {
     displayCode: string;
@@ -34,6 +37,18 @@ export function OrderForm({
     loadingOrder
 }: OrderFormProps) {
     const { t } = useTranslation();
+    const [customerHasDefault, setCustomerHasDefault] = useState(false);
+    const [tableHasDefault, setTableHasDefault] = useState(false);
+
+    useEffect(() => {
+        const sync = () => {
+            setCustomerHasDefault(localStorage.getItem('defaultCustomerEnabled') === 'true');
+            setTableHasDefault(localStorage.getItem('defaultTableEnabled') === 'true');
+        };
+        sync();
+        window.addEventListener('storage', sync);
+        return () => window.removeEventListener('storage', sync);
+    }, []);
 
     return (
         <div className="space-y-2 p-4">
@@ -68,7 +83,7 @@ export function OrderForm({
             {/* Customer and Table */}
             <div className={`grid ${enableTableInput && !tableInputDisabled ? 'grid-cols-2' : 'grid-cols-1'} gap-4`}>
                 <div>
-                    <Label htmlFor="customer" className='mb-2'>{t('orderForm.customer')}{requireCustomer ? ' *' : ''}</Label>
+                    <Label htmlFor="customer" className='mb-2'>{t('orderForm.customer')}{requireCustomer && !customerHasDefault ? ' *' : ''}</Label>
                     <Input
                         autoComplete='off'
                         id="customer"
@@ -84,7 +99,7 @@ export function OrderForm({
 
                 {enableTableInput && !tableInputDisabled && (
                     <div>
-                        <Label htmlFor="table" className='mb-2'>{t('orderForm.table')} *</Label>
+                        <Label htmlFor="table" className='mb-2'>{t('orderForm.table')}{!tableHasDefault ? ' *' : ''}</Label>
                         <Input
                             autoComplete='off'
                             id="table"

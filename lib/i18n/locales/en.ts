@@ -191,6 +191,15 @@ export const en = {
         selectAll: "Select all",
         deselectAll: "Deselect all",
         loading: "Loading categories..."
+      },
+      defaults: {
+        title: "Default values",
+        description: "If the field is empty when submitting the order, the default value is used",
+        customerLabel: "Default customer",
+        customerPlaceholder: "E.g. Anonymous",
+        tableLabel: "Default table",
+        tablePlaceholder: "E.g. Takeaway",
+        save: "Save"
       }
     },
     loginForm: {

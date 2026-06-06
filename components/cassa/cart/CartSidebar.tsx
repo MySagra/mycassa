@@ -293,7 +293,7 @@ export function CartSidebar({
                                     className="w-full text-lg font-semibold select-none cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
                                     size="lg"
                                     onClick={handleConfirmOrder}
-                                    disabled={cart.length === 0 || !paymentMethod || (requireCustomer && (!customer || customer.length < 2)) || (enableTableInput && !table) || loadingConfirmOrder}
+                                    disabled={!!(validationMessage && validationMessage.length > 0) || loadingConfirmOrder}
                                 >
                                     {loadingConfirmOrder ? (
                                         <>

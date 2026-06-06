@@ -991,7 +991,12 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
 
         // Validate customer
         if (requireCustomer) {
-            const customerValidation = orderSchema.shape.customer.safeParse(customer);
+            const defaultCustomerEnabled = localStorage.getItem('defaultCustomerEnabled') === 'true';
+            const defaultCustomerValue = localStorage.getItem('defaultCustomerValue') ?? '';
+            const customerToValidate = !customer.trim() && defaultCustomerEnabled && defaultCustomerValue.trim()
+                ? defaultCustomerValue
+                : customer;
+            const customerValidation = orderSchema.shape.customer.safeParse(customerToValidate);
             if (!customerValidation.success) {
                 toast.error(customerValidation.error.issues[0].message);
                 return;
@@ -1000,7 +1005,12 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
 
         // Validate table only if enabled
         if (enableTableInput) {
-            const tableValidation = z.string().min(1, 'Il numero del tavolo è obbligatorio').safeParse(table);
+            const defaultTableEnabled = localStorage.getItem('defaultTableEnabled') === 'true';
+            const defaultTableValue = localStorage.getItem('defaultTableValue') ?? '';
+            const tableToValidate = !table.trim() && defaultTableEnabled && defaultTableValue.trim()
+                ? defaultTableValue
+                : table;
+            const tableValidation = z.string().min(1, 'Il numero del tavolo è obbligatorio').safeParse(tableToValidate);
             if (!tableValidation.success) {
                 const error = tableValidation.error.issues[0].message;
                 setValidationErrors({ table: error });
@@ -1041,7 +1051,18 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
         setShowUnavailableDialog(false);
         setLoadingConfirmOrder(true);
         try {
-            const effectiveCustomer = !requireCustomer && !customer.trim() ? 'NO CUSTOMER' : customer;
+            const defaultCustomerEnabled = localStorage.getItem('defaultCustomerEnabled') === 'true';
+            const defaultCustomerValue = localStorage.getItem('defaultCustomerValue') ?? '';
+            const defaultTableEnabled = localStorage.getItem('defaultTableEnabled') === 'true';
+            const defaultTableValue = localStorage.getItem('defaultTableValue') ?? '';
+
+            const effectiveCustomer = !requireCustomer && !customer.trim()
+                ? 'NO CUSTOMER'
+                : (defaultCustomerEnabled && !customer.trim() && defaultCustomerValue.trim() ? defaultCustomerValue : customer);
+            const effectiveTable = defaultTableEnabled && !table.trim() && defaultTableValue.trim()
+                ? defaultTableValue
+                : table;
+
             // Merge cart items with same foodId and notes
             const mergedOrderItems = mergeCartItems(cart, allIngredients);
 
@@ -1063,7 +1084,7 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
                     cashRegisterId: localStorage.getItem('selectedCashRegister') || '',
                     discount: appliedDiscountAmount,
                     customer: effectiveCustomer !== originalCustomerFromOrder ? effectiveCustomer : undefined,
-                    table: table !== originalTableFromOrder ? table : undefined,
+                    table: effectiveTable !== originalTableFromOrder ? effectiveTable : undefined,
                     orderItems: mergedOrderItems,
                 });
 
@@ -1086,7 +1107,7 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
             } else {
                 // Create new order with confirmation details
                 const createResult = await createOrder({
-                    table: enableTableInput && table.trim() ? table : "NO_TABLE_PRESET",
+                    table: enableTableInput && effectiveTable.trim() ? effectiveTable : "NO_TABLE_PRESET",
                     customer: effectiveCustomer,
                     orderItems: mergedOrderItems,
                     confirm: {
@@ -1163,7 +1184,13 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
     const total = calculateTotal(cart, appliedDiscountAmount, allIngredients);
     const surcharges = calculateTotalSurcharges(cart, allIngredients);
     const change = calculateChange(total, parseFloat(paidAmount) || 0);
-    const baseValidation = getOrderValidationMessage(cart.length, customer, table, enableTableInput, requireCustomer);
+    const _defCustEnabled = localStorage.getItem('defaultCustomerEnabled') === 'true';
+    const _defCustValue = localStorage.getItem('defaultCustomerValue') ?? '';
+    const _defTableEnabled = localStorage.getItem('defaultTableEnabled') === 'true';
+    const _defTableValue = localStorage.getItem('defaultTableValue') ?? '';
+    const _effectiveCustomer = _defCustEnabled && !customer.trim() && _defCustValue.trim() ? _defCustValue : customer;
+    const _effectiveTable = _defTableEnabled && !table.trim() && _defTableValue.trim() ? _defTableValue : table;
+    const baseValidation = getOrderValidationMessage(cart.length, _effectiveCustomer, _effectiveTable, enableTableInput, requireCustomer);
     const validationMessage = !paymentMethod
         ? [...(baseValidation ?? []), 'Seleziona un metodo di pagamento']
         : baseValidation;

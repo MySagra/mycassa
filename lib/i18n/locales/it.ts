@@ -191,6 +191,15 @@ export const it = {
         selectAll: "Seleziona tutte",
         deselectAll: "Deseleziona tutte",
         loading: "Caricamento categorie..."
+      },
+      defaults: {
+        title: "Valori predefiniti",
+        description: "Se il campo è vuoto all'invio dell'ordine, viene usato il valore predefinito",
+        customerLabel: "Cliente predefinito",
+        customerPlaceholder: "Es. Anonimo",
+        tableLabel: "Tavolo predefinito",
+        tablePlaceholder: "Es. Asporto",
+        save: "Salva"
       }
     },
     loginForm: {
