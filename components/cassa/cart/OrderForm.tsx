@@ -62,7 +62,7 @@ export function OrderForm({
                         placeholder={t('orderForm.orderCodePlaceholder')}
                         value={displayCode}
                         onChange={(e) => onUpdateDisplayCode(e.target.value.toUpperCase())}
-                        maxLength={3}
+                        maxLength={4}
                         enterKeyHint="enter"
                         onKeyDown={(e) => {
                             if (e.key === 'Enter') {
