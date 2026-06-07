@@ -290,6 +290,11 @@ export const en = {
       drawerOpened: "Drawer opened successfully",
       drawerOpenError: "Error opening the drawer",
       loading: "Loading..."
+    },
+    dialog: {
+      printerOfflineAction: "Check the connection and restart the printer",
+      printerOfflineDismiss: "Got it",
+      printerErrorAction: "Check the printer status and restart it if needed"
     }
   }
 };

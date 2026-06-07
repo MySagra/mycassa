@@ -290,6 +290,11 @@ export const it = {
       drawerOpened: "Cassetto aperto con successo",
       drawerOpenError: "Errore nell'apertura del cassetto",
       loading: "Caricamento..."
+    },
+    dialog: {
+      printerOfflineAction: "Verifica la connessione e riavvia la stampante",
+      printerOfflineDismiss: "Ho capito",
+      printerErrorAction: "Verifica lo stato della stampante e riavviala se necessario"
     }
   }
 };

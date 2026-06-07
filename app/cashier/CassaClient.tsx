@@ -78,6 +78,8 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
     const [showAllOrders, setShowAllOrders] = useState(false);
     const [allIngredients, setAllIngredients] = useState<Ingredient[]>([]);
     const [showUnavailableDialog, setShowUnavailableDialog] = useState(false);
+    const [printerOfflineInfo, setPrinterOfflineInfo] = useState<{ label: string } | null>(null);
+    const [printerErrorInfo, setPrinterErrorInfo] = useState<{ label: string; status: string } | null>(null);
     const [stationsMap, setStationsMap] = useState<Record<string, string>>({});
 
     // Clear localStorage and logout on auth errors, redirecting to login with a reason code
@@ -526,11 +528,12 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
 
                                     if (!isMobile) {
                                         if (status === 'ONLINE') {
+                                            setPrinterOfflineInfo(null);
                                             toast.success(t('toast.printerOnline', { label }), { description: t('toast.printerOnlineDesc') });
                                         } else if (status === 'OFFLINE') {
-                                            toast.warning(t('toast.printerOffline', { label }), { description: t('toast.printerOfflineDesc') });
+                                            setPrinterOfflineInfo({ label });
                                         } else {
-                                            toast.error(t('toast.printerError', { label }), { description: t('toast.printerErrorDesc', { status }) });
+                                            setPrinterErrorInfo({ label, status });
                                         }
                                     }
                                 };
@@ -1314,6 +1317,68 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
                 onOpenChange={setShowConfigDialog}
                 onCashRegisterSelected={handleCashRegisterSelected}
             />
+
+            <AlertDialog open={printerOfflineInfo !== null} onOpenChange={(open) => { if (!open) setPrinterOfflineInfo(null); }}>
+                <AlertDialogContent className="border-destructive border-2 sm:max-w-md">
+                    <AlertDialogHeader>
+                        <div className="flex items-center gap-3 mb-1">
+                            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-destructive/15 shrink-0">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 text-destructive" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
+                                    <path d="M6 9V3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v6" />
+                                    <rect x="6" y="14" width="12" height="8" rx="1" />
+                                    <line x1="2" y1="2" x2="22" y2="22" className="text-destructive" />
+                                </svg>
+                            </div>
+                            <AlertDialogTitle className="text-destructive text-xl">
+                                {t('toast.printerOffline', { label: printerOfflineInfo?.label ?? '' })}
+                            </AlertDialogTitle>
+                        </div>
+                        <AlertDialogDescription className="text-base font-medium pl-15">
+                            {t('toast.printerOfflineDesc')}. {t('dialog.printerOfflineAction')}
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogAction
+                            className="bg-destructive text-white hover:bg-destructive/80 w-full"
+                            onClick={() => setPrinterOfflineInfo(null)}
+                        >
+                            {t('dialog.printerOfflineDismiss')}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+
+            <AlertDialog open={printerErrorInfo !== null} onOpenChange={(open) => { if (!open) setPrinterErrorInfo(null); }}>
+                <AlertDialogContent className="border-amber-500 border-2 sm:max-w-md">
+                    <AlertDialogHeader>
+                        <div className="flex items-center gap-3 mb-1">
+                            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-amber-500/15 shrink-0">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
+                                    <path d="M6 9V3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v6" />
+                                    <rect x="6" y="14" width="12" height="8" rx="1" />
+                                    <path d="M12 17v.01" />
+                                </svg>
+                            </div>
+                            <AlertDialogTitle className="text-amber-500 text-xl">
+                                {t('toast.printerError', { label: printerErrorInfo?.label ?? '' })}
+                            </AlertDialogTitle>
+                        </div>
+                        <AlertDialogDescription className="text-base font-medium pl-15">
+                            {t('toast.printerErrorDesc', { status: printerErrorInfo?.status ?? '' })}. {t('dialog.printerErrorAction')}
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogAction
+                            className="bg-amber-500 text-white hover:bg-amber-500/80 w-full"
+                            onClick={() => setPrinterErrorInfo(null)}
+                        >
+                            {t('dialog.printerOfflineDismiss')}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
 
             <AlertDialog open={showUnavailableDialog} onOpenChange={setShowUnavailableDialog}>
                 <AlertDialogContent>
