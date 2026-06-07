@@ -90,16 +90,23 @@ export function DailyOrdersSidebar({
                             {loading ? t('dailyOrders.loading') : t('dailyOrders.noOrders')}
                         </div>
                     ) : (
-                        orders.map((order) => (
-                            <DailyOrderCard
-                                key={order.id}
-                                order={order}
-                                searchQuery={searchQuery}
-                                onViewDetail={() => onViewDetail(order.id)}
-                                onLoadToCart={() => onLoadToCart(order)}
-                                onCancelOrder={() => onCancelOrder(order.id)}
-                            />
-                        ))
+                        <>
+                            {orders.map((order) => (
+                                <DailyOrderCard
+                                    key={order.id}
+                                    order={order}
+                                    searchQuery={searchQuery}
+                                    onViewDetail={() => onViewDetail(order.id)}
+                                    onLoadToCart={() => onLoadToCart(order)}
+                                    onCancelOrder={() => onCancelOrder(order.id)}
+                                />
+                            ))}
+                            {showAllOrders && (
+                                <p className="text-center text-xs text-muted-foreground pt-2 pb-1 select-none">
+                                    {t('dailyOrders.last20Orders')}
+                                </p>
+                            )}
+                        </>
                     )}
                 </div>
             </ScrollArea>

@@ -248,7 +248,7 @@ export async function searchDailyOrders(searchValue: string) {
 
   try {
     const headers = await authHeaders();
-    const response = await fetch(`${process.env.API_URL}/v1/orders?search=${searchValue}&page=1&limit=20&sortBy=createdAt&dateFrom=${dateFrom}&dateTo=${dateTo}`, {
+    const response = await fetch(`${process.env.API_URL}/v1/orders?search=${searchValue}&page=1&limit=20&sortBy=createdAt&status=PENDING&dateFrom=${dateFrom}&dateTo=${dateTo}`, {
       headers,
       cache: 'no-store',
     });

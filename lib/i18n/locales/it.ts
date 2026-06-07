@@ -59,7 +59,8 @@ export const it = {
       loading: "Caricamento ordini...",
       noOrders: "Nessun ordine trovato per oggi",
       filterPending: "SOLO IN ATTESA",
-      filterAll: "TUTTI GLI ORDINI"
+      filterAll: "TUTTI GLI ORDINI",
+      last20Orders: "Stai visualizzando solo gli ultimi 20 ordini"
     },
     dailyOrderCard: {
       statusPending: "In attesa",

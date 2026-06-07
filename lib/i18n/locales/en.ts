@@ -59,7 +59,8 @@ export const en = {
       loading: "Loading orders...",
       noOrders: "No orders found for today",
       filterPending: "PENDING ONLY",
-      filterAll: "ALL ORDERS"
+      filterAll: "ALL ORDERS",
+      last20Orders: "You are viewing only the last 20 orders"
     },
     dailyOrderCard: {
       statusPending: "Pending",
