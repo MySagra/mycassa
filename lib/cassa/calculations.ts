@@ -36,7 +36,7 @@ export function calculateIngredientSurcharge(item: ExtendedCartItem, allIngredie
         item.food.ingredients.forEach((ingredient) => {
             const qty = item.ingredientQuantities?.[ingredient.id] ?? 1;
             if (qty > 1) {
-                const rate = parseFloat(ingredient.surcharge ?? '0.5') || 0.5;
+                const rate = parseFloat(ingredient.surcharge ?? '0');
                 surcharge += (qty - 1) * rate;
             }
         });
@@ -46,7 +46,7 @@ export function calculateIngredientSurcharge(item: ExtendedCartItem, allIngredie
     if (item.extraIngredients) {
         for (const [id, qty] of Object.entries(item.extraIngredients)) {
             const ingredient = allIngredients.find((i) => i.id === id);
-            const rate = parseFloat(ingredient?.surcharge ?? '0.5') || 0.5;
+            const rate = parseFloat(ingredient?.surcharge ?? '0');
             surcharge += qty * rate;
         }
     }
