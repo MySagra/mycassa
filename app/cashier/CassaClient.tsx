@@ -33,6 +33,8 @@ function throwIfActionError(result: { success: boolean; error?: string; status?:
     }
 }
 
+const ORDER_DRAFT_KEY = 'mycassa_order_draft';
+
 export default function CassaPage({ requiredTable, requireCustomer }: { requiredTable: boolean; requireCustomer: boolean }) {
     const router = useRouter();
     const { user, isLoading, isAuthenticated } = useAuth();
@@ -81,6 +83,31 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
     const [printerOfflineInfo, setPrinterOfflineInfo] = useState<{ label: string } | null>(null);
     const [printerErrorInfo, setPrinterErrorInfo] = useState<{ label: string; status: string } | null>(null);
     const [stationsMap, setStationsMap] = useState<Record<string, string>>({});
+
+    // Restore order draft from sessionStorage on mount
+    useEffect(() => {
+        try {
+            const raw = sessionStorage.getItem(ORDER_DRAFT_KEY);
+            if (!raw) return;
+            const draft = JSON.parse(raw);
+            if (draft.cart?.length) setCart(draft.cart);
+            if (draft.customer) setCustomer(draft.customer);
+            if (draft.table) setTable(draft.table);
+            if (draft.displayCode) setDisplayCode(draft.displayCode);
+            if (draft.paymentMethod) setPaymentMethod(draft.paymentMethod);
+            if (draft.paidAmount) setPaidAmount(draft.paidAmount);
+            if (draft.appliedDiscountAmount) setAppliedDiscountAmount(draft.appliedDiscountAmount);
+        } catch {}
+    }, []);
+
+    // Save order draft to sessionStorage on change
+    useEffect(() => {
+        try {
+            sessionStorage.setItem(ORDER_DRAFT_KEY, JSON.stringify({
+                cart, customer, table, displayCode, paymentMethod, paidAmount, appliedDiscountAmount
+            }));
+        } catch {}
+    }, [cart, customer, table, displayCode, paymentMethod, paidAmount, appliedDiscountAmount]);
 
     // Clear localStorage and logout on auth errors, redirecting to login with a reason code
     const handleAuthError = async (code?: string) => {
@@ -738,6 +765,7 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
     };
 
     const clearCart = () => {
+        sessionStorage.removeItem(ORDER_DRAFT_KEY);
         setCart([]);
         setDisplayCode('');
         setCustomer('');
@@ -748,6 +776,7 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
     };
 
     const resetAfterOrder = () => {
+        sessionStorage.removeItem(ORDER_DRAFT_KEY);
         setCart([]);
         setDisplayCode('');
         setCustomer('');

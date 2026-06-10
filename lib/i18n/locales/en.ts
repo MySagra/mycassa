@@ -186,7 +186,7 @@ export const en = {
         dark: "Dark"
       },
       header: {
-        title: "Settings",
+        title: "MySettings",
         backToCashier: "Back to Register"
       },
       categoryVisibility: {

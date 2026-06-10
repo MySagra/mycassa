@@ -186,7 +186,7 @@ export const it = {
         dark: "Scuro"
       },
       header: {
-        title: "Impostazioni",
+        title: "MyImpostazioni",
         backToCashier: "Torna alla cassa"
       },
       categoryVisibility: {
