@@ -57,27 +57,34 @@ export function OrderForm({
             <div>
                 <Label htmlFor="displayCode" className='mb-2'>{t('orderForm.loadOrder')}</Label>
                 <div className="mt-1 flex gap-2">
-                    <Input
-                        autoComplete='off'
-                        id="displayCode"
-                        placeholder={t('orderForm.orderCodePlaceholder')}
-                        value={displayCode}
-                        onChange={(e) => onUpdateDisplayCode(e.target.value.toUpperCase())}
-                        maxLength={4}
-                        enterKeyHint="enter"
-                        onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                                onLoadOrder();
-                            }
-                        }}
-                    />
-                    <Button onClick={onLoadOrder} className="cursor-pointer" disabled={loadingOrder}>
-                        {loadingOrder ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                            <Search className="h-4 w-4" />
-                        )}
-                    </Button>
+                    <div className="flex flex-1">
+                        <Input
+                            autoComplete='off'
+                            id="displayCode"
+                            placeholder={t('orderForm.orderCodePlaceholder')}
+                            value={displayCode}
+                            onChange={(e) => onUpdateDisplayCode(e.target.value.toUpperCase())}
+                            maxLength={4}
+                            enterKeyHint="enter"
+                            className="rounded-r-none"
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                    onLoadOrder();
+                                }
+                            }}
+                        />
+                        <Button
+                            onClick={onLoadOrder}
+                            className="cursor-pointer rounded-l-none border-l-0"
+                            disabled={loadingOrder}
+                        >
+                            {loadingOrder ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                                <Search className="h-4 w-4" />
+                            )}
+                        </Button>
+                    </div>
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <Button
