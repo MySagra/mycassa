@@ -17,7 +17,8 @@ export const it = {
       customerPlaceholder: "Es. Mario Rossi",
       table: "Tavolo",
       tablePlaceholder: "Es. 12 o Tavolo A5",
-      tableDisabled: "TAVOLO DISABILITATO"
+      tableDisabled: "TAVOLO DISABILITATO",
+      noCustomer: "Inserisci cliente di default"
     },
     payment: {
       subtotal: "Subtotale",

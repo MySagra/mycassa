@@ -3,7 +3,8 @@
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Loader2 } from 'lucide-react';
+import { Search, Loader2, UserX } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useTranslation } from 'react-i18next';
 import { useState, useEffect } from 'react';
 
@@ -77,6 +78,22 @@ export function OrderForm({
                             <Search className="h-4 w-4" />
                         )}
                     </Button>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                className="cursor-pointer shrink-0"
+                                onClick={() => {
+                                    onUpdateCustomer('NO_CUSTOMER');
+                                    onUpdateTable('NO_TABLE');
+                                }}
+                            >
+                                <UserX className="h-4 w-4" />
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>{t('orderForm.noCustomer')}</TooltipContent>
+                    </Tooltip>
                 </div>
             </div>
 

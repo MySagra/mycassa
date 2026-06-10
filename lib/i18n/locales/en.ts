@@ -17,7 +17,8 @@ export const en = {
       customerPlaceholder: "E.g. John Doe",
       table: "Table",
       tablePlaceholder: "E.g. 12 or Table A5",
-      tableDisabled: "TABLE DISABLED"
+      tableDisabled: "TABLE DISABLED",
+      noCustomer: "Insert default customer"
     },
     payment: {
       subtotal: "Subtotal",
