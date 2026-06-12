@@ -3,10 +3,12 @@
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
 import { Input } from '@/components/ui/input';
 import { Toggle } from '@/components/ui/toggle';
-import { Check, CheckCheck } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Check, CheckCheck, Search } from 'lucide-react';
 import { DailyOrder } from '@/lib/cassa/types';
 import { DailyOrderCard } from '@/components/cassa/daily-orders/DailyOrderCard';
 import { useTranslation } from 'react-i18next';
+import { useState } from 'react';
 
 interface MobileVerificaDrawerProps {
     open: boolean;
@@ -36,6 +38,11 @@ export function MobileVerificaDrawer({
     onToggleAllOrders,
 }: MobileVerificaDrawerProps) {
     const { t } = useTranslation();
+    const [localInput, setLocalInput] = useState(searchQuery);
+
+    const handleSearch = () => {
+        onSearchChange(localInput);
+    };
 
     return (
         <Drawer open={open} onOpenChange={(val) => { if (!val) (document.activeElement as HTMLElement)?.blur(); onOpenChange(val); }}>
@@ -48,10 +55,19 @@ export function MobileVerificaDrawer({
                     <Input
                         autoComplete="off"
                         placeholder={t('dailyOrders.searchPlaceholder')}
-                        value={searchQuery}
-                        onChange={(e) => onSearchChange(e.target.value)}
+                        value={localInput}
+                        onChange={(e) => setLocalInput(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                         className="flex-1"
                     />
+                    <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={handleSearch}
+                        className="shrink-0 cursor-pointer"
+                    >
+                        <Search className="h-4 w-4" />
+                    </Button>
                     <Toggle
                         variant="outline"
                         pressed={showAllOrders}

@@ -379,51 +379,39 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
                             }
                         }
                         // Handle confirmed-order event
-                        // Handle confirmed-order event
                         else if (event.event === 'confirmed-order') {
                             try {
-                                const { id, displayCode } = JSON.parse(event.data);
+                                const { id } = JSON.parse(event.data);
 
-                                // Fetch full order details to get ticketNumber
-                                try {
-                                    const result = await getOrderByOrderId(id);
-                                    if (result.success) {
-                                        const newOrder = result.data;
-                                        const dailyOrder: DailyOrder = {
-                                            id: newOrder.id,
-                                            displayCode: newOrder.displayCode,
-                                            ticketNumber: (newOrder as any).ticketNumber,
-                                            table: newOrder.table,
-                                            customer: newOrder.customer,
-                                            createdAt: newOrder.createdAt,
-                                            subTotal: newOrder.subTotal,
-                                            total: newOrder.total,
-                                            status: 'CONFIRMED'
-                                        };
-
-                                        // If showing all orders, update the order status instead of removing
-                                        if (showAllOrdersRef.current) {
+                                if (showAllOrdersRef.current) {
+                                    // Fetch full details only when showing all orders (need ticketNumber etc.)
+                                    try {
+                                        const result = await getOrderByOrderId(id);
+                                        if (result.success) {
+                                            const newOrder = result.data;
+                                            const dailyOrder: DailyOrder = {
+                                                id: newOrder.id,
+                                                displayCode: newOrder.displayCode,
+                                                ticketNumber: (newOrder as any).ticketNumber,
+                                                table: newOrder.table,
+                                                customer: newOrder.customer,
+                                                createdAt: newOrder.createdAt,
+                                                subTotal: newOrder.subTotal,
+                                                total: newOrder.total,
+                                                status: 'CONFIRMED'
+                                            };
                                             const orderExists = dailyOrdersRef.current.some(o => o.id === id);
-
                                             if (orderExists) {
-                                                setDailyOrders((prevOrders) => {
-                                                    return prevOrders.map(o =>
-                                                        o.id === id ? dailyOrder : o
-                                                    );
-                                                });
+                                                setDailyOrders(prev => prev.map(o => o.id === id ? dailyOrder : o));
                                             } else {
-                                                // If order doesn't exist, add it
                                                 setDailyOrders(prev => [dailyOrder, ...prev]);
                                             }
-                                        } else {
-                                            // Only remove from list if showing pending orders only
-                                            setDailyOrders((prevOrders) => {
-                                                return prevOrders.filter(o => o.id !== id);
-                                            });
                                         }
+                                    } catch (error) {
+                                        console.error('[SSE] Error fetching confirmed order details:', error);
                                     }
-                                } catch (error) {
-                                    console.error('[SSE] Error fetching confirmed order details:', error);
+                                } else {
+                                    setDailyOrders(prev => prev.filter(o => o.id !== id));
                                 }
                             } catch (error) {
                                 console.error('[SSE] Errore parsando confirmed-order:', error);
@@ -648,43 +636,15 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
         };
     }, [isAuthenticated]);
 
-    // Load daily orders when the section is opened
-    useEffect(() => {
-        if (!isAuthenticated || !showDailyOrders) {
-            return;
-        }
-
-        // Load initial orders
-        const loadInitialOrders = async () => {
-            setLoadingDailyOrders(true);
-            try {
-                const result = showAllOrders ? await getAllTodayOrders() : await getTodayOrders();
-                throwIfActionError(result);
-                if (result.success) setDailyOrders(result.data);
-            } catch (error: any) {
-                if (error instanceof ApiError && error.isAuthError) {
-                    await handleAuthError(error.code);
-                    return;
-                }
-                console.error('[SSE] Errore caricamento ordini iniziali:', error);
-                if (!isMobile) toast.error(error.message || t('toast.orderLoadError'));
-            } finally {
-                setLoadingDailyOrders(false);
-            }
-        };
-
-        loadInitialOrders();
-    }, [isAuthenticated, showDailyOrders, showAllOrders]);
-
-    // Search daily orders based on query
+    // Load or search daily orders
     useEffect(() => {
         if (!isAuthenticated || (!showDailyOrders && !isMobile)) {
             return;
         }
 
-        // If search query is empty, reload all today's orders
         if (!searchQuery.trim()) {
-            const loadInitialOrders = async () => {
+            const loadOrders = async () => {
+                setLoadingDailyOrders(true);
                 try {
                     const result = showAllOrders ? await getAllTodayOrders() : await getTodayOrders();
                     throwIfActionError(result);
@@ -695,14 +655,16 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
                         return;
                     }
                     console.error('Errore caricamento ordini:', error);
+                    if (!isMobile) toast.error(error.message || t('toast.orderLoadError'));
+                } finally {
+                    setLoadingDailyOrders(false);
                 }
             };
 
-            loadInitialOrders();
+            loadOrders();
             return;
         }
 
-        // Search with query
         const searchOrders = async () => {
             try {
                 const result = showAllOrders ? await searchAllDailyOrders(searchQuery) : await searchDailyOrders(searchQuery);
@@ -718,10 +680,7 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
             }
         };
 
-        const debounceTimer = setTimeout(() => {
-            searchOrders();
-        }, 300); // Debounce 300ms
-
+        const debounceTimer = setTimeout(searchOrders, 300);
         return () => clearTimeout(debounceTimer);
     }, [isAuthenticated, showDailyOrders, isMobile, searchQuery, showAllOrders]);
 
@@ -997,24 +956,6 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
             return;
         }
 
-        try {
-            const registersResult = await getCashRegisters();
-            if (registersResult.success) {
-                const exists = registersResult.data.some((cr: any) => cr.id === selectedCashRegister);
-                if (!exists) {
-                    setCashRegisterInvalid(true);
-                    setCashRegisterName('');
-                    localStorage.removeItem('selectedCashRegister');
-                    if (!isMobile) toast.error(t('toast.noCashRegisterSelected'));
-                    setShowConfigDialog(true);
-                    return;
-                }
-                setCashRegisterInvalid(false);
-            }
-        } catch {
-            // Non-blocking: if validation fetch fails, proceed and let server error handle it
-        }
-
         // Validate payment method
         if (!paymentMethod) {
             toast.error('Seleziona un metodo di pagamento');
@@ -1169,6 +1110,48 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
                 await handleAuthError(error.code);
                 return;
             }
+
+            if (error instanceof ApiError && error.status === 400 && error.code === 'ForeignKeyConstraintViolation') {
+                const selectedCashRegister = localStorage.getItem('selectedCashRegister');
+                let handled = false;
+
+                // Check cash register still exists
+                try {
+                    const registersResult = await getCashRegisters();
+                    if (registersResult.success) {
+                        const exists = registersResult.data.some((cr: any) => cr.id === selectedCashRegister);
+                        if (!exists) {
+                            setCashRegisterInvalid(true);
+                            setCashRegisterName('');
+                            localStorage.removeItem('selectedCashRegister');
+                            if (!isMobile) toast.error(t('toast.noCashRegisterSelected'));
+                            setShowConfigDialog(true);
+                            handled = true;
+                        }
+                    }
+                } catch {}
+
+                // Cash register OK — check if any food in cart no longer exists
+                if (!handled) {
+                    const uniqueFoodIds = [...new Set(cart.map(item => item.food.id))];
+                    try {
+                        const foodResults = await Promise.all(uniqueFoodIds.map(id => getFoodById(id)));
+                        const missingFoodIds = uniqueFoodIds.filter((_, i) => !foodResults[i].success);
+                        if (missingFoodIds.length > 0) {
+                            const missingNames = [...new Set(
+                                cart
+                                    .filter(item => missingFoodIds.includes(item.food.id))
+                                    .map(item => item.food.name)
+                            )];
+                            if (!isMobile) toast.error(`Prodotti non più disponibili: ${missingNames.join(', ')}`);
+                            handled = true;
+                        }
+                    } catch {}
+                }
+
+                if (handled) return;
+            }
+
             console.error('Error confirming order:', error);
             const message = error instanceof ApiError ? error.message : t('toast.orderConfirmed');
             if (!isMobile) toast.error(message);

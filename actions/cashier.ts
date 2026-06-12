@@ -42,7 +42,7 @@ function getDailyOrderDateRange() {
 function errBody(errorData: any, fallback: string) {
   return {
     error: errorData.message || fallback,
-    code: errorData.type ?? errorData.code as string | undefined,
+    code: (errorData.type ?? errorData.code ?? errorData.error) as string | undefined,
   };
 }
 

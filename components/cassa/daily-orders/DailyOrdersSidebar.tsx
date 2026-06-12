@@ -4,9 +4,10 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { DailyOrder } from '@/lib/cassa/types';
 import { DailyOrderCard } from './DailyOrderCard';
 import { Button } from '@/components/ui/button';
-import { ArrowLeftRight, X } from 'lucide-react';
+import { ArrowLeftRight, Search, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useEnv } from '@/lib/contexts/EnvContext';
+import { useState } from 'react';
 
 interface DailyOrdersSidebarProps {
     orders: DailyOrder[];
@@ -35,6 +36,11 @@ export function DailyOrdersSidebar({
 }: DailyOrdersSidebarProps) {
     const { t } = useTranslation();
     const { showNumbers } = useEnv();
+    const [localInput, setLocalInput] = useState(searchQuery);
+
+    const handleSearch = () => {
+        onSearchChange(localInput);
+    };
 
     return (
         <aside className="w-96 border-l flex flex-col bg-card h-screen animate-in">
@@ -71,14 +77,23 @@ export function DailyOrdersSidebar({
                 {/* Search Section */}
                 <div>
                     <Label htmlFor="searchQuery" className="mb-2">{t('dailyOrders.searchOrder')}</Label>
-                    <div className="mt-1">
+                    <div className="mt-1 flex gap-2">
                         <Input
                             autoComplete='off'
                             id="searchQuery"
                             placeholder={showNumbers ? t('dailyOrders.searchPlaceholder') + ', numero...' : t('dailyOrders.searchPlaceholder')}
-                            value={searchQuery}
-                            onChange={(e) => onSearchChange(e.target.value)}
+                            value={localInput}
+                            onChange={(e) => setLocalInput(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                         />
+                        <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={handleSearch}
+                            className="shrink-0 cursor-pointer"
+                        >
+                            <Search className="h-4 w-4" />
+                        </Button>
                     </div>
                 </div>
             </div>
