@@ -46,6 +46,9 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
     const lastEventRef = useRef<string | null>(null);
     const showAllOrdersRef = useRef<boolean>(false);
     const dailyOrdersRef = useRef<DailyOrder[]>([]);
+    const showDailyOrdersRef = useRef<boolean>(false);
+    const isMobileRef = useRef<boolean>(isMobile);
+    const sseConnectedRef = useRef<boolean>(false);
     const printerCacheRef = useRef<Map<string, { name: string; ip?: string | null }>>(new Map());
     const wasAuthenticatedRef = useRef(isAuthenticated);
     const [categories, setCategories] = useState<Category[]>([]);
@@ -127,12 +130,13 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
         wasAuthenticatedRef.current = isAuthenticated;
     }, [isAuthenticated, isLoading]);
 
-    // Keep ref in sync with state
-    // Keep ref in sync with state
+    // Keep refs in sync with state
     useEffect(() => {
         showAllOrdersRef.current = showAllOrders;
         dailyOrdersRef.current = dailyOrders;
-    }, [showAllOrders, dailyOrders]);
+        showDailyOrdersRef.current = showDailyOrders;
+        isMobileRef.current = isMobile;
+    }, [showAllOrders, dailyOrders, showDailyOrders, isMobile]);
 
 
 
@@ -297,18 +301,22 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
                         if (response.ok) {
                             console.log('[SSE] Connessione stabilita con successo');
 
-                            // Fetch initial daily orders when SSE connection is established or reopened
-                            try {
-                                const result = showAllOrdersRef.current ? await getAllTodayOrders() : await getTodayOrders();
-                                if (result.success) {
-                                    setDailyOrders(result.data);
-                                    console.log('[SSE] Ordini caricati:', result.data.length);
-                                } else {
-                                    console.error('[SSE] Errore caricamento ordini iniziali:', result.error);
+                            // On reconnection only: reload orders to catch missed events
+                            // First connect is handled by the useEffect below
+                            if (sseConnectedRef.current && (showDailyOrdersRef.current || isMobileRef.current)) {
+                                try {
+                                    const result = showAllOrdersRef.current ? await getAllTodayOrders() : await getTodayOrders();
+                                    if (result.success) {
+                                        setDailyOrders(result.data);
+                                        console.log('[SSE] Ordini ricaricati dopo riconnessione:', result.data.length);
+                                    } else {
+                                        console.error('[SSE] Errore caricamento ordini dopo riconnessione:', result.error);
+                                    }
+                                } catch (error: any) {
+                                    console.error('[SSE] Errore caricamento ordini dopo riconnessione:', error);
                                 }
-                            } catch (error: any) {
-                                console.error('[SSE] Errore caricamento ordini iniziali:', error);
                             }
+                            sseConnectedRef.current = true;
                         } else if (response.status === 401 || response.status === 403) {
                             abortController.abort();
                             await handleAuthError('session_expired');
@@ -334,7 +342,6 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
                         if (event.event === 'new-order') {
                             try {
                                 const order: DailyOrder = JSON.parse(event.data);
-                                const isNewOrder = !dailyOrdersRef.current.some(o => o.id === order.id);
 
                                 setDailyOrders((prevOrders) => {
                                     const existingIndex = prevOrders.findIndex(o => o.id === order.id);
@@ -348,31 +355,6 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
                                     }
                                 });
 
-                                // Fetch full order details for new orders to populate ticketNumber and source
-                                if (isNewOrder) {
-                                    try {
-                                        const result = await getOrderByOrderId(order.id);
-                                        if (result.success) {
-                                            const fullOrderDetail = result.data;
-                                            const fullOrder: DailyOrder = {
-                                                id: fullOrderDetail.id,
-                                                displayCode: fullOrderDetail.displayCode,
-                                                ticketNumber: fullOrderDetail.ticketNumber,
-                                                table: fullOrderDetail.table,
-                                                customer: fullOrderDetail.customer,
-                                                createdAt: fullOrderDetail.createdAt,
-                                                subTotal: fullOrderDetail.subTotal,
-                                                total: fullOrderDetail.total,
-                                                status: fullOrderDetail.status
-                                            };
-                                            setDailyOrders(prev =>
-                                                prev.map(o => o.id === order.id ? fullOrder : o)
-                                            );
-                                        }
-                                    } catch (error) {
-                                        console.error('[SSE] Error fetching full new order details:', error);
-                                    }
-                                }
 
                             } catch (error) {
                                 console.error('[SSE] Errore parsando new-order:', error);
@@ -633,6 +615,7 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
             console.log('[SSE] Cleanup: chiusura connessione');
             abortController.abort();
             sseConnectionRef.current = false;
+            sseConnectedRef.current = false;
         };
     }, [isAuthenticated]);
 
