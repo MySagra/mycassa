@@ -17,7 +17,8 @@ export const en = {
       customerPlaceholder: "E.g. John Doe",
       table: "Table",
       tablePlaceholder: "E.g. 12 or Table A5",
-      tableDisabled: "TABLE DISABLED"
+      tableDisabled: "TABLE DISABLED",
+      noCustomer: "Insert default customer"
     },
     payment: {
       subtotal: "Subtotal",
@@ -57,7 +58,10 @@ export const en = {
       searchOrder: "Search Order",
       searchPlaceholder: "Search by code, table or customer...",
       loading: "Loading orders...",
-      noOrders: "No orders found for today"
+      noOrders: "No orders found for today",
+      filterPending: "PENDING ONLY",
+      filterAll: "ALL ORDERS",
+      last20Orders: "You are viewing only the last 20 orders"
     },
     dailyOrderCard: {
       statusPending: "Pending",
@@ -182,8 +186,24 @@ export const en = {
         dark: "Dark"
       },
       header: {
-        title: "Settings",
+        title: "MySettings",
         backToCashier: "Back to Register"
+      },
+      categoryVisibility: {
+        title: "Visible categories",
+        description: "Select the food categories you want to see on the register page",
+        selectAll: "Select all",
+        deselectAll: "Deselect all",
+        loading: "Loading categories..."
+      },
+      defaults: {
+        title: "Default values",
+        description: "If the field is empty when submitting the order, the default value is used",
+        customerLabel: "Default customer",
+        customerPlaceholder: "E.g. Anonymous",
+        tableLabel: "Default table",
+        tablePlaceholder: "E.g. Takeaway",
+        save: "Save"
       }
     },
     loginForm: {
@@ -200,7 +220,9 @@ export const en = {
       passwordLabel: "Password",
       passwordPlaceholder: "Your password",
       loggingIn: "Logging in...",
-      loginButton: "Login"
+      loginButton: "Login",
+      sessionExpired: "Session expired, please log in again",
+      accessDenied: "Access denied: insufficient permissions"
     },
     categorySideBar: {
       allCategories: "All Categories",
@@ -209,7 +231,9 @@ export const en = {
     },
     foods: {
       notAvailable: "N/A",
-      toggleUnavailable: "Show/hide unavailable foods"
+      toggleUnavailable: "Show/hide unavailable foods",
+      hideUnavailable: "Hide unavailable",
+      showUnavailable: "Show unavailable"
     },
     mobile: {
       header: {
@@ -268,6 +292,11 @@ export const en = {
       drawerOpened: "Drawer opened successfully",
       drawerOpenError: "Error opening the drawer",
       loading: "Loading..."
+    },
+    dialog: {
+      printerOfflineAction: "Check the connection and restart the printer",
+      printerOfflineDismiss: "Got it",
+      printerErrorAction: "Check the printer status and restart it if needed"
     }
   }
 };

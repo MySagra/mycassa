@@ -1,11 +1,24 @@
+"use client";
+
 import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "react-i18next";
+import { useAuth } from "@/hooks/use-auth";
+import { logout as logoutAction } from "@/actions/auth";
+import { UserMenu } from "@/components/cassa/header/UserMenu";
 
 export function SettingsHeader() {
     const router = useRouter();
     const { t } = useTranslation();
+    const { user } = useAuth();
+
+    const handleLogout = async () => {
+        await logoutAction();
+        localStorage.removeItem('mycassa_user');
+        localStorage.removeItem('selectedCashRegister');
+        router.push('/login');
+    };
 
     return (
         <header className="border-b bg-card sticky top-0 z-10">
@@ -20,15 +33,20 @@ export function SettingsHeader() {
                     <h1 className="text-2xl font-bold select-none hidden md:block">{t('settings.header.title')}</h1>
                 </div>
 
-                <Button
-                    variant="outline"
-                    size="lg"
-                    className='select-none cursor-pointer'
-                    onClick={() => router.push('/cashier')}
-                >
-                    <ArrowLeft className="mr-2 h-4 w-4" />
-                    {t('settings.header.backToCashier')}
-                </Button>
+                <div className="flex items-center gap-2">
+                    <Button
+                        variant="outline"
+                        size="lg"
+                        className='select-none cursor-pointer'
+                        onClick={() => router.push('/cashier')}
+                    >
+                        <ArrowLeft className="mr-2 h-4 w-4" />
+                        {t('settings.header.backToCashier')}
+                    </Button>
+                    {user && (
+                        <UserMenu user={user} onLogout={handleLogout} />
+                    )}
+                </div>
             </div>
         </header>
     );

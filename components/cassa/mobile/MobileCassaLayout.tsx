@@ -279,10 +279,7 @@ export function MobileCassaLayout({
                                         onClick={onConfirmOrder}
                                         disabled={
                                             orderSuccess ||
-                                            cart.length === 0 ||
-                                            !paymentMethod ||
-                                            (requireCustomer && (!customer || customer.length < 2)) ||
-                                            (enableTableInput && !table) ||
+                                            !!(validationMessage && validationMessage.length > 0) ||
                                             loadingConfirmOrder
                                         }
                                     >

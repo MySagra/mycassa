@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { OrderDetailResponse } from '@/lib/api-types';
 import {
     Dialog,
@@ -15,6 +16,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Printer, Receipt, Loader2 } from 'lucide-react';
 import { getPrinterById, reprintOrder } from '@/actions/cashier';
 import { toast } from 'sonner';
+import { ApiError } from '@/lib/api-error';
 
 interface PrinterInfo {
     id: string;
@@ -31,6 +33,7 @@ interface ReprintDialogProps {
 }
 
 export function ReprintDialog({ order, open, onClose }: ReprintDialogProps) {
+    const router = useRouter();
     const [printers, setPrinters] = useState<PrinterInfo[]>([]);
     const [reprintReceipt, setReprintReceipt] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -118,14 +121,15 @@ export function ReprintDialog({ order, open, onClose }: ReprintDialogProps) {
 
         try {
             const result = await reprintOrder(order.id, body);
-            if (result.success) {
-                toast.success('Ristampa eseguita con successo');
-                onClose();
-            } else {
-                toast.error(result.error || 'Errore durante la ristampa');
+            if (!result.success) throw new ApiError(result.status ?? 0, result.error, (result as any).code);
+            toast.success('Ristampa eseguita con successo');
+            onClose();
+        } catch (error: any) {
+            if (error instanceof ApiError && error.isAuthError) {
+                router.push(`/login?error=${encodeURIComponent(error.code ?? 'session_expired')}`);
+                return;
             }
-        } catch {
-            toast.error('Errore durante la ristampa');
+            toast.error(error instanceof ApiError ? error.message : 'Errore durante la ristampa');
         } finally {
             setSubmitting(false);
         }

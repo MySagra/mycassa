@@ -111,8 +111,6 @@ export function DesktopCassaLayout({
                     cashRegisterName={cashRegisterName}
                     cashRegisterId={cashRegisterId}
                     cashRegisterInvalid={cashRegisterInvalid}
-                    foodSearchQuery={foodSearchQuery}
-                    onFoodSearchChange={onFoodSearchChange}
                     user={user}
                     onGeneralClosure={onGeneralClosure}
                 />
@@ -132,6 +130,7 @@ export function DesktopCassaLayout({
                             loading={loadingFoods}
                             showDailyOrders={showDailyOrders}
                             foodSearchQuery={foodSearchQuery}
+                            onFoodSearchChange={onFoodSearchChange}
                         />
                     </main>
                     <CartSidebar
@@ -180,6 +179,7 @@ export function DesktopCassaLayout({
                             onLoadToCart={onLoadToCart}
                             onCancelOrder={onCancelOrder}
                             onToggleAllOrders={onToggleAllOrders}
+                            onClose={onToggleDailyOrders}
                         />
                     )}
                 </div>

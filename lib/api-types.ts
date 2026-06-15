@@ -111,6 +111,11 @@ export interface OrderStationState {
   status: 'PENDING' | 'COMPLETED' | 'CANCELLED' | 'PARTIAL';
   orderId: string;
   stationId: string;
+  updatedAt?: string;
+  station?: {
+    id: string;
+    name: string;
+  };
 }
 
 export interface OrderDetailResponse {
@@ -133,6 +138,17 @@ export interface OrderDetailResponse {
   cashRegisterId?: string;
   orderStationStates?: OrderStationState[];
   categorizedItems: CategorizedItems[];
+  user?: {
+    id: string;
+    username: string;
+    roleId: string;
+  };
+  cashRegister?: {
+    id: string;
+    name: string;
+    enabled: boolean;
+    defaultPrinterId?: string | null;
+  };
 }
 
 export interface CategorizedItems {

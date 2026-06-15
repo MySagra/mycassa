@@ -1,12 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { OrderDetailResponse } from '@/lib/api-types';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { FileText, Printer } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { getCashRegisters, getUsers } from '@/actions/cashier';
-import { toast } from 'sonner';
 import { ReprintDialog } from './ReprintDialog';
 import { useTranslation } from 'react-i18next';
 
@@ -18,63 +16,9 @@ interface OrderDetailDialogProps {
     stationsMap?: Record<string, string>;
 }
 
-interface CashRegister {
-    id: string;
-    name: string;
-    enabled: boolean;
-}
-
 export function OrderDetailDialog({ order, open, loading, onClose, stationsMap }: OrderDetailDialogProps) {
-    const [cashRegisterName, setCashRegisterName] = useState<string>('');
-    const [operatorName, setOperatorName] = useState<string>('');
     const [reprintOpen, setReprintOpen] = useState(false);
     const { t } = useTranslation();
-
-    // Fetch cash register name when order changes
-    useEffect(() => {
-        const fetchCashRegisterName = async () => {
-            if (order?.cashRegisterId) {
-                try {
-                    const result = await getCashRegisters();
-                    if (result.success) {
-                        const cashRegisters = result.data as CashRegister[];
-                        const cashRegister = cashRegisters.find(cr => cr.id === order.cashRegisterId);
-                        if (cashRegister) {
-                            setCashRegisterName(cashRegister.name);
-                        } else {
-                            setCashRegisterName('N/A');
-                        }
-                    } else {
-                        setCashRegisterName('N/A');
-                    }
-                } catch (error) {
-                    console.error('Error fetching cash register:', error);
-                    setCashRegisterName('N/A');
-                }
-            } else {
-                setCashRegisterName('N/A');
-            }
-        };
-
-        const fetchOperatorName = async () => {
-            if (order?.userId) {
-                const result = await getUsers();
-                if (result.success) {
-                    const user = (result.data as { id: string; username: string }[]).find(u => u.id === order.userId);
-                    setOperatorName(user?.username ?? 'N/A');
-                } else {
-                    setOperatorName('N/A');
-                }
-            } else {
-                setOperatorName('N/A');
-            }
-        };
-
-        if (order) {
-            fetchCashRegisterName();
-            fetchOperatorName();
-        }
-    }, [order]);
     return (
         <>
             <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
@@ -248,7 +192,7 @@ export function OrderDetailDialog({ order, open, loading, onClose, stationsMap }
                                                     PARTIAL: { label: t('orderStationStatus.partial'), className: 'bg-orange-500/20 text-orange-700 dark:text-orange-400' }
                                                 };
                                                 const statusInfo = statusMap[stationState.status] || { label: stationState.status, className: 'bg-gray-500/20 text-gray-700 dark:text-gray-400' };
-                                                const stationName = stationsMap?.[stationState.stationId] || `Station ${stationState.stationId}`;
+                                                const stationName = stationState.station?.name || stationsMap?.[stationState.stationId] || `Station ${stationState.stationId}`;
                                                 return (
                                                     <div key={stationState.id} className="flex items-center justify-between p-2 bg-muted dark:bg-muted/40 rounded-lg">
                                                         <span className="text-sm font-medium">{stationName}</span>
@@ -270,11 +214,11 @@ export function OrderDetailDialog({ order, open, loading, onClose, stationsMap }
                             <div className='flex flex-col gap-1'>
                                 <div className='flex items-center gap-2'>
                                     <div className="text-sm text-muted-foreground">{t('orderDetailDialog.cashRegister')}</div>
-                                    <div className="text-sm font-bold text-amber-600">{cashRegisterName}</div>
+                                    <div className="text-sm font-bold text-amber-600">{order?.cashRegister?.name ?? 'N/A'}</div>
                                 </div>
                                 <div className='flex items-center gap-2'>
                                     <div className="text-sm text-muted-foreground">{t('orderDetailDialog.operator')}</div>
-                                    <div className="text-sm font-bold text-amber-600">{operatorName}</div>
+                                    <div className="text-sm font-bold text-amber-600">{order?.user?.username ?? 'N/A'}</div>
                                 </div>
                             </div>
 

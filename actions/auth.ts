@@ -1,7 +1,7 @@
 'use server';
 
-import { cookies } from 'next/headers';
-import { AUTH_COOKIE_NAME, COOKIE_STORE_NAME } from '@/lib/auth';
+import { cookies, headers } from 'next/headers';
+import { AUTH_COOKIE_NAME, COOKIE_STORE_NAME, USER_COOKIE_NAME, signUserJwt } from '@/lib/auth';
 
 /**
  * Login action: chiama l'API e il cookie mysagra_token viene impostato
@@ -9,9 +9,14 @@ import { AUTH_COOKIE_NAME, COOKIE_STORE_NAME } from '@/lib/auth';
  */
 export async function login(username: string, password: string) {
   try {
+    const userAgent = (await headers()).get('user-agent') ?? '';
+
     const response = await fetch(`${process.env.API_URL}/auth/login`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'User-Agent': userAgent,
+      },
       body: JSON.stringify({ username, password }),
       credentials: 'include',
     });
@@ -20,14 +25,13 @@ export async function login(username: string, password: string) {
       return { success: false, error: 'Credenziali non valide' };
     }
 
-    // Il backend restituisce { id, username, role } e imposta il cookie mysagra_token
-    // Propaghiamo il cookie Set-Cookie dalla risposta API al browser tramite Next.js
+    const data = await response.json();
+    const user = { ...data, id: data.userId ?? data.id };
+
     const setCookieHeader = response.headers.get('set-cookie');
     if (setCookieHeader) {
-      // Parsiamo il cookie mysagra_token dal set-cookie header e lo reimpostiamo
       const cookieStore = await cookies();
-      // Estrai il valore del token dal set-cookie header
-      const tokenMatch = setCookieHeader.match(/mysagra_token=([^;]+)/);
+      const tokenMatch = setCookieHeader.match(new RegExp(`${AUTH_COOKIE_NAME}=([^;]+)`));
       if (tokenMatch) {
         const tokenValue = tokenMatch[1];
 
@@ -54,11 +58,19 @@ export async function login(username: string, password: string) {
           path: '/',
           maxAge,
         });
+
+        const userJwt = await signUserJwt({ id: user.id, username: user.username, role: user.role });
+        cookieStore.set(USER_COOKIE_NAME, userJwt, {
+          httpOnly: false,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax',
+          path: '/',
+          maxAge,
+        });
       }
     }
 
-    const data = await response.json();
-    return { success: true, user: data };
+    return { success: true };
   } catch (error) {
     console.error('Login error:', error);
     return { success: false, error: 'Errore durante il login' };
@@ -91,6 +103,7 @@ export async function logout() {
   } finally {
     const cookieStore = await cookies();
     cookieStore.delete(COOKIE_STORE_NAME);
+    cookieStore.delete(USER_COOKIE_NAME);
   }
 
   return { success: true };

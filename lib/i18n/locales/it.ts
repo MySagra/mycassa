@@ -17,7 +17,8 @@ export const it = {
       customerPlaceholder: "Es. Mario Rossi",
       table: "Tavolo",
       tablePlaceholder: "Es. 12 o Tavolo A5",
-      tableDisabled: "TAVOLO DISABILITATO"
+      tableDisabled: "TAVOLO DISABILITATO",
+      noCustomer: "Inserisci cliente di default"
     },
     payment: {
       subtotal: "Subtotale",
@@ -57,7 +58,10 @@ export const it = {
       searchOrder: "Cerca Ordine",
       searchPlaceholder: "Cerca per codice, tavolo o cliente...",
       loading: "Caricamento ordini...",
-      noOrders: "Nessun ordine trovato per oggi"
+      noOrders: "Nessun ordine trovato per oggi",
+      filterPending: "SOLO IN ATTESA",
+      filterAll: "TUTTI GLI ORDINI",
+      last20Orders: "Stai visualizzando solo gli ultimi 20 ordini"
     },
     dailyOrderCard: {
       statusPending: "In attesa",
@@ -182,8 +186,24 @@ export const it = {
         dark: "Scuro"
       },
       header: {
-        title: "Impostazioni",
+        title: "MyImpostazioni",
         backToCashier: "Torna alla cassa"
+      },
+      categoryVisibility: {
+        title: "Categorie visibili",
+        description: "Seleziona le categorie di cibi che vuoi vedere nella pagina della cassa",
+        selectAll: "Seleziona tutte",
+        deselectAll: "Deseleziona tutte",
+        loading: "Caricamento categorie..."
+      },
+      defaults: {
+        title: "Valori predefiniti",
+        description: "Se il campo è vuoto all'invio dell'ordine, viene usato il valore predefinito",
+        customerLabel: "Cliente predefinito",
+        customerPlaceholder: "Es. Anonimo",
+        tableLabel: "Tavolo predefinito",
+        tablePlaceholder: "Es. Asporto",
+        save: "Salva"
       }
     },
     loginForm: {
@@ -200,7 +220,9 @@ export const it = {
       passwordLabel: "Password",
       passwordPlaceholder: "La tua password",
       loggingIn: "Accesso...",
-      loginButton: "Accedi"
+      loginButton: "Accedi",
+      sessionExpired: "Sessione scaduta, effettua di nuovo il login",
+      accessDenied: "Accesso negato: permessi insufficienti"
     },
     categorySideBar: {
       allCategories: "Tutte le Categorie",
@@ -209,7 +231,9 @@ export const it = {
     },
     foods: {
       notAvailable: "Non disp.",
-      toggleUnavailable: "Mostra/nascondi cibi non disponibili"
+      toggleUnavailable: "Mostra/nascondi cibi non disponibili",
+      hideUnavailable: "Nascondi non disponibili",
+      showUnavailable: "Mostra non disponibili"
     },
     mobile: {
       header: {
@@ -268,6 +292,11 @@ export const it = {
       drawerOpened: "Cassetto aperto con successo",
       drawerOpenError: "Errore nell'apertura del cassetto",
       loading: "Caricamento..."
+    },
+    dialog: {
+      printerOfflineAction: "Verifica la connessione e riavvia la stampante",
+      printerOfflineDismiss: "Ho capito",
+      printerErrorAction: "Verifica lo stato della stampante e riavviala se necessario"
     }
   }
 };

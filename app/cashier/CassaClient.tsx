@@ -24,6 +24,16 @@ import { DesktopCassaLayout, CassaLayoutProps } from '@/components/cassa/desktop
 import { MobileCassaLayout } from '@/components/cassa/mobile/MobileCassaLayout';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { z } from 'zod';
+import { ApiError } from '@/lib/api-error';
+
+/** Solleva ApiError se l'action ha restituito un fallimento. */
+function throwIfActionError(result: { success: boolean; error?: string; status?: number; code?: string }) {
+    if (!result.success) {
+        throw new ApiError(result.status ?? 0, result.error, result.code);
+    }
+}
+
+const ORDER_DRAFT_KEY = 'mycassa_order_draft';
 
 export default function CassaPage({ requiredTable, requireCustomer }: { requiredTable: boolean; requireCustomer: boolean }) {
     const router = useRouter();
@@ -36,6 +46,9 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
     const lastEventRef = useRef<string | null>(null);
     const showAllOrdersRef = useRef<boolean>(false);
     const dailyOrdersRef = useRef<DailyOrder[]>([]);
+    const showDailyOrdersRef = useRef<boolean>(false);
+    const isMobileRef = useRef<boolean>(isMobile);
+    const sseConnectedRef = useRef<boolean>(false);
     const printerCacheRef = useRef<Map<string, { name: string; ip?: string | null }>>(new Map());
     const wasAuthenticatedRef = useRef(isAuthenticated);
     const [categories, setCategories] = useState<Category[]>([]);
@@ -70,14 +83,41 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
     const [showAllOrders, setShowAllOrders] = useState(false);
     const [allIngredients, setAllIngredients] = useState<Ingredient[]>([]);
     const [showUnavailableDialog, setShowUnavailableDialog] = useState(false);
+    const [printerOfflineInfo, setPrinterOfflineInfo] = useState<{ label: string } | null>(null);
+    const [printerErrorInfo, setPrinterErrorInfo] = useState<{ label: string; status: string } | null>(null);
     const [stationsMap, setStationsMap] = useState<Record<string, string>>({});
 
-    // Clear localStorage and logout on auth errors
-    const handleAuthError = async () => {
+    // Restore order draft from sessionStorage on mount
+    useEffect(() => {
+        try {
+            const raw = sessionStorage.getItem(ORDER_DRAFT_KEY);
+            if (!raw) return;
+            const draft = JSON.parse(raw);
+            if (draft.cart?.length) setCart(draft.cart);
+            if (draft.customer) setCustomer(draft.customer);
+            if (draft.table) setTable(draft.table);
+            if (draft.displayCode) setDisplayCode(draft.displayCode);
+            if (draft.paymentMethod) setPaymentMethod(draft.paymentMethod);
+            if (draft.paidAmount) setPaidAmount(draft.paidAmount);
+            if (draft.appliedDiscountAmount) setAppliedDiscountAmount(draft.appliedDiscountAmount);
+        } catch {}
+    }, []);
+
+    // Save order draft to sessionStorage on change
+    useEffect(() => {
+        try {
+            sessionStorage.setItem(ORDER_DRAFT_KEY, JSON.stringify({
+                cart, customer, table, displayCode, paymentMethod, paidAmount, appliedDiscountAmount
+            }));
+        } catch {}
+    }, [cart, customer, table, displayCode, paymentMethod, paidAmount, appliedDiscountAmount]);
+
+    // Clear localStorage and logout on auth errors, redirecting to login with a reason code
+    const handleAuthError = async (code?: string) => {
         localStorage.removeItem('mycassa_user');
         localStorage.removeItem('selectedCashRegister');
         await logoutAction();
-        router.push('/login');
+        router.push(`/login?error=${encodeURIComponent(code ?? 'session_expired')}`);
     };
 
     // Clear localStorage when session expires
@@ -90,12 +130,13 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
         wasAuthenticatedRef.current = isAuthenticated;
     }, [isAuthenticated, isLoading]);
 
-    // Keep ref in sync with state
-    // Keep ref in sync with state
+    // Keep refs in sync with state
     useEffect(() => {
         showAllOrdersRef.current = showAllOrders;
         dailyOrdersRef.current = dailyOrders;
-    }, [showAllOrders, dailyOrders]);
+        showDailyOrdersRef.current = showDailyOrders;
+        isMobileRef.current = isMobile;
+    }, [showAllOrders, dailyOrders, showDailyOrders, isMobile]);
 
 
 
@@ -106,21 +147,23 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
             if (selectedId) {
                 try {
                     const result = await getCashRegisters();
-                    if (result.success) {
-                        const cashRegisters = result.data;
-                        const selected = cashRegisters.find((cr: any) => cr.id === selectedId);
-                        if (selected) {
-                            setCashRegisterId(selected.id);
-                            setCashRegisterName(selected.name);
-                            setCashRegisterInvalid(false);
-                        } else {
-                            // ID saved in localStorage no longer exists in this system
-                            setCashRegisterInvalid(true);
-                            localStorage.removeItem('selectedCashRegister');
-                            setShowConfigDialog(true);
-                        }
+                    throwIfActionError(result);
+                    const cashRegisters = result.data;
+                    const selected = cashRegisters.find((cr: any) => cr.id === selectedId);
+                    if (selected) {
+                        setCashRegisterId(selected.id);
+                        setCashRegisterName(selected.name);
+                        setCashRegisterInvalid(false);
+                    } else {
+                        setCashRegisterInvalid(true);
+                        localStorage.removeItem('selectedCashRegister');
+                        setShowConfigDialog(true);
                     }
-                } catch (error) {
+                } catch (error: any) {
+                    if (error instanceof ApiError && error.isAuthError) {
+                        await handleAuthError(error.code);
+                        return;
+                    }
                     console.error('Error loading cash register name:', error);
                 }
             } else {
@@ -154,11 +197,8 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
         const fetchStations = async () => {
             try {
                 const result = await getStations();
-
-                if (!result.success || !result.data) {
-                    if (!isMobile) toast.error(result.error || t('toast.categoriesLoadError'));
-                    return;
-                }
+                throwIfActionError(result);
+                if (!result.success) return;
 
                 const { categories: fetchedCategories, stations } = result.data;
 
@@ -199,7 +239,11 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
                 setFoods(allFoods);
                 setAllIngredients(Array.from(allIngredientsSet.values()));
                 setStationsMap(stationIdToName);
-            } catch (error) {
+            } catch (error: any) {
+                if (error instanceof ApiError && error.isAuthError) {
+                    await handleAuthError(error.code);
+                    return;
+                }
                 console.error('Error loading stations:', error);
                 if (!isMobile) toast.error(t('toast.categoriesLoadError'));
             } finally {
@@ -257,18 +301,25 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
                         if (response.ok) {
                             console.log('[SSE] Connessione stabilita con successo');
 
-                            // Fetch initial daily orders when SSE connection is established or reopened
-                            try {
-                                const result = showAllOrdersRef.current ? await getAllTodayOrders() : await getTodayOrders();
-                                if (result.success) {
-                                    setDailyOrders(result.data);
-                                    console.log('[SSE] Ordini caricati:', result.data.length);
-                                } else {
-                                    console.error('[SSE] Errore caricamento ordini iniziali:', result.error);
+                            // On reconnection only: reload orders to catch missed events
+                            // First connect is handled by the useEffect below
+                            if (sseConnectedRef.current && (showDailyOrdersRef.current || isMobileRef.current)) {
+                                try {
+                                    const result = showAllOrdersRef.current ? await getAllTodayOrders() : await getTodayOrders();
+                                    if (result.success) {
+                                        setDailyOrders(result.data);
+                                        console.log('[SSE] Ordini ricaricati dopo riconnessione:', result.data.length);
+                                    } else {
+                                        console.error('[SSE] Errore caricamento ordini dopo riconnessione:', result.error);
+                                    }
+                                } catch (error: any) {
+                                    console.error('[SSE] Errore caricamento ordini dopo riconnessione:', error);
                                 }
-                            } catch (error: any) {
-                                console.error('[SSE] Errore caricamento ordini iniziali:', error);
                             }
+                            sseConnectedRef.current = true;
+                        } else if (response.status === 401 || response.status === 403) {
+                            abortController.abort();
+                            await handleAuthError('session_expired');
                         } else {
                             console.error(`[SSE] Errore di connessione: Status ${response.status}`);
                             throw new Error(`SSE connection failed with status ${response.status}`);
@@ -291,7 +342,6 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
                         if (event.event === 'new-order') {
                             try {
                                 const order: DailyOrder = JSON.parse(event.data);
-                                const isNewOrder = !dailyOrdersRef.current.some(o => o.id === order.id);
 
                                 setDailyOrders((prevOrders) => {
                                     const existingIndex = prevOrders.findIndex(o => o.id === order.id);
@@ -305,82 +355,45 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
                                     }
                                 });
 
-                                // Fetch full order details for new orders to populate ticketNumber and source
-                                if (isNewOrder) {
-                                    try {
-                                        const result = await getOrderByOrderId(order.id);
-                                        if (result.success) {
-                                            const fullOrderDetail = result.data;
-                                            const fullOrder: DailyOrder = {
-                                                id: fullOrderDetail.id,
-                                                displayCode: fullOrderDetail.displayCode,
-                                                ticketNumber: fullOrderDetail.ticketNumber,
-                                                table: fullOrderDetail.table,
-                                                customer: fullOrderDetail.customer,
-                                                createdAt: fullOrderDetail.createdAt,
-                                                subTotal: fullOrderDetail.subTotal,
-                                                total: fullOrderDetail.total,
-                                                status: fullOrderDetail.status
-                                            };
-                                            setDailyOrders(prev =>
-                                                prev.map(o => o.id === order.id ? fullOrder : o)
-                                            );
-                                        }
-                                    } catch (error) {
-                                        console.error('[SSE] Error fetching full new order details:', error);
-                                    }
-                                }
 
                             } catch (error) {
                                 console.error('[SSE] Errore parsando new-order:', error);
                             }
                         }
                         // Handle confirmed-order event
-                        // Handle confirmed-order event
                         else if (event.event === 'confirmed-order') {
                             try {
-                                const { id, displayCode } = JSON.parse(event.data);
+                                const { id } = JSON.parse(event.data);
 
-                                // Fetch full order details to get ticketNumber
-                                try {
-                                    const result = await getOrderByOrderId(id);
-                                    if (result.success) {
-                                        const newOrder = result.data;
-                                        const dailyOrder: DailyOrder = {
-                                            id: newOrder.id,
-                                            displayCode: newOrder.displayCode,
-                                            ticketNumber: (newOrder as any).ticketNumber,
-                                            table: newOrder.table,
-                                            customer: newOrder.customer,
-                                            createdAt: newOrder.createdAt,
-                                            subTotal: newOrder.subTotal,
-                                            total: newOrder.total,
-                                            status: 'CONFIRMED'
-                                        };
-
-                                        // If showing all orders, update the order status instead of removing
-                                        if (showAllOrdersRef.current) {
+                                if (showAllOrdersRef.current) {
+                                    // Fetch full details only when showing all orders (need ticketNumber etc.)
+                                    try {
+                                        const result = await getOrderByOrderId(id);
+                                        if (result.success) {
+                                            const newOrder = result.data;
+                                            const dailyOrder: DailyOrder = {
+                                                id: newOrder.id,
+                                                displayCode: newOrder.displayCode,
+                                                ticketNumber: (newOrder as any).ticketNumber,
+                                                table: newOrder.table,
+                                                customer: newOrder.customer,
+                                                createdAt: newOrder.createdAt,
+                                                subTotal: newOrder.subTotal,
+                                                total: newOrder.total,
+                                                status: 'CONFIRMED'
+                                            };
                                             const orderExists = dailyOrdersRef.current.some(o => o.id === id);
-
                                             if (orderExists) {
-                                                setDailyOrders((prevOrders) => {
-                                                    return prevOrders.map(o =>
-                                                        o.id === id ? dailyOrder : o
-                                                    );
-                                                });
+                                                setDailyOrders(prev => prev.map(o => o.id === id ? dailyOrder : o));
                                             } else {
-                                                // If order doesn't exist, add it
                                                 setDailyOrders(prev => [dailyOrder, ...prev]);
                                             }
-                                        } else {
-                                            // Only remove from list if showing pending orders only
-                                            setDailyOrders((prevOrders) => {
-                                                return prevOrders.filter(o => o.id !== id);
-                                            });
                                         }
+                                    } catch (error) {
+                                        console.error('[SSE] Error fetching confirmed order details:', error);
                                     }
-                                } catch (error) {
-                                    console.error('[SSE] Error fetching confirmed order details:', error);
+                                } else {
+                                    setDailyOrders(prev => prev.filter(o => o.id !== id));
                                 }
                             } catch (error) {
                                 console.error('[SSE] Errore parsando confirmed-order:', error);
@@ -512,11 +525,12 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
 
                                     if (!isMobile) {
                                         if (status === 'ONLINE') {
+                                            setPrinterOfflineInfo(null);
                                             toast.success(t('toast.printerOnline', { label }), { description: t('toast.printerOnlineDesc') });
                                         } else if (status === 'OFFLINE') {
-                                            toast.warning(t('toast.printerOffline', { label }), { description: t('toast.printerOfflineDesc') });
+                                            setPrinterOfflineInfo({ label });
                                         } else {
-                                            toast.error(t('toast.printerError', { label }), { description: t('toast.printerErrorDesc', { status }) });
+                                            setPrinterErrorInfo({ label, status });
                                         }
                                     }
                                 };
@@ -601,78 +615,55 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
             console.log('[SSE] Cleanup: chiusura connessione');
             abortController.abort();
             sseConnectionRef.current = false;
+            sseConnectedRef.current = false;
         };
     }, [isAuthenticated]);
 
-    // Load daily orders when the section is opened
-    useEffect(() => {
-        if (!isAuthenticated || !showDailyOrders) {
-            return;
-        }
-
-        // Load initial orders
-        const loadInitialOrders = async () => {
-            setLoadingDailyOrders(true);
-            try {
-                const result = showAllOrders ? await getAllTodayOrders() : await getTodayOrders();
-                if (result.success) {
-                    setDailyOrders(result.data);
-                } else {
-                    if (!isMobile) toast.error(result.error || t('toast.orderLoadError'));
-                }
-            } catch (error: any) {
-                console.error('[SSE] Errore caricamento ordini iniziali:', error);
-                if (!isMobile) toast.error(error.message || t('toast.orderLoadError'));
-            } finally {
-                setLoadingDailyOrders(false);
-            }
-        };
-
-        loadInitialOrders();
-    }, [isAuthenticated, showDailyOrders, showAllOrders]);
-
-    // Search daily orders based on query
+    // Load or search daily orders
     useEffect(() => {
         if (!isAuthenticated || (!showDailyOrders && !isMobile)) {
             return;
         }
 
-        // If search query is empty, reload all today's orders
         if (!searchQuery.trim()) {
-            const loadInitialOrders = async () => {
+            const loadOrders = async () => {
+                setLoadingDailyOrders(true);
                 try {
                     const result = showAllOrders ? await getAllTodayOrders() : await getTodayOrders();
-                    if (result.success) {
-                        setDailyOrders(result.data);
-                    }
+                    throwIfActionError(result);
+                    if (result.success) setDailyOrders(result.data);
                 } catch (error: any) {
+                    if (error instanceof ApiError && error.isAuthError) {
+                        await handleAuthError(error.code);
+                        return;
+                    }
                     console.error('Errore caricamento ordini:', error);
+                    if (!isMobile) toast.error(error.message || t('toast.orderLoadError'));
+                } finally {
+                    setLoadingDailyOrders(false);
                 }
             };
 
-            loadInitialOrders();
+            loadOrders();
             return;
         }
 
-        // Search with query
         const searchOrders = async () => {
             try {
                 const result = showAllOrders ? await searchAllDailyOrders(searchQuery) : await searchDailyOrders(searchQuery);
-                if (result.success) {
-                    setDailyOrders(result.data);
-                } else {
-                    if (!isMobile) toast.error(result.error || t('toast.orderLoadError'));
-                }
+                throwIfActionError(result);
+                if (result.success) setDailyOrders(result.data);
             } catch (error: any) {
+                if (error instanceof ApiError && error.isAuthError) {
+                    await handleAuthError(error.code);
+                    return;
+                }
                 console.error('Errore nella ricerca:', error);
                 if (!isMobile) toast.error(error.message || t('toast.orderLoadError'));
             }
         };
 
-        const debounceTimer = setTimeout(() => {
-            searchOrders();
-        }, 300); // Debounce 300ms
-
+        const debounceTimer = setTimeout(searchOrders, 300);
         return () => clearTimeout(debounceTimer);
     }, [isAuthenticated, showDailyOrders, isMobile, searchQuery, showAllOrders]);
 
@@ -716,6 +707,7 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
     };
 
     const clearCart = () => {
+        sessionStorage.removeItem(ORDER_DRAFT_KEY);
         setCart([]);
         setDisplayCode('');
         setCustomer('');
@@ -726,6 +718,7 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
     };
 
     const resetAfterOrder = () => {
+        sessionStorage.removeItem(ORDER_DRAFT_KEY);
         setCart([]);
         setDisplayCode('');
         setCustomer('');
@@ -786,13 +779,10 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
         setLoadingOrder(true);
         try {
             const result = await getOrderByCode(displayCode.toUpperCase());
+            throwIfActionError(result);
+            if (!result.success) return;
 
-            if (!result.success) {
-                toast.error(result.error || t('toast.orderLoadError'));
-                return;
-            }
-
-            const order = (result as any).data;
+            const order = result.data;
 
             // Check if order is pending
             if (order.status !== 'PENDING') {
@@ -837,6 +827,10 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
 
             if (!isMobile) toast.success(t('toast.orderLoaded', { displayCode: displayCode.toUpperCase() }));
         } catch (error: any) {
+            if (error instanceof ApiError && error.isAuthError) {
+                await handleAuthError(error.code);
+                return;
+            }
             console.error('Error loading order:', error);
             if (!isMobile) toast.error(error.message || t('toast.orderLoadError'));
         } finally {
@@ -848,11 +842,8 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
     const loadOrderToCart = async (order: DailyOrder) => {
         try {
             const result = await getOrderByOrderId(order.id);
-
-            if (!result.success) {
-                toast.error(result.error || t('toast.orderLoadError'));
-                return;
-            }
+            throwIfActionError(result);
+            if (!result.success) return;
 
             const orderDetail = result.data;
 
@@ -894,6 +885,10 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
 
             if (!isMobile) toast.success(t('toast.orderLoadedToCart', { displayCode: order.displayCode }));
         } catch (error: any) {
+            if (error instanceof ApiError && error.isAuthError) {
+                await handleAuthError(error.code);
+                return;
+            }
             console.error('Error loading order to cart:', error);
             if (!isMobile) toast.error(error.message || t('toast.orderLoadError'));
         }
@@ -904,12 +899,13 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
         setLoadingOrderDetail(true);
         try {
             const result = await getOrderByOrderId(orderId);
-            if (result.success) {
-                setViewingOrderDetail(result.data);
-            } else {
-                if (!isMobile) toast.error(result.error || t('toast.orderLoadError'));
-            }
+            throwIfActionError(result);
+            if (result.success) setViewingOrderDetail(result.data);
         } catch (error: any) {
+            if (error instanceof ApiError && error.isAuthError) {
+                await handleAuthError(error.code);
+                return;
+            }
             console.error('Error loading order detail:', error);
             if (!isMobile) toast.error(error.message || t('toast.orderLoadError'));
         } finally {
@@ -920,15 +916,16 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
     const handleCancelOrder = async (orderId: string) => {
         try {
             const result = await cancelOrderAction(orderId);
-            if (result.success) {
-                setDailyOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'CANCELLED' } : o));
-                toast.success(t('toast.orderCancelled'));
-            } else {
-                toast.error(result.error || t('toast.orderCancelError'));
-            }
+            throwIfActionError(result);
+            setDailyOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'CANCELLED' } : o));
+            toast.success(t('toast.orderCancelled'));
         } catch (error: any) {
+            if (error instanceof ApiError && error.isAuthError) {
+                await handleAuthError(error.code);
+                return;
+            }
             console.error('Error cancelling order:', error);
-            toast.error(error.message || t('toast.orderCancelError'));
+            toast.error(error instanceof ApiError ? error.message : t('toast.orderCancelError'));
         }
     };
 
@@ -942,24 +939,6 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
             return;
         }
 
-        try {
-            const registersResult = await getCashRegisters();
-            if (registersResult.success) {
-                const exists = registersResult.data.some((cr: any) => cr.id === selectedCashRegister);
-                if (!exists) {
-                    setCashRegisterInvalid(true);
-                    setCashRegisterName('');
-                    localStorage.removeItem('selectedCashRegister');
-                    if (!isMobile) toast.error(t('toast.noCashRegisterSelected'));
-                    setShowConfigDialog(true);
-                    return;
-                }
-                setCashRegisterInvalid(false);
-            }
-        } catch {
-            // Non-blocking: if validation fetch fails, proceed and let server error handle it
-        }
-
         // Validate payment method
         if (!paymentMethod) {
             toast.error('Seleziona un metodo di pagamento');
@@ -968,7 +947,12 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
 
         // Validate customer
         if (requireCustomer) {
-            const customerValidation = orderSchema.shape.customer.safeParse(customer);
+            const defaultCustomerEnabled = localStorage.getItem('defaultCustomerEnabled') === 'true';
+            const defaultCustomerValue = localStorage.getItem('defaultCustomerValue') ?? '';
+            const customerToValidate = !customer.trim() && defaultCustomerEnabled && defaultCustomerValue.trim()
+                ? defaultCustomerValue
+                : customer;
+            const customerValidation = orderSchema.shape.customer.safeParse(customerToValidate);
             if (!customerValidation.success) {
                 toast.error(customerValidation.error.issues[0].message);
                 return;
@@ -977,7 +961,12 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
 
         // Validate table only if enabled
         if (enableTableInput) {
-            const tableValidation = z.string().min(1, 'Il numero del tavolo è obbligatorio').safeParse(table);
+            const defaultTableEnabled = localStorage.getItem('defaultTableEnabled') === 'true';
+            const defaultTableValue = localStorage.getItem('defaultTableValue') ?? '';
+            const tableToValidate = !table.trim() && defaultTableEnabled && defaultTableValue.trim()
+                ? defaultTableValue
+                : table;
+            const tableValidation = z.string().min(1, 'Il numero del tavolo è obbligatorio').safeParse(tableToValidate);
             if (!tableValidation.success) {
                 const error = tableValidation.error.issues[0].message;
                 setValidationErrors({ table: error });
@@ -1018,22 +1007,31 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
         setShowUnavailableDialog(false);
         setLoadingConfirmOrder(true);
         try {
-            const effectiveCustomer = !requireCustomer && !customer.trim() ? 'NO CUSTOMER' : customer;
+            const defaultCustomerEnabled = localStorage.getItem('defaultCustomerEnabled') === 'true';
+            const defaultCustomerValue = localStorage.getItem('defaultCustomerValue') ?? '';
+            const defaultTableEnabled = localStorage.getItem('defaultTableEnabled') === 'true';
+            const defaultTableValue = localStorage.getItem('defaultTableValue') ?? '';
+
+            const effectiveCustomer = !requireCustomer && !customer.trim()
+                ? 'NO CUSTOMER'
+                : (defaultCustomerEnabled && !customer.trim() && defaultCustomerValue.trim() ? defaultCustomerValue : customer);
+            const effectiveTable = defaultTableEnabled && !table.trim() && defaultTableValue.trim()
+                ? defaultTableValue
+                : table;
+
             // Merge cart items with same foodId and notes
             const mergedOrderItems = mergeCartItems(cart, allIngredients);
 
             // If displayCode exists, load the order to confirm it
             if (displayCode.trim()) {
                 const result = await getOrderByCode(displayCode.toUpperCase());
+                throwIfActionError(result);
+                if (!result.success) return;
 
-                if (!result.success) {
-                    if (!isMobile) toast.error(result.error || t('toast.orderLoadError'));
-                    return;
-                }
-
-                const orderResponse = (result as any).data;
+                const orderResponse = result.data;
                 const orderId = orderResponse.id;
                 const originalCustomerFromOrder = orderResponse.customer;
+                const originalTableFromOrder = orderResponse.table;
 
                 const confirmResult = await confirmOrderAction({
                     orderId,
@@ -1042,12 +1040,12 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
                     cashRegisterId: localStorage.getItem('selectedCashRegister') || '',
                     discount: appliedDiscountAmount,
                     customer: effectiveCustomer !== originalCustomerFromOrder ? effectiveCustomer : undefined,
+                    table: effectiveTable !== originalTableFromOrder ? effectiveTable : undefined,
                     orderItems: mergedOrderItems,
                 });
 
                 if (!confirmResult.success) {
-                    if (!isMobile) toast.error(confirmResult.error || t('toast.orderConfirmed'));
-                    return;
+                    throw new ApiError(confirmResult.status ?? 0, confirmResult.error, (confirmResult as any).code);
                 }
 
                 // Update or remove the confirmed order from daily orders list
@@ -1065,7 +1063,7 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
             } else {
                 // Create new order with confirmation details
                 const createResult = await createOrder({
-                    table: enableTableInput && table.trim() ? table : "NO_TABLE_PRESET",
+                    table: enableTableInput && effectiveTable.trim() ? effectiveTable : "NO_TABLE_PRESET",
                     customer: effectiveCustomer,
                     orderItems: mergedOrderItems,
                     confirm: {
@@ -1077,8 +1075,7 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
                 });
 
                 if (!createResult.success) {
-                    if (!isMobile) toast.error(createResult.error || t('toast.orderCreated'));
-                    return;
+                    throw new ApiError(createResult.status ?? 0, createResult.error, (createResult as any).code);
                 }
             }
 
@@ -1091,8 +1088,56 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
                 resetAfterOrder();
             }
         } catch (error: any) {
+            // Errore di autenticazione: pulisci sessione e vai al login con il codice errore
+            if (error instanceof ApiError && error.isAuthError) {
+                await handleAuthError(error.code);
+                return;
+            }
+
+            if (error instanceof ApiError && error.status === 400 && error.code === 'ForeignKeyConstraintViolation') {
+                const selectedCashRegister = localStorage.getItem('selectedCashRegister');
+                let handled = false;
+
+                // Check cash register still exists
+                try {
+                    const registersResult = await getCashRegisters();
+                    if (registersResult.success) {
+                        const exists = registersResult.data.some((cr: any) => cr.id === selectedCashRegister);
+                        if (!exists) {
+                            setCashRegisterInvalid(true);
+                            setCashRegisterName('');
+                            localStorage.removeItem('selectedCashRegister');
+                            if (!isMobile) toast.error(t('toast.noCashRegisterSelected'));
+                            setShowConfigDialog(true);
+                            handled = true;
+                        }
+                    }
+                } catch {}
+
+                // Cash register OK — check if any food in cart no longer exists
+                if (!handled) {
+                    const uniqueFoodIds = [...new Set(cart.map(item => item.food.id))];
+                    try {
+                        const foodResults = await Promise.all(uniqueFoodIds.map(id => getFoodById(id)));
+                        const missingFoodIds = uniqueFoodIds.filter((_, i) => !foodResults[i].success);
+                        if (missingFoodIds.length > 0) {
+                            const missingNames = [...new Set(
+                                cart
+                                    .filter(item => missingFoodIds.includes(item.food.id))
+                                    .map(item => item.food.name)
+                            )];
+                            if (!isMobile) toast.error(`Prodotti non più disponibili: ${missingNames.join(', ')}`);
+                            handled = true;
+                        }
+                    } catch {}
+                }
+
+                if (handled) return;
+            }
+
             console.error('Error confirming order:', error);
-            if (!isMobile) toast.error(error.message || t('toast.orderConfirmed'));
+            const message = error instanceof ApiError ? error.message : t('toast.orderConfirmed');
+            if (!isMobile) toast.error(message);
         } finally {
             setLoadingConfirmOrder(false);
         }
@@ -1113,11 +1158,16 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
             if (!isMobile) toast.error(t('toast.cashierNotSelected'));
             return;
         }
-        const result = await generalClosure(cashRegisterId);
-        if (result.success) {
+        try {
+            const result = await generalClosure(cashRegisterId);
+            throwIfActionError(result);
             if (!isMobile) toast.success(t('toast.generalClosureSuccess'));
-        } else {
-            if (!isMobile) toast.error(result.error || t('toast.generalClosureError'));
+        } catch (error: any) {
+            if (error instanceof ApiError && error.isAuthError) {
+                await handleAuthError(error.code);
+                return;
+            }
+            if (!isMobile) toast.error(error instanceof ApiError ? error.message : t('toast.generalClosureError'));
         }
     };
 
@@ -1132,7 +1182,13 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
     const total = calculateTotal(cart, appliedDiscountAmount, allIngredients);
     const surcharges = calculateTotalSurcharges(cart, allIngredients);
     const change = calculateChange(total, parseFloat(paidAmount) || 0);
-    const baseValidation = getOrderValidationMessage(cart.length, customer, table, enableTableInput, requireCustomer);
+    const _defCustEnabled = localStorage.getItem('defaultCustomerEnabled') === 'true';
+    const _defCustValue = localStorage.getItem('defaultCustomerValue') ?? '';
+    const _defTableEnabled = localStorage.getItem('defaultTableEnabled') === 'true';
+    const _defTableValue = localStorage.getItem('defaultTableValue') ?? '';
+    const _effectiveCustomer = _defCustEnabled && !customer.trim() && _defCustValue.trim() ? _defCustValue : customer;
+    const _effectiveTable = _defTableEnabled && !table.trim() && _defTableValue.trim() ? _defTableValue : table;
+    const baseValidation = getOrderValidationMessage(cart.length, _effectiveCustomer, _effectiveTable, enableTableInput, requireCustomer);
     const validationMessage = !paymentMethod
         ? [...(baseValidation ?? []), 'Seleziona un metodo di pagamento']
         : baseValidation;
@@ -1256,6 +1312,68 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
                 onOpenChange={setShowConfigDialog}
                 onCashRegisterSelected={handleCashRegisterSelected}
             />
+
+            <AlertDialog open={printerOfflineInfo !== null} onOpenChange={(open) => { if (!open) setPrinterOfflineInfo(null); }}>
+                <AlertDialogContent className="border-destructive border-2 sm:max-w-md">
+                    <AlertDialogHeader>
+                        <div className="flex items-center gap-3 mb-1">
+                            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-destructive/15 shrink-0">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 text-destructive" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
+                                    <path d="M6 9V3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v6" />
+                                    <rect x="6" y="14" width="12" height="8" rx="1" />
+                                    <line x1="2" y1="2" x2="22" y2="22" className="text-destructive" />
+                                </svg>
+                            </div>
+                            <AlertDialogTitle className="text-destructive text-xl">
+                                {t('toast.printerOffline', { label: printerOfflineInfo?.label ?? '' })}
+                            </AlertDialogTitle>
+                        </div>
+                        <AlertDialogDescription className="text-base font-medium pl-15">
+                            {t('toast.printerOfflineDesc')}. {t('dialog.printerOfflineAction')}
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogAction
+                            className="bg-destructive text-white hover:bg-destructive/80 w-full"
+                            onClick={() => setPrinterOfflineInfo(null)}
+                        >
+                            {t('dialog.printerOfflineDismiss')}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+
+            <AlertDialog open={printerErrorInfo !== null} onOpenChange={(open) => { if (!open) setPrinterErrorInfo(null); }}>
+                <AlertDialogContent className="border-amber-500 border-2 sm:max-w-md">
+                    <AlertDialogHeader>
+                        <div className="flex items-center gap-3 mb-1">
+                            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-amber-500/15 shrink-0">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
+                                    <path d="M6 9V3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v6" />
+                                    <rect x="6" y="14" width="12" height="8" rx="1" />
+                                    <path d="M12 17v.01" />
+                                </svg>
+                            </div>
+                            <AlertDialogTitle className="text-amber-500 text-xl">
+                                {t('toast.printerError', { label: printerErrorInfo?.label ?? '' })}
+                            </AlertDialogTitle>
+                        </div>
+                        <AlertDialogDescription className="text-base font-medium pl-15">
+                            {t('toast.printerErrorDesc', { status: printerErrorInfo?.status ?? '' })}. {t('dialog.printerErrorAction')}
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogAction
+                            className="bg-amber-500 text-white hover:bg-amber-500/80 w-full"
+                            onClick={() => setPrinterErrorInfo(null)}
+                        >
+                            {t('dialog.printerOfflineDismiss')}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
 
             <AlertDialog open={showUnavailableDialog} onOpenChange={setShowUnavailableDialog}>
                 <AlertDialogContent>

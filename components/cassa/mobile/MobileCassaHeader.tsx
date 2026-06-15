@@ -7,6 +7,7 @@ import { AlertTriangle, Euro, DollarSign } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { openDrawer } from '@/actions/cashier';
 import { toast } from 'sonner';
+import { ApiError } from '@/lib/api-error';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 
 interface MobileCassaHeaderProps {
@@ -67,13 +68,14 @@ export function MobileCassaHeader({
         setIsOpeningDrawer(true);
         try {
             const result = await openDrawer(cashRegisterId);
-            if (result.success) {
-                toast.success(t('toast.drawerOpened'));
-            } else {
-                toast.error(result.error || t('toast.drawerOpenError'));
-            }
+            if (!result.success) throw new ApiError(result.status ?? 0, result.error, (result as any).code);
+            toast.success(t('toast.drawerOpened'));
         } catch (error: any) {
-            toast.error(error.message || t('toast.drawerOpenError'));
+            if (error instanceof ApiError && error.isAuthError) {
+                onLogout();
+                return;
+            }
+            toast.error(error instanceof ApiError ? error.message : t('toast.drawerOpenError'));
         } finally {
             setIsOpeningDrawer(false);
         }
