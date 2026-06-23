@@ -56,7 +56,12 @@ export function EditItemDialog({ item, open, onClose, onSave, allIngredients = [
     const updateExtraIngredientQuantity = (ingredientId: string, delta: number) => {
         setExtraIngredients((prev) => {
             const currentQty = prev[ingredientId] ?? 1;
-            const newQty = Math.max(1, currentQty + delta);
+            const newQty = currentQty + delta;
+            if (newQty <= 0) {
+                // Remove the extra ingredient when quantity reaches 0
+                const { [ingredientId]: _, ...rest } = prev;
+                return rest;
+            }
             return { ...prev, [ingredientId]: newQty };
         });
     };
@@ -185,7 +190,6 @@ export function EditItemDialog({ item, open, onClose, onSave, allIngredients = [
                                                         size="icon"
                                                         className="h-8 w-8 cursor-pointer"
                                                         onClick={() => updateExtraIngredientQuantity(id, -1)}
-                                                        disabled={qty <= 1}
                                                     >
                                                         <Minus className="h-4 w-4" />
                                                     </Button>
@@ -231,7 +235,7 @@ export function EditItemDialog({ item, open, onClose, onSave, allIngredients = [
                                     </div>
                                 </AccordionTrigger>
                                 <AccordionContent>
-                                    <div className="flex flex-wrap gap-2 mt-2 max-h-[100px] overflow-y-auto">
+                                    <div className="flex flex-wrap gap-2 mt-2 h-[160px] overflow-y-scroll content-start">
                                         {availableExtras
                                             .filter((i) => i.name.toLowerCase().includes(extraSearch.toLowerCase()))
                                             .map((ingredient) => {

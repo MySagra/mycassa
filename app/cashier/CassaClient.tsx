@@ -7,7 +7,7 @@ import { useTheme } from 'next-themes';
 import { useTranslation } from 'react-i18next';
 import { fetchEventSource } from '@microsoft/fetch-event-source';
 import { toast } from 'sonner';
-import { getStations, getOrderByOrderId, confirmOrder as confirmOrderAction, createOrder, getTodayOrders, getAllTodayOrders, getFoodById, searchDailyOrders, searchAllDailyOrders, getOrderByCode, getCashRegisters, getPrinterById, generalClosure, cancelOrder as cancelOrderAction } from '@/actions/cashier';
+import { getStations, getAllIngredients, getOrderByOrderId, confirmOrder as confirmOrderAction, createOrder, getTodayOrders, getAllTodayOrders, getFoodById, searchDailyOrders, searchAllDailyOrders, getOrderByCode, getCashRegisters, getPrinterById, generalClosure, cancelOrder as cancelOrderAction } from '@/actions/cashier';
 import { logout as logoutAction } from '@/actions/auth';
 import { Category, Food, Ingredient, PaymentMethod, OrderDetailResponse, ExtendedCartItem } from '@/lib/api-types';
 import { DailyOrder } from '@/lib/cassa/types';
@@ -196,15 +196,17 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
     useEffect(() => {
         const fetchStations = async () => {
             try {
-                const result = await getStations();
+                const [result, ingredientsResult] = await Promise.all([
+                    getStations(),
+                    getAllIngredients(),
+                ]);
                 throwIfActionError(result);
                 if (!result.success) return;
 
                 const { categories: fetchedCategories, stations } = result.data;
 
-                // Extract all foods and ingredients from categories
+                // Extract all foods from categories
                 const allFoods: Food[] = [];
-                const allIngredientsSet = new Map<string, any>();
                 const stationIdToName: Record<string, string> = {};
 
                 // Map stations to names
@@ -222,13 +224,6 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
                                 category: cat
                             };
                             allFoods.push(foodWithCategory);
-
-                            // Extract ingredients from food
-                            if (food.ingredients && Array.isArray(food.ingredients)) {
-                                food.ingredients.forEach((ingredient: any) => {
-                                    allIngredientsSet.set(ingredient.id, ingredient);
-                                });
-                            }
                         });
                     }
                 });
@@ -237,7 +232,10 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
                 const sortedCategories = fetchedCategories.sort((a: Category, b: Category) => a.position - b.position);
                 setCategories(sortedCategories);
                 setFoods(allFoods);
-                setAllIngredients(Array.from(allIngredientsSet.values()));
+                // Use all ingredients from dedicated endpoint (covers ingredients not yet assigned to any food)
+                if (ingredientsResult.success) {
+                    setAllIngredients(ingredientsResult.data);
+                }
                 setStationsMap(stationIdToName);
             } catch (error: any) {
                 if (error instanceof ApiError && error.isAuthError) {
