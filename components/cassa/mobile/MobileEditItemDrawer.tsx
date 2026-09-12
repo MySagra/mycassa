@@ -212,7 +212,7 @@ export function MobileEditItemDrawer({
                         )}
 
                         {/* Add extra ingredients - search bar only, results appear while typing */}
-                        {availableExtras.length > 0 && hasIngredients && (
+                        {availableExtras.length > 0 && (
                             <div className="space-y-1.5">
                                 <Label className='mb-4'>{t('editItemDialog.addIngredients')}</Label>
                                 <div className="relative">

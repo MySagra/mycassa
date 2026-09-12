@@ -3,8 +3,19 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useTranslation } from 'react-i18next';
 import { useState, useEffect } from 'react';
+import { PanelLeftClose, PanelLeftOpen, LayoutGrid } from 'lucide-react';
 
 const LS_HIDDEN_CATS_KEY = 'foodgrid_hidden_categories';
+const LS_COLLAPSED_KEY = 'categorySidebar_collapsed';
+
+function getInitials(name: string): string {
+    return name
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((word) => word[0].toUpperCase())
+        .join('');
+}
 
 interface CategorySidebarProps {
     categories: Category[];
@@ -23,6 +34,20 @@ export function CategorySidebar({ categories, selectedCategoryId, onSelectCatego
         } catch { return []; }
     });
 
+    const [collapsed, setCollapsed] = useState<boolean>(() => {
+        try {
+            return localStorage.getItem(LS_COLLAPSED_KEY) === '1';
+        } catch { return false; }
+    });
+
+    const toggleCollapsed = () => {
+        setCollapsed((prev) => {
+            const next = !prev;
+            try { localStorage.setItem(LS_COLLAPSED_KEY, next ? '1' : '0'); } catch { /* noop */ }
+            return next;
+        });
+    };
+
     useEffect(() => {
         const handler = () => {
             try {
@@ -37,42 +62,71 @@ export function CategorySidebar({ categories, selectedCategoryId, onSelectCatego
     const visibleCategories = categories.filter(c => !hiddenIds.includes(c.id));
 
     return (
-        <aside className="w-64 border-r bg-card hidden xl:block">
+        <aside className={`${collapsed ? 'w-14' : 'w-64'} border-r bg-card hidden xl:flex xl:flex-col transition-[width] duration-150`}>
             <div className="p-2">
                 <Button
                     variant={selectedCategoryId === null ? 'default' : 'outline'}
-                    className="w-full justify-start h-20 cursor-pointer"
+                    className={`w-full ${collapsed ? 'justify-center px-0' : 'justify-start'} h-20 cursor-pointer`}
                     onClick={() => onSelectCategory(null)}
+                    title={t('categorySideBar.allCategories')}
                 >
-                    <div className='text-lg select-none'>
-                        {t('categorySideBar.allCategories')}
-                    </div>
+                    {collapsed ? (
+                        <LayoutGrid className="size-5" />
+                    ) : (
+                        <div className='text-lg select-none'>{t('categorySideBar.allCategories')}</div>
+                    )}
                 </Button>
             </div>
 
-            <ScrollArea className="h-[calc(100vh-8rem)]">
+            <ScrollArea className="flex-1 min-h-0">
                 <div className="space-y-2.5 p-2">
                     {loading ? (
                         <div className="p-4 text-center text-sm text-muted-foreground">
-                            {t('categorySideBar.loading')}
+                            {collapsed ? '…' : t('categorySideBar.loading')}
                         </div>
                     ) : (
                         visibleCategories.map((category) => (
                             <Button
                                 key={category.id}
                                 variant={selectedCategoryId === category.id ? 'default' : 'outline'}
-                                className={`w-full justify-start cursor-pointer select-none ${category.available === false ? 'opacity-60' : ''}`}
+                                className={`w-full ${collapsed ? 'justify-center px-0' : 'justify-start'} cursor-pointer select-none ${category.available === false ? 'opacity-60' : ''}`}
                                 onClick={() => onSelectCategory(category.id)}
+                                title={category.name}
                             >
-                                <span className="truncate">{category.name}</span>
-                                {category.available === false && (
-                                    <span className="ml-auto shrink-0 text-xs text-muted-foreground">{t('categorySideBar.notAvailable')}</span>
+                                {collapsed ? (
+                                    <span className="text-xs font-semibold">{getInitials(category.name)}</span>
+                                ) : (
+                                    <>
+                                        <span className="truncate">{category.name}</span>
+                                        {category.available === false && (
+                                            <span className="ml-auto shrink-0 text-xs text-muted-foreground">{t('categorySideBar.notAvailable')}</span>
+                                        )}
+                                    </>
                                 )}
                             </Button>
                         ))
                     )}
                 </div>
             </ScrollArea>
+
+            <div className="p-2 border-t bg-card">
+                <Button
+                    variant="outline"
+                    size={collapsed ? 'icon' : 'default'}
+                    className={`w-full cursor-pointer ${collapsed ? '' : 'justify-between'}`}
+                    onClick={toggleCollapsed}
+                    title={collapsed ? t('categorySideBar.expand') : t('categorySideBar.collapse')}
+                >
+                    {collapsed ? (
+                        <PanelLeftOpen className="size-4" />
+                    ) : (
+                        <>
+                            <span className="text-sm select-none">{t('categorySideBar.collapseLabel')}</span>
+                            <PanelLeftClose className="size-4" />
+                        </>
+                    )}
+                </Button>
+            </div>
         </aside>
     );
 }
