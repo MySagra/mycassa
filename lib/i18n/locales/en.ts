@@ -227,7 +227,10 @@ export const en = {
     categorySideBar: {
       allCategories: "All Categories",
       loading: "Loading...",
-      notAvailable: "N/A"
+      notAvailable: "N/A",
+      collapse: "Collapse sidebar",
+      expand: "Expand sidebar",
+      collapseLabel: "Collapse"
     },
     foods: {
       notAvailable: "N/A",
