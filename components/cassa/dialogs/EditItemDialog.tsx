@@ -216,7 +216,7 @@ export function EditItemDialog({ item, open, onClose, onSave, allIngredients = [
                     )}
 
                     {/* Extra Ingredients Accordion */}
-                    {availableExtras.length > 0 && item.food.ingredients && item.food.ingredients.length > 0 && (
+                    {availableExtras.length > 0 && (
                         <Accordion type="single" collapsible className="border rounded-md p-3">
                             <AccordionItem value="extra-ingredients" className="border-b-0">
                                 <AccordionTrigger className="py-2 items-center focus-visible:ring-0 focus-visible:border-transparent">
