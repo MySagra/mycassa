@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
 import { useTheme } from 'next-themes';
 import { useTranslation } from 'react-i18next';
-import { fetchEventSource } from '@microsoft/fetch-event-source';
+import { subscribeSse, resolveSseEventType } from '@/lib/sse';
 import { toast } from 'sonner';
 import { getStations, getAllIngredients, getOrderByOrderId, confirmOrder as confirmOrderAction, createOrder, getTodayOrders, getAllTodayOrders, getFoodById, searchDailyOrders, searchAllDailyOrders, getOrderByCode, getCashRegisters, getPrinterById, generalClosure, cancelOrder as cancelOrderAction } from '@/actions/cashier';
 import { logout as logoutAction } from '@/actions/auth';
@@ -285,17 +285,10 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
 
         const connectSSE = async () => {
             try {
-                await fetchEventSource(`/api/events/cashier`, {
-                    method: 'GET',
-                    headers: {
-                        'Accept': 'text/event-stream',
-                    },
+                await subscribeSse(`/api/events/cashier`, {
                     signal: abortController.signal,
 
-                    // Automatic retry configuration
-                    openWhenHidden: true,
-
-                    async onopen(response) {
+                    async onOpen(response) {
                         if (response.ok) {
                             console.log('[SSE] Connessione stabilita con successo');
 
@@ -319,25 +312,30 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
                             abortController.abort();
                             await handleAuthError('session_expired');
                         } else {
+                            // Non-OK responses are turned into errors by the SSE
+                            // client itself, which then retries with backoff.
                             console.error(`[SSE] Errore di connessione: Status ${response.status}`);
-                            throw new Error(`SSE connection failed with status ${response.status}`);
                         }
                     },
 
-                    async onmessage(event) {
+                    async onEvent(event) {
                         if (!event.data) {
                             return;
                         }
 
+                        // Event type as sent on the wire, with a fallback on the
+                        // payload itself when the stream did not carry one.
+                        const eventType = resolveSseEventType(event);
+
                         // Prevent duplicate events
-                        const eventKey = `${event.event}-${event.data}`;
+                        const eventKey = `${eventType}-${event.data}`;
                         if (lastEventRef.current === eventKey) {
                             return;
                         }
                         lastEventRef.current = eventKey;
 
                         // Handle new-order event
-                        if (event.event === 'new-order') {
+                        if (eventType === 'new-order') {
                             try {
                                 const order: DailyOrder = JSON.parse(event.data);
 
@@ -359,7 +357,7 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
                             }
                         }
                         // Handle confirmed-order event
-                        else if (event.event === 'confirmed-order') {
+                        else if (eventType === 'confirmed-order') {
                             try {
                                 const { id } = JSON.parse(event.data);
 
@@ -398,7 +396,7 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
                             }
                         }
                         // Handle food-availability-changed event
-                        else if (event.event === 'food-availability-changed') {
+                        else if (eventType === 'food-availability-changed') {
                             try {
                                 const { id: foodId, available } = JSON.parse(event.data);
 
@@ -462,7 +460,7 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
                             }
                         }
                         // Handle category-availability-changed event
-                        else if (event.event === 'category-availability-changed') {
+                        else if (eventType === 'category-availability-changed') {
                             try {
                                 const { id: categoryId, available } = JSON.parse(event.data);
                                 let categoryName = '';
@@ -504,7 +502,7 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
                             }
                         }
                         // Handle printer-status-changed event
-                        else if (event.event === 'printer-status-changed') {
+                        else if (eventType === 'printer-status-changed') {
                             try {
                                 const { id: printerId, status } = JSON.parse(event.data);
 
@@ -538,7 +536,7 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
                             }
                         }
                         // Handle order-status-update event
-                        else if (event.event === 'order-status-update') {
+                        else if (eventType === 'order-status-update') {
                             try {
                                 const { id, status } = JSON.parse(event.data);
                                 setDailyOrders((prevOrders) => prevOrders.map(o =>
@@ -573,28 +571,29 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
                         }
                     },
 
-                    onclose() {
+                    onClose() {
                         console.log('[SSE] Connessione chiusa');
                         sseConnectionRef.current = false;
                     },
 
-                    onerror(err) {
+                    onError(err) {
                         console.error('[SSE] Errore di rete:', err);
                         const status = (err as any).status;
                         if (status === 401) {
                             console.error("[SSE] Errore 401 - Token scaduto");
                             if (!isMobile) toast.error(t('toast.authError401'));
+                            abortController.abort();
                             handleAuthError();
                             return;
                         } else if (status === 403) {
                             console.error("[SSE] Errore 403 - Accesso vietato");
                             if (!isMobile) toast.error(t('toast.authError403'));
+                            abortController.abort();
                             handleAuthError();
                             return;
                         }
                         sseConnectionRef.current = false;
-                        // Throw error to trigger retry
-                        throw err;
+                        // Returning lets the client reconnect with backoff.
                     }
                 });
             } catch (err: any) {
