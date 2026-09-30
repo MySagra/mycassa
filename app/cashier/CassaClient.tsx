@@ -22,6 +22,7 @@ import { ConfigurationDialog } from '@/components/cassa/dialogs/ConfigurationDia
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { DesktopCassaLayout, CassaLayoutProps } from '@/components/cassa/desktop/DesktopCassaLayout';
 import { MobileCassaLayout } from '@/components/cassa/mobile/MobileCassaLayout';
+import { GuideProvider, useGuide } from '@/components/cassa/guide/GuideContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { z } from 'zod';
 import { ApiError } from '@/lib/api-error';
@@ -34,6 +35,12 @@ function throwIfActionError(result: { success: boolean; error?: string; status?:
 }
 
 const ORDER_DRAFT_KEY = 'mycassa_order_draft';
+
+/** The cash register dialog waits for the guide, which comes first after login. */
+function ConfigurationDialogAfterGuide(props: React.ComponentProps<typeof ConfigurationDialog>) {
+    const { busy } = useGuide();
+    return <ConfigurationDialog {...props} open={props.open && !busy} />;
+}
 
 export default function CassaPage({ requiredTable, requireCustomer }: { requiredTable: boolean; requireCustomer: boolean }) {
     const router = useRouter();
@@ -1270,7 +1277,7 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
     };
 
     return (
-        <>
+        <GuideProvider autoOpen>
             {isMobile
                 ? <MobileCassaLayout {...layoutProps} />
                 : <DesktopCassaLayout {...layoutProps} />
@@ -1305,7 +1312,7 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
                 />
             )}
 
-            <ConfigurationDialog
+            <ConfigurationDialogAfterGuide
                 open={showConfigDialog}
                 onOpenChange={setShowConfigDialog}
                 onCashRegisterSelected={handleCashRegisterSelected}
@@ -1400,6 +1407,6 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
-        </>
+        </GuideProvider>
     );
 }

@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { ButtonGroup } from '@/components/ui/button-group';
-import { Settings, Moon, Sun, Maximize, Minimize, AlertTriangle, Euro, DollarSign } from 'lucide-react';
+import { Settings, Moon, Sun, Maximize, Minimize, AlertTriangle, Euro, DollarSign, CircleHelp } from 'lucide-react';
 import { UserMenu } from './UserMenu';
 import { useState, useCallback, useRef, useMemo } from 'react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
@@ -9,6 +9,7 @@ import { openDrawer } from '@/actions/cashier';
 import { toast } from 'sonner';
 import { ApiError } from '@/lib/api-error';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
+import { useGuide } from '@/components/cassa/guide/GuideContext';
 
 interface CassaHeaderProps {
     onLogout: () => void;
@@ -35,6 +36,7 @@ export function CassaHeader({ onLogout, onSettingsClick, theme, onThemeToggle, c
     const userRoleName = user ? (typeof user.role === 'string' ? user.role : (user.role as any)?.name ?? '') : '';
     const isAdminOrMaintainer = userRoleName.toUpperCase() === 'ADMIN' || userRoleName.toUpperCase() === 'MAINTAINER';
     const { t, i18n } = useTranslation();
+    const { openGuide } = useGuide();
 
     const drawerIcon = useMemo(() => {
         return i18n.language === 'it' ? <Euro className="h-5 w-5" /> : <DollarSign className="h-5 w-5" />;
@@ -141,6 +143,9 @@ export function CassaHeader({ onLogout, onSettingsClick, theme, onThemeToggle, c
                         </TooltipContent>
                     </Tooltip>
                     <ButtonGroup>
+                        <Button variant="outline" className='cursor-pointer' size="icon" onClick={openGuide} title={t('header.guide')}>
+                            <CircleHelp className="h-5 w-5" />
+                        </Button>
                         <Button variant="outline" className='cursor-pointer' size="icon" onClick={onSettingsClick}>
                             <Settings className="h-5 w-5" />
                         </Button>
