@@ -9,6 +9,8 @@ import { PrintersSettingsCard } from '../../components/settings/setting-card/Pri
 import { AppearanceSettingsCard } from '../../components/settings/setting-card/AppearanceSettingsCard';
 import { CategoryVisibilitySettingsCard } from '../../components/settings/setting-card/CategoryVisibilitySettingsCard';
 import { DefaultFieldsSettingsCard } from '../../components/settings/setting-card/DefaultFieldsSettingsCard';
+import { GuideSettingsCard } from '../../components/settings/setting-card/GuideSettingsCard';
+import { GuideProvider } from '@/components/cassa/guide/GuideContext';
 
 interface Props {
     requireCustomer: boolean;
@@ -39,17 +41,20 @@ export default function SettingsPageClient({ requireCustomer, requireTable }: Pr
     }
 
     return (
-        <div className="min-h-screen bg-background">
-            <SettingsHeader />
-            <main className="container max-w-4xl mx-auto p-6 space-y-6">
-                <PrintersSettingsCard />
-                <DefaultFieldsSettingsCard requireCustomer={requireCustomer} requireTable={requireTable} />
-                <CategoryVisibilitySettingsCard />
-                <AppearanceSettingsCard
-                    theme={theme}
-                    setTheme={setTheme}
-                />
-            </main>
-        </div>
+        <GuideProvider>
+            <div className="min-h-screen bg-background">
+                <SettingsHeader />
+                <main className="container max-w-4xl mx-auto p-6 space-y-6">
+                    <PrintersSettingsCard />
+                    <DefaultFieldsSettingsCard requireCustomer={requireCustomer} requireTable={requireTable} />
+                    <CategoryVisibilitySettingsCard />
+                    <AppearanceSettingsCard
+                        theme={theme}
+                        setTheme={setTheme}
+                    />
+                    <GuideSettingsCard />
+                </main>
+            </div>
+        </GuideProvider>
     );
 }

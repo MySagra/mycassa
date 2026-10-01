@@ -9,6 +9,7 @@ import { openDrawer } from '@/actions/cashier';
 import { toast } from 'sonner';
 import { ApiError } from '@/lib/api-error';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
+import { useGuide } from '@/components/cassa/guide/GuideContext';
 
 interface MobileCassaHeaderProps {
     onLogout: () => void;
@@ -39,6 +40,7 @@ export function MobileCassaHeader({
     onVerificaClick,
 }: MobileCassaHeaderProps) {
     const { t, i18n } = useTranslation();
+    const { openGuide } = useGuide();
     const [logoClickCount, setLogoClickCount] = useState(0);
     const [isOpeningDrawer, setIsOpeningDrawer] = useState(false);
     const easterEggActive = logoClickCount >= EASTER_EGG_CLICKS;
@@ -135,6 +137,7 @@ export function MobileCassaHeader({
                             theme={theme}
                             onThemeToggle={onThemeToggle}
                             onGeneralClosure={onGeneralClosure}
+                            onOpenGuide={openGuide}
                             cashRegisterName={cashRegisterName}
                             cashRegisterInvalid={cashRegisterInvalid}
                         />

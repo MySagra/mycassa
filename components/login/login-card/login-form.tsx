@@ -14,6 +14,7 @@ import { login as loginAction } from "@/actions/auth";
 import { Eye, EyeOff } from "lucide-react";
 import z from "zod"
 import { useTranslation } from "react-i18next";
+import { markGuidePending } from "@/components/cassa/guide/GuideContext";
 
 export function LoginForm() {
     const router = useRouter();
@@ -39,6 +40,7 @@ export function LoginForm() {
         try {
             const result = await loginAction(values.username, values.password);
             if (result.success) {
+                markGuidePending();
                 await new Promise(resolve => setTimeout(resolve, 100));
                 window.location.href = '/cashier';
             } else {

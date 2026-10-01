@@ -121,3 +121,163 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Looping demos in the usage guide. Every demo shares one 5s timeline: the
+   pointer taps at 15%, 40% and 65%, what each tap changes follows right after,
+   and from 88% everything fades back to the start. The *-1/2/3 suffix names
+   the tap an animation reacts to. */
+@theme {
+  --animate-guide-cursor: guide-cursor 5s ease-in-out infinite;
+  --animate-guide-on-1: guide-on-1 5s ease-out infinite;
+  --animate-guide-on-2: guide-on-2 5s ease-out infinite;
+  --animate-guide-on-3: guide-on-3 5s ease-out infinite;
+  --animate-guide-off-1: guide-off-1 5s ease-out infinite;
+  --animate-guide-off-2: guide-off-2 5s ease-out infinite;
+  --animate-guide-off-3: guide-off-3 5s ease-out infinite;
+  --animate-guide-press-1: guide-press-1 5s ease-in-out infinite;
+  --animate-guide-press-2: guide-press-2 5s ease-in-out infinite;
+  --animate-guide-press-3: guide-press-3 5s ease-in-out infinite;
+  --animate-guide-type-1: guide-type-1 5s linear infinite;
+  --animate-guide-type-2: guide-type-2 5s linear infinite;
+  --animate-guide-float-2: guide-float-2 5s ease-out infinite;
+  --animate-guide-float-3: guide-float-3 5s ease-out infinite;
+  --animate-guide-drain-3: guide-drain-3 5s linear infinite;
+  --animate-guide-slide-2: guide-slide-2 5s ease-out infinite;
+  --animate-guide-shake-2: guide-shake-2 5s ease-out infinite;
+  --animate-guide-type-once: guide-type-once 0.9s both;
+  --animate-guide-flash: guide-flash 1.8s ease-out both;
+  --animate-guide-print: guide-print 1.8s steps(18) 0.3s both;
+
+  /* The pointer: sits on --p1, --p2 and --p3 in turn and presses on each.
+     --press1/2/3 set to 1 turn a press into a plain stop. */
+  @keyframes guide-cursor {
+    0% { translate: var(--p1); opacity: 0; scale: 1; }
+    6%, 13% { translate: var(--p1); opacity: 1; scale: 1; }
+    15% { translate: var(--p1); scale: var(--press1, 0.8); }
+    17%, 20% { translate: var(--p1); scale: 1; }
+    32%, 38% { translate: var(--p2); scale: 1; }
+    40% { translate: var(--p2); scale: var(--press2, 0.8); }
+    42%, 47% { translate: var(--p2); scale: 1; }
+    57%, 63% { translate: var(--p3); scale: 1; }
+    65% { translate: var(--p3); scale: var(--press3, 0.8); }
+    67%, 88% { translate: var(--p3); scale: 1; opacity: 1; }
+    95%, 100% { translate: var(--p3); opacity: 0; }
+  }
+
+  /* Appears after a tap and stays until the reset. */
+  @keyframes guide-on-1 {
+    0%, 16% { opacity: 0; scale: 0.9; }
+    20%, 88% { opacity: 1; scale: 1; }
+    95%, 100% { opacity: 0; scale: 1; }
+  }
+  @keyframes guide-on-2 {
+    0%, 41% { opacity: 0; scale: 0.9; }
+    45%, 88% { opacity: 1; scale: 1; }
+    95%, 100% { opacity: 0; scale: 1; }
+  }
+  @keyframes guide-on-3 {
+    0%, 66% { opacity: 0; scale: 0.9; }
+    70%, 88% { opacity: 1; scale: 1; }
+    95%, 100% { opacity: 0; scale: 1; }
+  }
+
+  /* Shown until a tap replaces it, back after the reset. */
+  @keyframes guide-off-1 {
+    0%, 16% { opacity: 1; }
+    18%, 95% { opacity: 0; }
+    100% { opacity: 1; }
+  }
+  @keyframes guide-off-2 {
+    0%, 41% { opacity: 1; }
+    43%, 95% { opacity: 0; }
+    100% { opacity: 1; }
+  }
+  @keyframes guide-off-3 {
+    0%, 66% { opacity: 1; }
+    68%, 95% { opacity: 0; }
+    100% { opacity: 1; }
+  }
+
+  /* The button under the pointer giving way. */
+  @keyframes guide-press-1 {
+    0%, 13%, 17%, 100% { scale: 1; }
+    15% { scale: 0.92; }
+  }
+  @keyframes guide-press-2 {
+    0%, 38%, 42%, 100% { scale: 1; }
+    40% { scale: 0.92; }
+  }
+  @keyframes guide-press-3 {
+    0%, 63%, 67%, 100% { scale: 1; }
+    65% { scale: 0.92; }
+  }
+
+  /* Text typed in after a tap; the element sets steps() to its length. */
+  @keyframes guide-type-1 {
+    0%, 18% { clip-path: inset(0 100% 0 0); }
+    34%, 88% { clip-path: inset(0 0 0 0); }
+    95%, 100% { clip-path: inset(0 100% 0 0); }
+  }
+  @keyframes guide-type-2 {
+    0%, 43% { clip-path: inset(0 100% 0 0); }
+    55%, 88% { clip-path: inset(0 0 0 0); }
+    95%, 100% { clip-path: inset(0 100% 0 0); }
+  }
+
+  /* A "+1" rising from what was tapped. */
+  @keyframes guide-float-2 {
+    0%, 40% { opacity: 0; translate: 0 0; }
+    43% { opacity: 1; translate: 0 -2px; }
+    60%, 100% { opacity: 0; translate: 0 -14px; }
+  }
+  @keyframes guide-float-3 {
+    0%, 65% { opacity: 0; translate: 0 0; }
+    68% { opacity: 1; translate: 0 -2px; }
+    85%, 100% { opacity: 0; translate: 0 -14px; }
+  }
+
+  /* The last order's total bar emptying after the order is created. */
+  @keyframes guide-drain-3 {
+    0%, 67% { width: 100%; }
+    95%, 100% { width: 0%; }
+  }
+
+  /* A new order arriving at the top of the list, with the amber flash. */
+  @keyframes guide-slide-2 {
+    0%, 40% { opacity: 0; translate: 0 -8px; box-shadow: 0 0 0 0 transparent; }
+    45% { opacity: 1; translate: 0 0; box-shadow: 0 0 0 2px oklch(0.769 0.188 70.08); }
+    62%, 88% { opacity: 1; box-shadow: 0 0 0 0 transparent; }
+    95%, 100% { opacity: 0; }
+  }
+
+  /* One-shot versions for the demos that run on their own clock. The element
+     sets steps() to the length of the text. */
+  @keyframes guide-type-once {
+    from { clip-path: inset(0 100% 0 0); }
+    to { clip-path: inset(0 0 0 0); }
+  }
+
+  /* A row just added, outlined in amber for a moment. */
+  @keyframes guide-flash {
+    0%, 35% { box-shadow: 0 0 0 2px oklch(0.769 0.188 70.08); }
+    100% { box-shadow: 0 0 0 2px transparent; }
+  }
+
+  /* A ticket fed out of the printer a line at a time. */
+  @keyframes guide-print {
+    from { translate: 0 -100%; }
+    to { translate: 0 0; }
+  }
+
+  /* The printer warning popping up. */
+  @keyframes guide-shake-2 {
+    0%, 40% { opacity: 0; translate: 0 6px; }
+    44% { opacity: 1; translate: 0 0; }
+    46% { translate: -3px 0; }
+    48% { translate: 3px 0; }
+    50% { translate: -2px 0; }
+    52% { translate: 2px 0; }
+    54%, 88% { opacity: 1; translate: 0 0; }
+    95%, 100% { opacity: 0; }
+  }
+}

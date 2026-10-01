@@ -24,7 +24,7 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { ChevronDownIcon, LogOutIcon, Settings, Sun, Moon, Languages, ShieldAlert, Monitor, AlertTriangle } from "lucide-react"
+import { ChevronDownIcon, LogOutIcon, Settings, Sun, Moon, Languages, ShieldAlert, Monitor, AlertTriangle, CircleHelp } from "lucide-react"
 import { useState, useEffect } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -35,6 +35,7 @@ interface MobileUserMenuProps {
     theme: string | undefined;
     onThemeToggle: () => void;
     onGeneralClosure?: () => void;
+    onOpenGuide?: () => void;
     cashRegisterName?: string;
     cashRegisterInvalid?: boolean;
 }
@@ -54,6 +55,7 @@ export function MobileUserMenu({
     theme,
     onThemeToggle,
     onGeneralClosure,
+    onOpenGuide,
     cashRegisterName,
     cashRegisterInvalid,
 }: MobileUserMenuProps) {
@@ -95,6 +97,12 @@ export function MobileUserMenu({
                         >
                             <ShieldAlert className="h-4 w-4" />
                             {t('header.closureButton')}
+                        </DropdownMenuItem>
+                    )}
+                    {onOpenGuide && (
+                        <DropdownMenuItem className="cursor-pointer" onClick={onOpenGuide}>
+                            <CircleHelp className="h-4 w-4" />
+                            {t("userMenu.guide")}
                         </DropdownMenuItem>
                     )}
                     <DropdownMenuItem className="cursor-pointer" onClick={onSettingsClick}>
