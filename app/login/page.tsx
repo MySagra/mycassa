@@ -5,7 +5,8 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { LoginForm } from "@/components/login/login-card/login-form";
 import { useTheme } from 'next-themes';
-import { Moon, Sun, } from 'lucide-react';
+import { Moon, Sun, Languages } from 'lucide-react';
+import { ButtonGroup, ButtonGroupText } from '@/components/ui/button-group';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 
@@ -18,7 +19,8 @@ const ERROR_MESSAGE_KEYS: Record<string, string> = {
 
 export default function LoginPage() {
   const { theme, setTheme } = useTheme();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const language = i18n.language?.slice(0, 2) || 'it';
   const [mounted, setMounted] = useState(false);
 
   // Prevent hydration mismatch by only rendering theme toggle after mount
@@ -50,7 +52,26 @@ export default function LoginPage() {
           </Button>
         </Link>
       </div>
-      <div className="absolute bottom-0 right-0 m-4">
+      <div className="absolute bottom-0 right-0 m-4 flex gap-2">
+        {/* Two buttons, not a menu: a menu at the bottom edge opens over the button
+            and picks the item under the pointer. The choice is saved by I18nProvider. */}
+        <ButtonGroup aria-label={t('userMenu.language')}>
+          <ButtonGroupText className="px-2.5" title={t('userMenu.language')}>
+            <Languages className="h-4 w-4" />
+          </ButtonGroupText>
+          {(['it', 'en'] as const).map((code) => (
+            <Button
+              key={code}
+              variant={language === code ? 'default' : 'outline'}
+              className="cursor-pointer select-none uppercase"
+              title={code === 'it' ? t('userMenu.italian') : t('userMenu.english')}
+              aria-pressed={language === code}
+              onClick={() => i18n.changeLanguage(code)}
+            >
+              {code}
+            </Button>
+          ))}
+        </ButtonGroup>
         <Button
           variant="outline"
           size="icon"

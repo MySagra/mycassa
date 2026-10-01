@@ -156,6 +156,7 @@ export const it = {
       loading: "Caricamento...",
       selectRegisterPlaceholder: "Seleziona una cassa",
       saveConfig: "Salva configurazione",
+      searchingRegisters: "Ricerca delle casse disponibili...",
       noRegisterTitle: "Nessuna cassa disponibile",
       noRegisterAdmin: "Non c'è nessuna cassa attiva da usare. Crea o abilita una cassa nella pagina di amministrazione di MySagra, nella sezione Casse, poi premi Riprova.",
       noRegisterEnable: "Non c'è nessuna cassa attiva da usare. Abilita una cassa nella pagina di amministrazione di MySagra, nella sezione Casse, poi premi Riprova.",

@@ -156,6 +156,7 @@ export const en = {
       loading: "Loading...",
       selectRegisterPlaceholder: "Select a register",
       saveConfig: "Save configuration",
+      searchingRegisters: "Looking for available registers...",
       noRegisterTitle: "No register available",
       noRegisterAdmin: "There is no active register to use. Create or enable a register in the MySagra admin page, under Cash Registers, then press Retry.",
       noRegisterEnable: "There is no active register to use. Enable a register in the MySagra admin page, under Cash Registers, then press Retry.",

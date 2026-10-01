@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import { AlertTriangle } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
+import { Spinner } from '@/components/ui/spinner';
 
 interface CashRegister {
     id: string;
@@ -102,7 +103,20 @@ export function ConfigurationDialog({ open, onOpenChange, onCashRegisterSelected
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-[425px]">
-                {loaded && cashRegisters.length === 0 ? (
+                {!loaded && loading ? (
+                    // Until the first answer it is not known which content applies: on a slow
+                    // connection the selection would show first and then turn into the alert
+                    <>
+                        <DialogHeader>
+                            <DialogTitle className="sr-only">{t('configDialog.title')}</DialogTitle>
+                            <DialogDescription className="sr-only">{t('configDialog.searchingRegisters')}</DialogDescription>
+                        </DialogHeader>
+                        <div className="flex flex-col items-center gap-3 py-8 text-muted-foreground">
+                            <Spinner className="size-6" />
+                            <p className="text-sm select-none">{t('configDialog.searchingRegisters')}</p>
+                        </div>
+                    </>
+                ) : loaded && cashRegisters.length === 0 ? (
                     <>
                         <DialogHeader>
                             <div className="flex items-center gap-3">
