@@ -24,7 +24,8 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { ChevronDownIcon, LogOutIcon, Settings, Sun, Moon, Languages, ShieldAlert, Monitor, AlertTriangle, CircleHelp } from "lucide-react"
+import { ChevronDownIcon, LogOutIcon, Settings, Sun, Moon, Languages, ShieldAlert, Monitor, AlertTriangle, CircleHelp, Tent } from "lucide-react"
+import { useSettings } from '@/lib/contexts/SettingsContext';
 import { useState, useEffect } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -61,6 +62,7 @@ export function MobileUserMenu({
 }: MobileUserMenuProps) {
     const initials = user.username.slice(0, 2).toUpperCase();
     const { t, i18n } = useTranslation();
+    const { sagraName } = useSettings();
     const [mounted, setMounted] = useState(false);
     const [showClosureConfirm, setShowClosureConfirm] = useState(false);
 
@@ -142,6 +144,12 @@ export function MobileUserMenu({
                             </DropdownMenuSubContent>
                         </DropdownMenuPortal>
                     </DropdownMenuSub>
+                    {sagraName && (
+                        <DropdownMenuItem disabled className="opacity-70 cursor-default">
+                            <Tent className="h-4 w-4" />
+                            {sagraName}
+                        </DropdownMenuItem>
+                    )}
                     {cashRegisterInvalid ? (
                         <DropdownMenuItem disabled className="cursor-default text-destructive">
                             <AlertTriangle className="h-4 w-4" />

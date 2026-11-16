@@ -3,13 +3,16 @@
 import { useState, useCallback, useRef, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { MobileUserMenu } from './MobileUserMenu';
-import { AlertTriangle, Euro, DollarSign } from 'lucide-react';
+import { AlertTriangle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { openDrawer } from '@/actions/cashier';
 import { toast } from 'sonner';
 import { ApiError } from '@/lib/api-error';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 import { useGuide } from '@/components/cassa/guide/GuideContext';
+import { useSettings } from '@/lib/contexts/SettingsContext';
+import { currencyIcon } from '@/components/cassa/header/CassaHeader';
+import { OrderingStatusBadge } from '@/components/cassa/header/OrderingStatusBadge';
 
 interface MobileCassaHeaderProps {
     onLogout: () => void;
@@ -39,16 +42,15 @@ export function MobileCassaHeader({
     onGeneralClosure,
     onVerificaClick,
 }: MobileCassaHeaderProps) {
-    const { t, i18n } = useTranslation();
+    const { t } = useTranslation();
     const { openGuide } = useGuide();
+    const { currency } = useSettings();
     const [logoClickCount, setLogoClickCount] = useState(0);
     const [isOpeningDrawer, setIsOpeningDrawer] = useState(false);
     const easterEggActive = logoClickCount >= EASTER_EGG_CLICKS;
     const clickTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-    const drawerIcon = useMemo(() => {
-        return i18n.language === 'it' ? <Euro className="h-5 w-5" /> : <DollarSign className="h-5 w-5" />;
-    }, [i18n.language]);
+    const drawerIcon = useMemo(() => currencyIcon(currency), [currency]);
 
     const handleLogoClick = useCallback(() => {
         setLogoClickCount((prev: number) => {
@@ -96,6 +98,7 @@ export function MobileCassaHeader({
                 </div>
 
                 <div className="flex items-center gap-2">
+                    <OrderingStatusBadge compact />
                     {cashRegisterInvalid && (
                         <span className="flex items-center gap-1 text-xs font-medium text-destructive bg-destructive/10 border border-destructive/30 px-2 py-1 rounded-full select-none">
                             <AlertTriangle className="h-3 w-3" />

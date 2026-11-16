@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search, Minus, Plus, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useSettings } from '@/lib/contexts/SettingsContext';
 import { cn } from '@/lib/utils';
 
 interface MobileFoodPickerDrawerProps {
@@ -27,6 +28,7 @@ export function MobileFoodPickerDrawer({
     const [search, setSearch] = useState('');
     const [selectedItems, setSelectedItems] = useState<Record<string, number>>({});
     const { t } = useTranslation();
+    const { formatPrice } = useSettings();
 
     const filtered = search.trim()
         ? foods.filter((f) => f.name.toLowerCase().includes(search.toLowerCase()))
@@ -144,7 +146,7 @@ export function MobileFoodPickerDrawer({
                                                     <div className="min-w-0 flex-1">
                                                         <p className="text-sm font-medium truncate">{food.name}</p>
                                                         <p className="text-xs text-amber-500 font-semibold">
-                                                            {price.toFixed(2)} €
+                                                            {formatPrice(price)}
                                                         </p>
                                                     </div>
 

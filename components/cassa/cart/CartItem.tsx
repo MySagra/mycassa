@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Pencil, X, Minus, Plus, AlertTriangle } from 'lucide-react';
 import { calculateIngredientSurcharge } from '@/lib/cassa/calculations';
 import { useTranslation } from 'react-i18next';
+import { useSettings } from '@/lib/contexts/SettingsContext';
 
 interface CartItemProps {
     item: ExtendedCartItem;
@@ -21,6 +22,7 @@ export function CartItem({ item, allIngredients, onUpdateQuantity, onRemove, onE
 
     const isUnavailable = item.food.available === false;
     const { t } = useTranslation();
+    const { formatPrice } = useSettings();
 
     return (
         <div className={`bg-card border rounded-lg p-3 ${isUnavailable ? 'border-destructive/60 bg-destructive/5' : ''}`}>
@@ -105,10 +107,10 @@ export function CartItem({ item, allIngredients, onUpdateQuantity, onRemove, onE
                 <div className="text-right">
                     {itemSurcharge > 0 && (
                         <p className="text-xs text-amber-600 dark:text-amber-500">
-                            (+{(itemSurcharge / item.quantity).toFixed(2)}€)
+                            (+{formatPrice(itemSurcharge / item.quantity)})
                         </p>
                     )}
-                    <p className="text-lg font-bold select-none">{itemTotal.toFixed(2)} €</p>
+                    <p className="text-lg font-bold select-none">{formatPrice(itemTotal)}</p>
                 </div>
             </div>
         </div>

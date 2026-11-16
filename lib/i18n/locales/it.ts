@@ -134,13 +134,13 @@ export const it = {
       save: "Salva"
     },
     discountDialog: {
-      toastApplied: "Sconto di {{amount}} € applicato",
+      toastApplied: "Sconto di {{amount}} applicato",
       toastRemoved: "Sconto rimosso",
-      discountCapped: "Sconto ridotto a {{amount}} € (pari al totale dell'ordine)",
+      discountCapped: "Sconto ridotto a {{amount}} (pari al totale dell'ordine)",
       title: "Applica Sconto",
       description: "Inserisci l'importo dello sconto da applicare al totale dell'ordine",
-      discountLabel: "Sconto (€)",
-      maxDiscount: "Sconto massimo: 9999.99 €",
+      discountLabel: "Sconto ({{currency}})",
+      maxDiscount: "Sconto massimo: {{amount}}",
       currentDiscount: "Sconto attualmente applicato:",
       cancel: "Annulla",
       removeDiscount: "Rimuovi Sconto",
@@ -371,6 +371,19 @@ export const it = {
       drawerOpened: "Cassetto aperto con successo",
       drawerOpenError: "Errore nell'apertura del cassetto",
       loading: "Caricamento..."
+    },
+    ordering: {
+      outsideTitle: "Fuori orario di apertura",
+      outsideDesc: "Gli ordini sono aperti dalle <b>{{opensAt}}</b> alle <b>{{closesAt}}</b>.",
+      outsideForce: "La cassa può comunque inviare l'ordine: vuoi procedere?",
+      forceSend: "Invia comunque",
+      badgeOpen: "Aperto {{opensAt}}–{{closesAt}}",
+      badgeOutside: "Fuori orario · {{opensAt}}–{{closesAt}}",
+      badgeOutsideShort: "Fuori orario",
+      badgeClosed: "Ordini online chiusi",
+      tooltipOpen: "Ordini aperti dalle {{opensAt}} alle {{closesAt}}",
+      tooltipOutside: "Fuori dagli orari di apertura ({{opensAt}}–{{closesAt}}): i clienti non possono ordinare, la cassa può inviare ordini forzando l'orario",
+      tooltipClosed: "I clienti non possono inviare ordini dalla web app. La cassa funziona normalmente"
     },
     dialog: {
       printerOfflineAction: "Verifica la connessione e riavvia la stampante",

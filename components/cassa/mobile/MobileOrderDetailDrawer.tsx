@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { FileText, Printer } from 'lucide-react';
 import { ReprintDialog } from '@/components/cassa/dialogs/ReprintDialog';
 import { useTranslation } from 'react-i18next';
+import { useSettings } from '@/lib/contexts/SettingsContext';
 
 interface MobileOrderDetailDrawerProps {
     order: OrderDetailResponse | null;
@@ -18,6 +19,7 @@ interface MobileOrderDetailDrawerProps {
 export function MobileOrderDetailDrawer({ order, open, loading, onClose }: MobileOrderDetailDrawerProps) {
     const [reprintOpen, setReprintOpen] = useState(false);
     const { t } = useTranslation();
+    const { formatPrice, formatDateTime } = useSettings();
 
     return (
         <>
@@ -81,10 +83,7 @@ export function MobileOrderDetailDrawer({ order, open, loading, onClose }: Mobil
                                     <div>
                                         <p className="text-xs text-muted-foreground">{t('orderDetailDialog.creationDate')}</p>
                                         <p className="text-xs">
-                                            {new Date(order.createdAt).toLocaleString('it-IT', {
-                                                day: '2-digit', month: '2-digit', year: 'numeric',
-                                                hour: '2-digit', minute: '2-digit',
-                                            })}
+                                            {formatDateTime(order.createdAt)}
                                         </p>
                                     </div>
                                     <div>
@@ -117,13 +116,13 @@ export function MobileOrderDetailDrawer({ order, open, loading, onClose }: Mobil
                                                                         <p className="text-xs text-muted-foreground">{t('orderDetailDialog.notes')} {item.notes}</p>
                                                                     )}
                                                                     <p className="text-xs text-muted-foreground">
-                                                                        {item.quantity} × {parseFloat(item.unitPrice).toFixed(2)} €
+                                                                        {item.quantity} × {formatPrice(parseFloat(item.unitPrice))}
                                                                     </p>
                                                                 </div>
                                                                 <div className="text-right shrink-0">
-                                                                    <p className="text-sm font-bold">{parseFloat(item.total).toFixed(2)} €</p>
+                                                                    <p className="text-sm font-bold">{formatPrice(parseFloat(item.total))}</p>
                                                                     {unitSurcharge > 0 && (
-                                                                        <p className="text-xs text-amber-600">(+{unitSurcharge.toFixed(2)} €)</p>
+                                                                        <p className="text-xs text-amber-600">(+{formatPrice(unitSurcharge)})</p>
                                                                     )}
                                                                 </div>
                                                             </div>
@@ -139,19 +138,19 @@ export function MobileOrderDetailDrawer({ order, open, loading, onClose }: Mobil
                                 <div className="p-3 bg-amber-500/20 rounded-lg border border-amber-500/20 space-y-1">
                                     <div className="flex justify-between text-xs">
                                         <span className="font-semibold">{t('orderDetailDialog.subtotal')}</span>
-                                        <span className="text-muted-foreground font-bold">{parseFloat(order.subTotal).toFixed(2)} €</span>
+                                        <span className="text-muted-foreground font-bold">{formatPrice(parseFloat(order.subTotal))}</span>
                                     </div>
                                     <div className="flex justify-between text-xs">
                                         <span className="font-semibold">{t('orderDetailDialog.totalSurcharges')}</span>
-                                        <span className="text-amber-600 font-bold">{parseFloat(order.surcharge?.toString() || '0').toFixed(2)} €</span>
+                                        <span className="text-amber-600 font-bold">{formatPrice(parseFloat(order.surcharge?.toString() || '0'))}</span>
                                     </div>
                                     <div className="flex justify-between text-xs">
                                         <span className="font-semibold">{t('orderDetailDialog.discount')}</span>
-                                        <span className="text-green-600 font-bold">{parseFloat(order.discount?.toString() || '0').toFixed(2)} €</span>
+                                        <span className="text-green-600 font-bold">{formatPrice(parseFloat(order.discount?.toString() || '0'))}</span>
                                     </div>
                                     <div className="flex justify-between pt-1 border-t">
                                         <span className="text-lg font-semibold">{t('orderDetailDialog.total')}</span>
-                                        <span className="text-lg font-bold text-amber-600">{parseFloat(order.total).toFixed(2)} €</span>
+                                        <span className="text-lg font-bold text-amber-600">{formatPrice(parseFloat(order.total))}</span>
                                     </div>
                                 </div>
                             </div>

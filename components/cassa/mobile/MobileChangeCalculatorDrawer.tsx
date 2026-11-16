@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useSettings } from '@/lib/contexts/SettingsContext';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
 import { Button } from '@/components/ui/button';
 import { Delete } from 'lucide-react';
@@ -33,6 +34,7 @@ export function MobileChangeCalculatorDrawer({
     onApply,
 }: MobileChangeCalculatorDrawerProps) {
     const { t } = useTranslation();
+    const { formatPrice, currencySymbol } = useSettings();
     const [input, setInput] = useState('');
 
     const paid = parseFloat(input.replace(',', '.')) || 0;
@@ -69,14 +71,14 @@ export function MobileChangeCalculatorDrawer({
                 <div className="px-4 pb-6 flex flex-col gap-4">
                     <div className="flex justify-between items-center text-sm text-muted-foreground">
                         <span>{t('mobile.changeCalculator.totalLabel')}</span>
-                        <span className="font-semibold text-foreground">{total.toFixed(2)} €</span>
+                        <span className="font-semibold text-foreground">{formatPrice(total)}</span>
                     </div>
 
                     {/* Display */}
                     <div className="text-right border rounded-lg p-4 bg-muted/30 min-h-[4rem] flex items-center justify-end">
                         {input
-                            ? <span className="text-3xl font-bold">{input} €</span>
-                            : <span className="text-xl text-muted-foreground">0.00 €</span>
+                            ? <span className="text-3xl font-bold">{input} {currencySymbol}</span>
+                            : <span className="text-xl text-muted-foreground">{formatPrice(0)}</span>
                         }
                     </div>
 
@@ -84,7 +86,7 @@ export function MobileChangeCalculatorDrawer({
                     <div className="flex justify-between items-center">
                         <span className="text-base font-medium">{t('payment.change')}</span>
                         <span className={`text-2xl font-bold ${paid > 0 ? (change >= 0 ? 'text-green-600 dark:text-green-500' : 'text-red-500') : 'text-muted-foreground'}`}>
-                            {paid > 0 ? `${change.toFixed(2)} €` : '— €'}
+                            {paid > 0 ? formatPrice(change) : `— ${currencySymbol}`}
                         </span>
                     </div>
 
@@ -97,7 +99,7 @@ export function MobileChangeCalculatorDrawer({
                                 className="cursor-pointer font-semibold text-sm"
                                 onClick={() => setInput(p.toString())}
                             >
-                                {p}€
+                                {p}{currencySymbol}
                             </Button>
                         ))}
                     </div>

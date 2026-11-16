@@ -7,6 +7,7 @@ import { FileText, Printer } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ReprintDialog } from './ReprintDialog';
 import { useTranslation } from 'react-i18next';
+import { useSettings } from '@/lib/contexts/SettingsContext';
 
 interface OrderDetailDialogProps {
     order: OrderDetailResponse | null;
@@ -19,6 +20,7 @@ interface OrderDetailDialogProps {
 export function OrderDetailDialog({ order, open, loading, onClose, stationsMap }: OrderDetailDialogProps) {
     const [reprintOpen, setReprintOpen] = useState(false);
     const { t } = useTranslation();
+    const { formatPrice, formatDateTime } = useSettings();
     return (
         <>
             <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
@@ -64,25 +66,13 @@ export function OrderDetailDialog({ order, open, loading, onClose, stationsMap }
                                     <div>
                                         <p className="text-sm text-muted-foreground">{t('orderDetailDialog.creationDate')}</p>
                                         <p className="text-sm">
-                                            {new Date(order.createdAt).toLocaleString('it-IT', {
-                                                day: '2-digit',
-                                                month: '2-digit',
-                                                year: 'numeric',
-                                                hour: '2-digit',
-                                                minute: '2-digit'
-                                            })}
+                                            {formatDateTime(order.createdAt)}
                                         </p>
                                     </div>
                                     <div>
                                         <p className="text-sm text-muted-foreground">{t('orderDetailDialog.confirmationDate')}</p>
                                         <p className="text-sm">
-                                            {order.confirmedAt ? new Date(order.confirmedAt).toLocaleString('it-IT', {
-                                                day: '2-digit',
-                                                month: '2-digit',
-                                                year: 'numeric',
-                                                hour: '2-digit',
-                                                minute: '2-digit'
-                                            }) : 'N/A'}
+                                            {order.confirmedAt ? formatDateTime(order.confirmedAt) : 'N/A'}
                                         </p>
                                     </div>
                                     <div>
@@ -125,16 +115,16 @@ export function OrderDetailDialog({ order, open, loading, onClose, stationsMap }
                                                                         </p>
                                                                     )}
                                                                     <p className="text-sm text-muted-foreground mt-1">
-                                                                        {t('orderDetailDialog.quantity')} {item.quantity} × {parseFloat(item.unitPrice).toFixed(2)} €
+                                                                        {t('orderDetailDialog.quantity')} {item.quantity} × {formatPrice(parseFloat(item.unitPrice))}
                                                                     </p>
                                                                 </div>
                                                                 <div className="text-right">
                                                                     <p className="font-semibold">
-                                                                        {parseFloat(item.total).toFixed(2)} €
+                                                                        {formatPrice(parseFloat(item.total))}
                                                                     </p>
                                                                     {unitSurcharge > 0 && (
                                                                         <p className="text-xs text-amber-600 dark:text-amber-500">
-                                                                            (+{unitSurcharge.toFixed(2)} €)
+                                                                            (+{formatPrice(unitSurcharge)})
                                                                         </p>
                                                                     )}
                                                                 </div>
@@ -154,26 +144,26 @@ export function OrderDetailDialog({ order, open, loading, onClose, stationsMap }
                                             <div className="flex items-center justify-between">
                                                 <div className="font-semibold">{t('orderDetailDialog.subtotal')}</div>
                                                 <div className="font-bold text-muted-foreground">
-                                                    {parseFloat(order.subTotal).toFixed(2)} €
+                                                    {formatPrice(parseFloat(order.subTotal))}
                                                 </div>
                                             </div>
                                             <div className="flex items-center justify-between">
                                                 <div className="font-semibold">{t('orderDetailDialog.totalSurcharges')}</div>
                                                 <div className="font-bold text-amber-600 dark:text-amber-500">
-                                                    {parseFloat(order.surcharge?.toString() || '0').toFixed(2)} €
+                                                    {formatPrice(parseFloat(order.surcharge?.toString() || '0'))}
                                                 </div>
                                             </div>
                                             <div className="flex items-center justify-between">
                                                 <div className="font-semibold">{t('orderDetailDialog.discount')}</div>
                                                 <div className="font-bold text-green-600 dark:text-green-500">
-                                                    {parseFloat(order.discount?.toString() || '0').toFixed(2)} €
+                                                    {formatPrice(parseFloat(order.discount?.toString() || '0'))}
                                                 </div>
                                             </div>
                                         </div>
                                         <div className="flex items-center justify-between">
                                             <div className="text-2xl font-semibold">{t('orderDetailDialog.total')}</div>
                                             <div className="text-2xl font-bold text-amber-600 dark:text-amber-500">
-                                                {parseFloat(order.total).toFixed(2)} €
+                                                {formatPrice(parseFloat(order.total))}
                                             </div>
                                         </div>
                                     </div>

@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { ButtonGroup } from '@/components/ui/button-group';
 import { CreditCard, Banknote, Calculator } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useSettings } from '@/lib/contexts/SettingsContext';
 
 interface PaymentSectionProps {
     total: number;
@@ -38,6 +39,7 @@ export function PaymentSection({
     const displayTotal = previousTotal ?? total ?? 0;
     const displayChange = (parseFloat(paidAmount.replace(',', '.')) || 0) - (displayTotal || 0);
     const { t } = useTranslation();
+    const { formatPrice, currencySymbol } = useSettings();
 
     return (
         <div className="space-y-2 p-4 pt-1.5">
@@ -47,7 +49,7 @@ export function PaymentSection({
                     <div className="flex items-center justify-between text-muted-foreground">
                         <span>{t('payment.subtotal')}:</span>
                         <span className="font-semibold">
-                            {(total - surcharges + discount).toFixed(2)} €
+                            {formatPrice(total - surcharges + discount)}
                         </span>
                     </div>
                 )}
@@ -55,7 +57,7 @@ export function PaymentSection({
                     <div className="flex items-center justify-between text-amber-600 dark:text-amber-500">
                         <span>{t('payment.surcharges')}:</span>
                         <span className="font-semibold">
-                            +{surcharges.toFixed(2)} €
+                            +{formatPrice(surcharges)}
                         </span>
                     </div>
                 )}
@@ -63,7 +65,7 @@ export function PaymentSection({
                     <div className="flex items-center justify-between text-green-600 dark:text-green-500">
                         <span>{t('payment.discount')}:</span>
                         <span className="font-semibold">
-                            -{discount.toFixed(2)} €
+                            -{formatPrice(discount)}
                         </span>
                     </div>
                 )}
@@ -74,7 +76,7 @@ export function PaymentSection({
                     {previousTotal !== null ? t('payment.lastOrderTotal') : t('payment.total')}:
                 </span>
                 <span className="text-2xl font-bold text-amber-500 select-none">
-                    {displayTotal.toFixed(2)} €
+                    {formatPrice(displayTotal)}
                 </span>
             </div>
 
@@ -102,7 +104,7 @@ export function PaymentSection({
                                     className={`text-right pr-8 ${validationErrors.paidAmount ? 'border-red-500' : ''}`}
                                 />
                                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground select-none">
-                                    €
+                                    {currencySymbol}
                                 </span>
                             </div>
                             {validationErrors.paidAmount && (
@@ -113,7 +115,7 @@ export function PaymentSection({
                             <span className="text-base font-medium select-none">{t('payment.change')}</span>
                             <div className='w-full h-full flex place-content-end items-center select-none'>
                                 <span className={`text-2xl font-bold ${displayChange >= 0 ? 'text-green-600 dark:text-green-500' : 'text-red-600 dark:text-red-500'}`}>
-                                    {displayChange.toFixed(2)} €
+                                    {formatPrice(displayChange)}
                                 </span>
                             </div>
                         </div>

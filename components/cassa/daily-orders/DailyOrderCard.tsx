@@ -14,6 +14,7 @@ import { Eye, ShoppingCart, X } from 'lucide-react';
 import { DailyOrder } from '@/lib/cassa/types';
 import { useRef, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useSettings } from '@/lib/contexts/SettingsContext';
 import { useEnv } from '@/lib/contexts/EnvContext';
 
 interface DailyOrderCardProps {
@@ -26,6 +27,7 @@ interface DailyOrderCardProps {
 
 export function DailyOrderCard({ order, onViewDetail, onLoadToCart, onCancelOrder, searchQuery }: DailyOrderCardProps) {
     const { t } = useTranslation();
+    const { formatPrice, formatDateTime } = useSettings();
     const { showNumbers } = useEnv();
     const cardRef = useRef<HTMLDivElement>(null);
     const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
@@ -120,7 +122,7 @@ export function DailyOrderCard({ order, onViewDetail, onLoadToCart, onCancelOrde
                             </span>
                         </div>
                         <p className="text-lg font-bold text-amber-600 shrink-0">
-                            {parseFloat(order.total).toFixed(2)} €
+                            {formatPrice(parseFloat(order.total))}
                         </p>
                     </div>
 
@@ -138,13 +140,7 @@ export function DailyOrderCard({ order, onViewDetail, onLoadToCart, onCancelOrde
                         />
                         <div className="flex items-center gap-2 pt-1">
                             <p className="text-xs text-muted-foreground">
-                                {new Date(order.createdAt).toLocaleString('it-IT', {
-                                    day: '2-digit',
-                                    month: '2-digit',
-                                    year: 'numeric',
-                                    hour: '2-digit',
-                                    minute: '2-digit'
-                                })}
+                                {formatDateTime(order.createdAt)}
                             </p>
                             {getStatusBadge(order.status)}
                         </div>

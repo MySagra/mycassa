@@ -33,6 +33,7 @@ import { CassaLayoutProps } from '@/components/cassa/desktop/DesktopCassaLayout'
 import { calculateIngredientSurcharge } from '@/lib/cassa/calculations';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
+import { useSettings } from '@/lib/contexts/SettingsContext';
 
 export function MobileCassaLayout({
     theme, onThemeToggle, cashRegisterName, cashRegisterId, cashRegisterInvalid, foodSearchQuery, onFoodSearchChange,
@@ -57,6 +58,7 @@ export function MobileCassaLayout({
     const [orderSuccess, setOrderSuccess] = useState(false);
     const wasConfirmingRef = useRef(false);
     const { t } = useTranslation();
+    const { formatPrice } = useSettings();
 
     useEffect(() => {
         if (editingItem !== null) setCartDrawerOpen(false);
@@ -180,7 +182,7 @@ export function MobileCassaLayout({
                                                                 )}
                                                             </div>
                                                             <span className="text-sm font-bold shrink-0 text-amber-500">
-                                                                {lineTotal.toFixed(2)} €
+                                                                {formatPrice(lineTotal)}
                                                             </span>
                                                         </div>
                                                     );

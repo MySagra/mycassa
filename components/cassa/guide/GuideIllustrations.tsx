@@ -1158,9 +1158,9 @@ export function PaymentIllustration({ mobile }: { mobile: boolean }) {
                 <span className="text-[8px] leading-tight text-muted-foreground">{t("discountDialog.description")}</span>
             </div>
             <div className="flex flex-col gap-1 py-1">
-                <FieldLabel>{t("discountDialog.discountLabel")}</FieldLabel>
+                <FieldLabel>{t("discountDialog.discountLabel", { currency: "€" })}</FieldLabel>
                 <MoneyInput target="discount-input" typed={done >= 2 && "2.00"} focused={done === 2} press={press} />
-                <Hint>{t("discountDialog.maxDiscount")}</Hint>
+                <Hint>{t("discountDialog.maxDiscount", { amount: "9999.99 €" })}</Hint>
             </div>
             <div className={cn("flex gap-1.5", mobile ? "flex-col-reverse" : "justify-end")}>
                 <MiniButton variant="destructive">{t("discountDialog.removeDiscount")}</MiniButton>
@@ -1229,7 +1229,7 @@ export function PaymentIllustration({ mobile }: { mobile: boolean }) {
                 <div className="pointer-events-none absolute inset-x-0 top-0 z-40 flex justify-center">
                     {toast && (
                         <Toast className="animate-in fade-in-0 slide-in-from-top-2">
-                            {t("discountDialog.toastApplied", { amount: "2.00" })}
+                            {t("discountDialog.toastApplied", { amount: "2.00 €" })}
                         </Toast>
                     )}
                 </div>

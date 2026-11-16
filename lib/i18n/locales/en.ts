@@ -134,13 +134,13 @@ export const en = {
       save: "Save"
     },
     discountDialog: {
-      toastApplied: "Discount of {{amount}} € applied",
+      toastApplied: "Discount of {{amount}} applied",
       toastRemoved: "Discount removed",
-      discountCapped: "Discount reduced to {{amount}} € (equals the order total)",
+      discountCapped: "Discount reduced to {{amount}} (equals the order total)",
       title: "Apply Discount",
       description: "Enter the discount amount to apply to the order total",
-      discountLabel: "Discount (€)",
-      maxDiscount: "Max discount: 9999.99 €",
+      discountLabel: "Discount ({{currency}})",
+      maxDiscount: "Max discount: {{amount}}",
       currentDiscount: "Currently applied discount:",
       cancel: "Cancel",
       removeDiscount: "Remove Discount",
@@ -371,6 +371,19 @@ export const en = {
       drawerOpened: "Drawer opened successfully",
       drawerOpenError: "Error opening the drawer",
       loading: "Loading..."
+    },
+    ordering: {
+      outsideTitle: "Outside opening hours",
+      outsideDesc: "Orders are open from <b>{{opensAt}}</b> to <b>{{closesAt}}</b>.",
+      outsideForce: "The register can still send the order: do you want to proceed?",
+      forceSend: "Send anyway",
+      badgeOpen: "Open {{opensAt}}–{{closesAt}}",
+      badgeOutside: "Outside hours · {{opensAt}}–{{closesAt}}",
+      badgeOutsideShort: "Outside hours",
+      badgeClosed: "Online orders closed",
+      tooltipOpen: "Orders open from {{opensAt}} to {{closesAt}}",
+      tooltipOutside: "Outside opening hours ({{opensAt}}–{{closesAt}}): customers cannot order, the register can still send orders by overriding the schedule",
+      tooltipClosed: "Customers cannot send orders from the web app. The register works as usual"
     },
     dialog: {
       printerOfflineAction: "Check the connection and restart the printer",

@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
 import { useTheme } from 'next-themes';
-import { useTranslation } from 'react-i18next';
+import { useTranslation, Trans } from 'react-i18next';
 import { subscribeSse, resolveSseEventType } from '@/lib/sse';
 import { toast } from 'sonner';
 import { getStations, getAllIngredients, getOrderByOrderId, confirmOrder as confirmOrderAction, createOrder, getTodayOrders, getAllTodayOrders, getFoodById, searchDailyOrders, searchAllDailyOrders, getOrderByCode, getCashRegisters, getPrinterById, generalClosure, cancelOrder as cancelOrderAction } from '@/actions/cashier';
@@ -26,6 +26,7 @@ import { GuideProvider, useGuide } from '@/components/cassa/guide/GuideContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { z } from 'zod';
 import { ApiError } from '@/lib/api-error';
+import { useSettings } from '@/lib/contexts/SettingsContext';
 
 /** Solleva ApiError se l'action ha restituito un fallimento. */
 function throwIfActionError(result: { success: boolean; error?: string; status?: number; code?: string }) {
@@ -48,6 +49,7 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
     const { theme, setTheme } = useTheme();
     const { t } = useTranslation();
     const isMobile = useIsMobile();
+    const { reload: reloadSettings, applySettings, ordering } = useSettings();
     const cartScrollRef = useRef<HTMLDivElement>(null);
     const sseConnectionRef = useRef(false);
     const lastEventRef = useRef<string | null>(null);
@@ -90,6 +92,7 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
     const [showAllOrders, setShowAllOrders] = useState(false);
     const [allIngredients, setAllIngredients] = useState<Ingredient[]>([]);
     const [showUnavailableDialog, setShowUnavailableDialog] = useState(false);
+    const [showOutsideScheduleDialog, setShowOutsideScheduleDialog] = useState(false);
     const [printerOfflineInfo, setPrinterOfflineInfo] = useState<{ label: string } | null>(null);
     const [printerErrorInfo, setPrinterErrorInfo] = useState<{ label: string; status: string } | null>(null);
     const [stationsMap, setStationsMap] = useState<Record<string, string>>({});
@@ -191,6 +194,11 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
         setCashRegisterInvalid(false);
         localStorage.setItem('selectedCashRegister', id);
     };
+
+    // Reload centralized settings once authenticated (the provider's first fetch may predate login)
+    useEffect(() => {
+        if (isAuthenticated) reloadSettings();
+    }, [isAuthenticated, reloadSettings]);
 
     // Redirect if not authenticated
     useEffect(() => {
@@ -298,6 +306,11 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
                     async onOpen(response) {
                         if (response.ok) {
                             console.log('[SSE] Connessione stabilita con successo');
+
+                            // On reconnection: reload settings to catch a missed settings-update
+                            if (sseConnectedRef.current) {
+                                reloadSettings();
+                            }
 
                             // On reconnection only: reload orders to catch missed events
                             // First connect is handled by the useEffect below
@@ -551,6 +564,14 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
                                 ));
                             } catch (error) {
                                 console.error('[SSE] Errore parsando order-status-update:', error);
+                            }
+                        }
+                        // Handle settings-update event (full settings payload)
+                        else if (eventType === 'settings-update') {
+                            try {
+                                applySettings(JSON.parse(event.data));
+                            } catch (error) {
+                                console.error('[SSE] Errore parsando settings-update:', error);
                             }
                         }
                         // Handle default/legacy message event
@@ -996,7 +1017,21 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
             return;
         }
 
-        // Check for unavailable items in cart — ask for confirmation before proceeding
+        await continueAfterScheduleCheck();
+    };
+
+    // SCHEDULE mode outside opening hours: the register can still force the order, after a warning
+    const continueAfterScheduleCheck = async () => {
+        if (ordering.isOutsideSchedule) {
+            setShowOutsideScheduleDialog(true);
+            return;
+        }
+        await continueAfterAvailabilityCheck();
+    };
+
+    // Check for unavailable items in cart — ask for confirmation before proceeding
+    const continueAfterAvailabilityCheck = async () => {
+        setShowOutsideScheduleDialog(false);
         const hasUnavailable = cart.some(item => item.food.available === false);
         if (hasUnavailable) {
             setShowUnavailableDialog(true);
@@ -1374,6 +1409,35 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
                             onClick={() => setPrinterErrorInfo(null)}
                         >
                             {t('dialog.printerOfflineDismiss')}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+
+            <AlertDialog open={showOutsideScheduleDialog} onOpenChange={setShowOutsideScheduleDialog}>
+                <AlertDialogContent className="border-amber-500 border-2 sm:max-w-md">
+                    <AlertDialogHeader>
+                        <AlertDialogTitle className="text-amber-500">{t('ordering.outsideTitle')}</AlertDialogTitle>
+                        <AlertDialogDescription asChild>
+                            <div className="space-y-2">
+                                <p>
+                                    <Trans
+                                        i18nKey="ordering.outsideDesc"
+                                        values={{ opensAt: ordering.opensAt ?? '', closesAt: ordering.closesAt ?? '' }}
+                                        components={{ b: <strong className="font-bold text-amber-500" /> }}
+                                    />
+                                </p>
+                                <p>{t('ordering.outsideForce')}</p>
+                            </div>
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>{t('header.cancel')}</AlertDialogCancel>
+                        <AlertDialogAction
+                            className="bg-amber-500 text-white hover:bg-amber-500/80"
+                            onClick={continueAfterAvailabilityCheck}
+                        >
+                            {t('ordering.forceSend')}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>

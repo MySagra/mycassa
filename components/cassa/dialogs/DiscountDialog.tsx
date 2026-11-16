@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { discountAmountSchema } from '@/lib/cassa/validations';
 import { useTranslation } from 'react-i18next';
+import { useSettings } from '@/lib/contexts/SettingsContext';
 
 interface DiscountDialogProps {
     open: boolean;
@@ -20,6 +21,7 @@ export function DiscountDialog({ open, currentDiscount, orderTotal, onClose, onA
     const [discountAmount, setDiscountAmount] = useState<string>('');
     const [validationError, setValidationError] = useState<string | undefined>();
     const { t } = useTranslation();
+    const { formatPrice, currencySymbol } = useSettings();
 
     useEffect(() => {
         if (open) {
@@ -48,12 +50,12 @@ export function DiscountDialog({ open, currentDiscount, orderTotal, onClose, onA
         let finalAmount = result.data;
         if (orderTotal !== undefined && finalAmount > orderTotal) {
             finalAmount = orderTotal;
-            toast.warning(t('discountDialog.discountCapped', { amount: finalAmount.toFixed(2) }));
+            toast.warning(t('discountDialog.discountCapped', { amount: formatPrice(finalAmount) }));
         }
 
         onApply(finalAmount);
         onClose();
-        toast.success(t('discountDialog.toastApplied', { amount: finalAmount.toFixed(2) }));
+        toast.success(t('discountDialog.toastApplied', { amount: formatPrice(finalAmount) }));
     };
 
     const handleRemove = () => {
@@ -74,7 +76,7 @@ export function DiscountDialog({ open, currentDiscount, orderTotal, onClose, onA
                 </DialogHeader>
                 <div className="space-y-4 py-4">
                     <div className="space-y-2">
-                        <Label htmlFor="discountAmount">{t('discountDialog.discountLabel')}</Label>
+                        <Label htmlFor="discountAmount">{t('discountDialog.discountLabel', { currency: currencySymbol })}</Label>
                         <div className="relative">
                             <Input
                                 autoComplete='off'
@@ -97,21 +99,21 @@ export function DiscountDialog({ open, currentDiscount, orderTotal, onClose, onA
                                 className={`text-right pr-8 ${validationError ? 'border-red-500' : ''}`}
                             />
                             <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                                €
+                                {currencySymbol}
                             </span>
                         </div>
                         {validationError && (
                             <p className="text-xs text-red-500 mt-1">{validationError}</p>
                         )}
                         <p className="text-xs text-muted-foreground">
-                            {t('discountDialog.maxDiscount')}
+                            {t('discountDialog.maxDiscount', { amount: formatPrice(9999.99) })}
                         </p>
                     </div>
 
                     {currentDiscount > 0 && (
                         <div className="rounded-lg border bg-muted/50 p-3">
                             <p className="text-sm text-muted-foreground mb-1">{t('discountDialog.currentDiscount')}</p>
-                            <p className="text-lg font-semibold text-amber-600">{currentDiscount.toFixed(2)} €</p>
+                            <p className="text-lg font-semibold text-amber-600">{formatPrice(currentDiscount)}</p>
                         </div>
                     )}
                 </div>

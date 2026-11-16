@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { ButtonGroup } from '@/components/ui/button-group';
-import { Settings, Moon, Sun, Maximize, Minimize, AlertTriangle, Euro, DollarSign, CircleHelp } from 'lucide-react';
+import { Settings, Moon, Sun, Maximize, Minimize, AlertTriangle, Euro, DollarSign, PoundSterling, Banknote, CircleHelp } from 'lucide-react';
 import { UserMenu } from './UserMenu';
 import { useState, useCallback, useRef, useMemo } from 'react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
@@ -10,6 +10,8 @@ import { toast } from 'sonner';
 import { ApiError } from '@/lib/api-error';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 import { useGuide } from '@/components/cassa/guide/GuideContext';
+import { useSettings } from '@/lib/contexts/SettingsContext';
+import { OrderingStatusBadge } from './OrderingStatusBadge';
 
 interface CassaHeaderProps {
     onLogout: () => void;
@@ -35,12 +37,11 @@ export function CassaHeader({ onLogout, onSettingsClick, theme, onThemeToggle, c
     const clickTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const userRoleName = user ? (typeof user.role === 'string' ? user.role : (user.role as any)?.name ?? '') : '';
     const isAdminOrMaintainer = userRoleName.toUpperCase() === 'ADMIN' || userRoleName.toUpperCase() === 'MAINTAINER';
-    const { t, i18n } = useTranslation();
+    const { t } = useTranslation();
     const { openGuide } = useGuide();
+    const { currency, sagraName } = useSettings();
 
-    const drawerIcon = useMemo(() => {
-        return i18n.language === 'it' ? <Euro className="h-5 w-5" /> : <DollarSign className="h-5 w-5" />;
-    }, [i18n.language]);
+    const drawerIcon = useMemo(() => currencyIcon(currency), [currency]);
 
     const handleLogoClick = useCallback(() => {
         setLogoClickCount((prev: number) => {
@@ -96,11 +97,19 @@ export function CassaHeader({ onLogout, onSettingsClick, theme, onThemeToggle, c
                         className="mx-auto h-10 w-auto select-none"
                         onClick={handleLogoClick}
                     />
-                    <h1 className="text-2xl font-bold select-none">{easterEggActive ? 'MaiMagri' : 'MyCassa'}</h1>
+                    <div className="flex flex-col min-w-0 leading-tight">
+                        <h1 className="text-2xl font-bold select-none">{easterEggActive ? 'MaiMagri' : 'MyCassa'}</h1>
+                        {sagraName && (
+                            <span className="text-xs text-muted-foreground truncate max-w-64 select-none" title={sagraName}>
+                                {sagraName}
+                            </span>
+                        )}
+                    </div>
                 </div>
 
                 {/* Right: Actions */}
                 <div className="flex items-center gap-2 shrink-0">
+                    <OrderingStatusBadge />
                     {cashRegisterInvalid ? (
                         <div className="flex items-center gap-2 ml-2">
                             <span className="flex items-center gap-1.5 text-sm font-medium text-destructive bg-destructive/10 border border-destructive/30 px-3 py-1 rounded-full select-none">
@@ -194,4 +203,14 @@ export function CassaHeader({ onLogout, onSettingsClick, theme, onThemeToggle, c
             </AlertDialog>
         </header>
     );
+}
+
+/** Icona del cassetto in base alla valuta configurata. */
+export function currencyIcon(currency: string, className = 'h-5 w-5') {
+    switch (currency.toUpperCase()) {
+        case 'EUR': return <Euro className={className} />;
+        case 'USD': return <DollarSign className={className} />;
+        case 'GBP': return <PoundSterling className={className} />;
+        default: return <Banknote className={className} />;
+    }
 }
