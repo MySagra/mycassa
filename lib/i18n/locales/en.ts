@@ -177,7 +177,9 @@ export const en = {
       openDrawerButton: "Open Drawer",
       openDrawerTooltip: "Open the cash drawer",
       guide: "Guide",
-      clockTooltip: "Current time ({{timezone}})"
+      clockTooltip: "Current time ({{timezone}})",
+      fullscreen: "Full screen",
+      exitFullscreen: "Exit full screen"
     },
     guide: {
       progress: "Guide · {{current}} of {{total}}",

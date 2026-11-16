@@ -162,28 +162,50 @@ export function CassaHeader({ onLogout, onSettingsClick, theme, onThemeToggle, c
                                 {t('header.openDrawerTooltip')}
                             </TooltipContent>
                         </Tooltip>
-                        <Button variant="outline" className='cursor-pointer' size="icon" onClick={openGuide} title={t('header.guide')}>
-                            <CircleHelp className="h-5 w-5" />
-                        </Button>
-                        <Button variant="outline" className='cursor-pointer' size="icon" onClick={onSettingsClick}>
-                            <Settings className="h-5 w-5" />
-                        </Button>
-                        <Button
-                            variant="outline"
-                            className='cursor-pointer'
-                            size="icon"
-                            onClick={onThemeToggle}
-                        >
-                            {theme === 'dark' ? <Sun className="h-5 w-5 cursor-pointer" /> : <Moon className="h-5 w-5 cursor-pointer" />}
-                        </Button>
-                        <Button
-                            variant="outline"
-                            className='cursor-pointer'
-                            size="icon"
-                            onClick={toggleFullscreen}
-                        >
-                            {isFullscreen ? <Minimize className="h-5 w-5" /> : <Maximize className="h-5 w-5" />}
-                        </Button>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button variant="outline" className='cursor-pointer' size="icon" onClick={onSettingsClick} aria-label={t('userMenu.settings')}>
+                                    <Settings className="h-5 w-5" />
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>{t('userMenu.settings')}</TooltipContent>
+                        </Tooltip>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button
+                                    variant="outline"
+                                    className='cursor-pointer'
+                                    size="icon"
+                                    onClick={onThemeToggle}
+                                    aria-label={theme === 'dark' ? t('userMenu.lightTheme') : t('userMenu.darkTheme')}
+                                >
+                                    {theme === 'dark' ? <Sun className="h-5 w-5 cursor-pointer" /> : <Moon className="h-5 w-5 cursor-pointer" />}
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>{theme === 'dark' ? t('userMenu.lightTheme') : t('userMenu.darkTheme')}</TooltipContent>
+                        </Tooltip>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button
+                                    variant="outline"
+                                    className='cursor-pointer'
+                                    size="icon"
+                                    onClick={toggleFullscreen}
+                                    aria-label={isFullscreen ? t('header.exitFullscreen') : t('header.fullscreen')}
+                                >
+                                    {isFullscreen ? <Minimize className="h-5 w-5" /> : <Maximize className="h-5 w-5" />}
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>{isFullscreen ? t('header.exitFullscreen') : t('header.fullscreen')}</TooltipContent>
+                        </Tooltip>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button variant="outline" className='cursor-pointer' size="icon" onClick={openGuide} aria-label={t('header.guide')}>
+                                    <CircleHelp className="h-5 w-5" />
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>{t('header.guide')}</TooltipContent>
+                        </Tooltip>
                     </ButtonGroup>
 
                     {user && <UserMenu user={user} onLogout={onLogout} />}

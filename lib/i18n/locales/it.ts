@@ -177,7 +177,9 @@ export const it = {
       openDrawerButton: "Apri cassetto",
       openDrawerTooltip: "Apri il cassetto dei contanti",
       guide: "Guida",
-      clockTooltip: "Ora attuale ({{timezone}})"
+      clockTooltip: "Ora attuale ({{timezone}})",
+      fullscreen: "Schermo intero",
+      exitFullscreen: "Esci da schermo intero"
     },
     guide: {
       progress: "Guida · {{current}} di {{total}}",
