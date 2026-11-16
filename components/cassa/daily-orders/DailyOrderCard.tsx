@@ -15,7 +15,6 @@ import { DailyOrder } from '@/lib/cassa/types';
 import { useRef, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSettings } from '@/lib/contexts/SettingsContext';
-import { useEnv } from '@/lib/contexts/EnvContext';
 
 interface DailyOrderCardProps {
     order: DailyOrder;
@@ -27,8 +26,8 @@ interface DailyOrderCardProps {
 
 export function DailyOrderCard({ order, onViewDetail, onLoadToCart, onCancelOrder, searchQuery }: DailyOrderCardProps) {
     const { t } = useTranslation();
-    const { formatPrice, formatDateTime } = useSettings();
-    const { showNumbers } = useEnv();
+    const { formatPrice, formatDateTime, settings } = useSettings();
+    const showNumbers = settings.settings.tickets.showNumbers;
     const cardRef = useRef<HTMLDivElement>(null);
     const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
 

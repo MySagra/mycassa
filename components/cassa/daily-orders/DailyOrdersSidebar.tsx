@@ -6,7 +6,7 @@ import { DailyOrderCard } from './DailyOrderCard';
 import { Button } from '@/components/ui/button';
 import { ArrowLeftRight, Search, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { useEnv } from '@/lib/contexts/EnvContext';
+import { useSettings } from '@/lib/contexts/SettingsContext';
 import { useState } from 'react';
 
 interface DailyOrdersSidebarProps {
@@ -35,7 +35,7 @@ export function DailyOrdersSidebar({
     onClose,
 }: DailyOrdersSidebarProps) {
     const { t } = useTranslation();
-    const { showNumbers } = useEnv();
+    const showNumbers = useSettings().settings.settings.tickets.showNumbers;
     const [localInput, setLocalInput] = useState(searchQuery);
 
     const handleSearch = () => {

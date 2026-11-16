@@ -4,7 +4,6 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { I18nProvider } from "@/lib/i18n/I18nProvider";
-import { EnvProviderWrapper } from "@/components/providers/EnvProviderWrapper";
 import { SettingsProvider } from "@/lib/contexts/SettingsContext";
 
 const geistSans = Geist({
@@ -40,17 +39,15 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <EnvProviderWrapper>
-            <I18nProvider>
-              <SettingsProvider>
-                {children}
-              </SettingsProvider>
-              <Toaster
-                position="top-center"
-                offset="6px"
-              />
-            </I18nProvider>
-          </EnvProviderWrapper>
+          <I18nProvider>
+            <SettingsProvider>
+              {children}
+            </SettingsProvider>
+            <Toaster
+              position="top-center"
+              offset="6px"
+            />
+          </I18nProvider>
         </ThemeProvider>
         <script
           dangerouslySetInnerHTML={{
