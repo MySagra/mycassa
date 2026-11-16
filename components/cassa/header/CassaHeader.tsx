@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { ButtonGroup } from '@/components/ui/button-group';
-import { Settings, Moon, Sun, Maximize, Minimize, AlertTriangle, Euro, DollarSign, PoundSterling, Banknote, CircleHelp } from 'lucide-react';
+import { Settings, Moon, Sun, Maximize, Minimize, AlertTriangle, Euro, DollarSign, PoundSterling, Banknote, CircleHelp, Monitor } from 'lucide-react';
 import { UserMenu } from './UserMenu';
 import { useState, useCallback, useRef, useMemo } from 'react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
@@ -11,7 +11,9 @@ import { ApiError } from '@/lib/api-error';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 import { useGuide } from '@/components/cassa/guide/GuideContext';
 import { useSettings } from '@/lib/contexts/SettingsContext';
-import { OrderingStatusBadge } from './OrderingStatusBadge';
+import { OrderingStatusBadge, headerChipClass } from './OrderingStatusBadge';
+import { HeaderClock } from './HeaderClock';
+import { cn } from '@/lib/utils';
 
 interface CassaHeaderProps {
     onLogout: () => void;
@@ -105,53 +107,61 @@ export function CassaHeader({ onLogout, onSettingsClick, theme, onThemeToggle, c
                             </span>
                         )}
                     </div>
+                    <div className="mx-2 h-8 w-px bg-border" aria-hidden />
+                    <HeaderClock />
                 </div>
 
-                {/* Right: Actions */}
+                {/* Right: status chips | actions */}
                 <div className="flex items-center gap-2 shrink-0">
                     <OrderingStatusBadge />
                     {cashRegisterInvalid ? (
-                        <div className="flex items-center gap-2 ml-2">
-                            <span className="flex items-center gap-1.5 text-sm font-medium text-destructive bg-destructive/10 border border-destructive/30 px-3 py-1 rounded-full select-none">
-                                <AlertTriangle className="h-3.5 w-3.5" />
-                                {t('header.invalidCashRegister')}
-                            </span>
-                        </div>
+                        <span className={cn(headerChipClass, 'text-destructive bg-destructive/10 border-destructive/30')}>
+                            <AlertTriangle className="h-4 w-4" />
+                            {t('header.invalidCashRegister')}
+                        </span>
                     ) : cashRegisterName ? (
-                        <div className="flex items-center gap-2 ml-2">
-                            <span className="text-sm font-medium text-muted-foreground bg-muted px-3 py-1 rounded-full select-none">
-                                {cashRegisterName}
-                            </span>
-                        </div>
+                        <span className={cn(headerChipClass, 'text-muted-foreground bg-muted/50')}>
+                            <Monitor className="h-4 w-4" />
+                            {cashRegisterName}
+                        </span>
                     ) : null}
+
+                    <div className="mx-1 h-6 w-px bg-border" aria-hidden />
+
                     {isAdminOrMaintainer && (
-                        <Button
-                            variant="destructive"
-                            className="cursor-pointer"
-                            size="sm"
-                            onClick={() => setShowClosureConfirm(true)}
-                        >
-                            {t('header.closureButton')}
-                        </Button>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button
+                                    variant="outline"
+                                    className="cursor-pointer border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive dark:border-destructive/50"
+                                    onClick={() => setShowClosureConfirm(true)}
+                                >
+                                    {t('header.closureButton')}
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent className="max-w-xs">
+                                {t('header.closureTooltip')}
+                            </TooltipContent>
+                        </Tooltip>
                     )}
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <Button
-                                variant="outline"
-                                className="cursor-pointer"
-                                size="icon"
-                                onClick={handleOpenDrawer}
-                                disabled={isOpeningDrawer}
-                                aria-label={t('header.openDrawerButton')}
-                            >
-                                {drawerIcon}
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                            {t('header.openDrawerTooltip')}
-                        </TooltipContent>
-                    </Tooltip>
                     <ButtonGroup>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button
+                                    variant="outline"
+                                    className="cursor-pointer"
+                                    size="icon"
+                                    onClick={handleOpenDrawer}
+                                    disabled={isOpeningDrawer}
+                                    aria-label={t('header.openDrawerButton')}
+                                >
+                                    {drawerIcon}
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                {t('header.openDrawerTooltip')}
+                            </TooltipContent>
+                        </Tooltip>
                         <Button variant="outline" className='cursor-pointer' size="icon" onClick={openGuide} title={t('header.guide')}>
                             <CircleHelp className="h-5 w-5" />
                         </Button>

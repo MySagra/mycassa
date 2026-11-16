@@ -12,7 +12,8 @@ import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip
 import { useGuide } from '@/components/cassa/guide/GuideContext';
 import { useSettings } from '@/lib/contexts/SettingsContext';
 import { currencyIcon } from '@/components/cassa/header/CassaHeader';
-import { OrderingStatusBadge } from '@/components/cassa/header/OrderingStatusBadge';
+import { OrderingStatusBadge, headerChipCompactClass } from '@/components/cassa/header/OrderingStatusBadge';
+import { cn } from '@/lib/utils';
 
 interface MobileCassaHeaderProps {
     onLogout: () => void;
@@ -100,8 +101,8 @@ export function MobileCassaHeader({
                 <div className="flex items-center gap-2">
                     <OrderingStatusBadge compact />
                     {cashRegisterInvalid && (
-                        <span className="flex items-center gap-1 text-xs font-medium text-destructive bg-destructive/10 border border-destructive/30 px-2 py-1 rounded-full select-none">
-                            <AlertTriangle className="h-3 w-3" />
+                        <span className={cn(headerChipCompactClass, 'text-destructive bg-destructive/10 border-destructive/30')}>
+                            <AlertTriangle className="h-3.5 w-3.5" />
                             {t('header.invalidCashRegister')}
                         </span>
                     )}

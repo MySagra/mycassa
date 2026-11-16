@@ -24,7 +24,7 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { ChevronDownIcon, LogOutIcon, Settings, Sun, Moon, Languages, ShieldAlert, Monitor, AlertTriangle, CircleHelp, Tent } from "lucide-react"
+import { ChevronDownIcon, LogOutIcon, Settings, Sun, Moon, Languages, Printer, Monitor, AlertTriangle, CircleHelp, Tent } from "lucide-react"
 import { useSettings } from '@/lib/contexts/SettingsContext';
 import { useState, useEffect } from "react"
 import { useTranslation } from "react-i18next"
@@ -97,7 +97,7 @@ export function MobileUserMenu({
                             className="cursor-pointer text-destructive focus:text-destructive"
                             onClick={() => setShowClosureConfirm(true)}
                         >
-                            <ShieldAlert className="h-4 w-4" />
+                            <Printer className="h-4 w-4" />
                             {t('header.closureButton')}
                         </DropdownMenuItem>
                     )}

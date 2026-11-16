@@ -6,6 +6,12 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { useSettings } from '@/lib/contexts/SettingsContext';
 import { cn } from '@/lib/utils';
 
+/** Stile comune dei "chip" informativi dell'header: stessa altezza e raggio dei pulsanti. */
+export const headerChipClass =
+    'inline-flex h-9 items-center gap-2 rounded-md border px-3 text-sm font-medium select-none whitespace-nowrap';
+export const headerChipCompactClass =
+    'inline-flex h-8 items-center gap-1.5 rounded-md border px-2 text-xs font-medium select-none whitespace-nowrap';
+
 /**
  * Stato degli ordini dalla web app clienti, secondo `settings.ordering`:
  * - OPEN: nessun badge (sempre aperto)
@@ -48,13 +54,9 @@ export function OrderingStatusBadge({ compact = false }: { compact?: boolean }) 
         <Tooltip>
             <TooltipTrigger asChild>
                 <span
-                    className={cn(
-                        'flex items-center gap-1.5 font-medium border rounded-full select-none whitespace-nowrap',
-                        compact ? 'text-xs px-2 py-1' : 'text-sm px-3 py-1',
-                        tone,
-                    )}
+                    className={cn(compact ? headerChipCompactClass : headerChipClass, tone)}
                 >
-                    <Icon className={compact ? 'h-3 w-3' : 'h-3.5 w-3.5'} />
+                    <Icon className={compact ? 'h-3.5 w-3.5' : 'h-4 w-4'} />
                     {label}
                 </span>
             </TooltipTrigger>

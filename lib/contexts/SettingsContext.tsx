@@ -23,6 +23,8 @@ interface SettingsContextType {
     currency: string;
     currencySymbol: string;
     ordering: OrderingStatus;
+    /** Ora corrente arrotondata al minuto (si aggiorna allo scoccare di ogni minuto). */
+    now: Date;
     /** Ricarica le impostazioni da `GET /v1/settings`. */
     reload: () => Promise<void>;
     /** Applica un payload ricevuto (es. evento SSE `settings-update`). */
@@ -33,8 +35,14 @@ interface SettingsContextType {
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
 
-/** Ricontrolla l'orario ogni 30s per aggiornare lo stato aperto/chiuso. */
-const CLOCK_TICK_MS = 30_000;
+/** Controlla l'orario ogni secondo, ma aggiorna lo stato solo al cambio di minuto. */
+const CLOCK_TICK_MS = 1_000;
+
+function startOfMinute(date: Date): Date {
+    const d = new Date(date);
+    d.setSeconds(0, 0);
+    return d;
+}
 
 function toLocale(language: string | undefined): string {
     if (!language) return 'it-IT';
@@ -91,7 +99,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     const { i18n } = useTranslation();
     const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS);
     const [loaded, setLoaded] = useState(false);
-    const [now, setNow] = useState(() => new Date());
+    const [now, setNow] = useState(() => startOfMinute(new Date()));
     const latestUpdateRef = useRef<string | null>(null);
 
     const applySettings = useCallback((raw: unknown) => {
@@ -121,7 +129,10 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     }, [reload]);
 
     useEffect(() => {
-        const id = setInterval(() => setNow(new Date()), CLOCK_TICK_MS);
+        const id = setInterval(() => {
+            const minute = startOfMinute(new Date());
+            setNow(prev => (prev.getTime() === minute.getTime() ? prev : minute));
+        }, CLOCK_TICK_MS);
         return () => clearInterval(id);
     }, []);
 
@@ -184,11 +195,12 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
         currency,
         currencySymbol,
         ordering,
+        now,
         reload,
         applySettings,
         formatPrice,
         formatDateTime,
-    }), [settings, loaded, sagraName, timezone, currency, currencySymbol, ordering, reload, applySettings, formatPrice, formatDateTime]);
+    }), [settings, loaded, sagraName, timezone, currency, currencySymbol, ordering, now, reload, applySettings, formatPrice, formatDateTime]);
 
     return <SettingsContext.Provider value={value}>{children}</SettingsContext.Provider>;
 }
