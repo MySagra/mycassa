@@ -18,6 +18,9 @@ export const it = {
       customerPlaceholder: "Es. Mario Rossi",
       table: "Tavolo",
       tablePlaceholder: "Es. 12 o Tavolo A5",
+      tablePlaceholderNumber: "Es. 12",
+      tablePlaceholderText: "Es. Tavolo A5",
+      tableMax: "(max {{max}})",
       tableDisabled: "TAVOLO DISABILITATO",
       noCustomer: "Inserisci cliente di default"
     },

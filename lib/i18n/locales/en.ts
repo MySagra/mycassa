@@ -18,6 +18,9 @@ export const en = {
       customerPlaceholder: "E.g. John Doe",
       table: "Table",
       tablePlaceholder: "E.g. 12 or Table A5",
+      tablePlaceholderNumber: "E.g. 12",
+      tablePlaceholderText: "E.g. Table A5",
+      tableMax: "(max {{max}})",
       tableDisabled: "TABLE DISABLED",
       noCustomer: "Insert default customer"
     },

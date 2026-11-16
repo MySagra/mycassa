@@ -8,19 +8,19 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Settings2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { orderSchema } from '@/lib/cassa/validations';
-import { z } from 'zod';
 import { toast } from 'sonner';
+import { useSettings } from '@/lib/contexts/SettingsContext';
+import { getOrderFieldsConfig, validateCustomer, validateTable } from '@/lib/cassa/order-fields';
 
-interface Props {
-    requireCustomer: boolean;
-    requireTable: boolean;
-}
-
-const tableSchema = z.string().min(1, 'Il numero del tavolo è obbligatorio');
-
-export function DefaultFieldsSettingsCard({ requireCustomer, requireTable }: Props) {
+export function DefaultFieldsSettingsCard() {
     const { t } = useTranslation();
+    const { settings } = useSettings();
+    const fields = getOrderFieldsConfig(settings);
+    // Il valore predefinito serve solo per i campi visibili in cassa
+    const showCustomer = fields.customer !== 'HIDDEN';
+    const showTable = fields.table !== 'HIDDEN';
+    // Un valore predefinito vuoto non ha senso: lo trattiamo come obbligatorio
+    const strictFields = { ...fields, customer: 'REQUIRED' as const, table: 'REQUIRED' as const };
     const [customerEnabled, setCustomerEnabled] = useState(false);
     const [customerValue, setCustomerValue] = useState('');
     const [customerError, setCustomerError] = useState<string | null>(null);
@@ -39,9 +39,9 @@ export function DefaultFieldsSettingsCard({ requireCustomer, requireTable }: Pro
         let valid = true;
 
         if (customerEnabled) {
-            const result = orderSchema.shape.customer.safeParse(customerValue);
-            if (!result.success) {
-                setCustomerError(result.error.issues[0].message);
+            const error = validateCustomer(customerValue, strictFields);
+            if (error) {
+                setCustomerError(error);
                 valid = false;
             } else {
                 setCustomerError(null);
@@ -51,9 +51,9 @@ export function DefaultFieldsSettingsCard({ requireCustomer, requireTable }: Pro
         }
 
         if (tableEnabled) {
-            const result = tableSchema.safeParse(tableValue);
-            if (!result.success) {
-                setTableError(result.error.issues[0].message);
+            const error = validateTable(tableValue, strictFields);
+            if (error) {
+                setTableError(error);
                 valid = false;
             } else {
                 setTableError(null);
@@ -71,7 +71,7 @@ export function DefaultFieldsSettingsCard({ requireCustomer, requireTable }: Pro
         toast.success(t('settings.printers.toastSaved'));
     };
 
-    if (!requireCustomer && !requireTable) return null;
+    if (!showCustomer && !showTable) return null;
 
     return (
         <Card>
@@ -85,7 +85,7 @@ export function DefaultFieldsSettingsCard({ requireCustomer, requireTable }: Pro
                 </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-                {requireCustomer && (
+                {showCustomer && (
                     <div className="flex items-center justify-between gap-4">
                         <div className="flex items-center gap-3">
                             <Checkbox
@@ -114,7 +114,7 @@ export function DefaultFieldsSettingsCard({ requireCustomer, requireTable }: Pro
                         </div>
                     </div>
                 )}
-                {requireTable && (
+                {showTable && (
                     <div className="flex items-center justify-between gap-4">
                         <div className="flex items-center gap-3">
                             <Checkbox

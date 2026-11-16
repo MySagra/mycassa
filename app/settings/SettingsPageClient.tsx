@@ -12,12 +12,7 @@ import { DefaultFieldsSettingsCard } from '../../components/settings/setting-car
 import { GuideSettingsCard } from '../../components/settings/setting-card/GuideSettingsCard';
 import { GuideProvider } from '@/components/cassa/guide/GuideContext';
 
-interface Props {
-    requireCustomer: boolean;
-    requireTable: boolean;
-}
-
-export default function SettingsPageClient({ requireCustomer, requireTable }: Props) {
+export default function SettingsPageClient() {
     const router = useRouter();
     const { isLoading, isAuthenticated } = useAuth();
     const { theme, setTheme } = useTheme();
@@ -46,7 +41,7 @@ export default function SettingsPageClient({ requireCustomer, requireTable }: Pr
                 <SettingsHeader />
                 <main className="container max-w-4xl mx-auto p-6 space-y-6">
                     <PrintersSettingsCard />
-                    <DefaultFieldsSettingsCard requireCustomer={requireCustomer} requireTable={requireTable} />
+                    <DefaultFieldsSettingsCard />
                     <CategoryVisibilitySettingsCard />
                     <AppearanceSettingsCard
                         theme={theme}

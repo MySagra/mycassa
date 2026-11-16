@@ -7,13 +7,13 @@ import { Search, Loader2, UserX } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useTranslation } from 'react-i18next';
 import { useState, useEffect } from 'react';
+import { useSettings } from '@/lib/contexts/SettingsContext';
+import { getOrderFieldsConfig } from '@/lib/cassa/order-fields';
 
 interface OrderFormProps {
     displayCode: string;
     customer: string;
     table: string;
-    enableTableInput: boolean;
-    requireCustomer: boolean;
     tableInputDisabled?: boolean;
     validationErrors: { customer?: string; table?: string };
     onUpdateDisplayCode: (value: string) => void;
@@ -27,8 +27,6 @@ export function OrderForm({
     displayCode,
     customer,
     table,
-    enableTableInput,
-    requireCustomer,
     tableInputDisabled,
     validationErrors,
     onUpdateDisplayCode,
@@ -38,6 +36,15 @@ export function OrderForm({
     loadingOrder
 }: OrderFormProps) {
     const { t } = useTranslation();
+    const { settings } = useSettings();
+    const fields = getOrderFieldsConfig(settings);
+    const showCustomer = fields.customer !== 'HIDDEN';
+    const showTable = fields.table !== 'HIDDEN' && !tableInputDisabled;
+    const tablePlaceholder = fields.tableNumberOnly
+        ? t('orderForm.tablePlaceholderNumber')
+        : fields.tableTextOnly
+            ? t('orderForm.tablePlaceholderText')
+            : t('orderForm.tablePlaceholder');
     const [customerHasDefault, setCustomerHasDefault] = useState(false);
     const [tableHasDefault, setTableHasDefault] = useState(false);
 
@@ -105,9 +112,11 @@ export function OrderForm({
             </div>
 
             {/* Customer and Table */}
-            <div className={`grid ${enableTableInput && !tableInputDisabled ? 'grid-cols-2' : 'grid-cols-1'} gap-4`}>
+            {(showCustomer || showTable) && (
+            <div className={`grid ${showCustomer && showTable ? 'grid-cols-2' : 'grid-cols-1'} gap-4`}>
+                {showCustomer && (
                 <div>
-                    <Label htmlFor="customer" className='mb-2'>{t('orderForm.customer')}{requireCustomer && !customerHasDefault ? ' *' : ''}</Label>
+                    <Label htmlFor="customer" className='mb-2'>{t('orderForm.customer')}{fields.customer === 'REQUIRED' && !customerHasDefault ? ' *' : ''}</Label>
                     <Input
                         autoComplete='off'
                         id="customer"
@@ -120,16 +129,27 @@ export function OrderForm({
                         <p className="text-xs text-red-500 mt-1">{validationErrors.customer}</p>
                     )}
                 </div>
+                )}
 
-                {enableTableInput && !tableInputDisabled && (
+                {showTable && (
                     <div>
-                        <Label htmlFor="table" className='mb-2'>{t('orderForm.table')}{!tableHasDefault ? ' *' : ''}</Label>
+                        <Label htmlFor="table" className='mb-2'>
+                            {t('orderForm.table')}{fields.table === 'REQUIRED' && !tableHasDefault ? ' *' : ''}
+                            {fields.maxTables !== null && !fields.tableTextOnly && (
+                                <span className="ml-1 text-xs font-normal text-muted-foreground">
+                                    {t('orderForm.tableMax', { max: fields.maxTables })}
+                                </span>
+                            )}
+                        </Label>
                         <Input
                             autoComplete='off'
                             id="table"
-                            placeholder={t('orderForm.tablePlaceholder')}
+                            placeholder={tablePlaceholder}
                             value={table}
-                            onChange={(e) => onUpdateTable(e.target.value)}
+                            inputMode={fields.tableNumberOnly ? 'numeric' : 'text'}
+                            onChange={(e) => onUpdateTable(
+                                fields.tableNumberOnly ? e.target.value.replace(/\D/g, '') : e.target.value
+                            )}
                             className={validationErrors.table ? 'border-red-500' : ''}
                         />
                         {validationErrors.table && (
@@ -138,6 +158,7 @@ export function OrderForm({
                     </div>
                 )}
             </div>
+            )}
         </div>
     );
 }

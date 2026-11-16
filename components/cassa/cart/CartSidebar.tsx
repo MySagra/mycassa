@@ -17,8 +17,6 @@ interface CartSidebarProps {
     customer: string;
     table: string;
     displayCode: string;
-    enableTableInput: boolean;
-    requireCustomer: boolean;
     tableInputDisabled?: boolean;
     paymentMethod: PaymentMethod | null;
     paidAmount: string;
@@ -53,8 +51,6 @@ export function CartSidebar({
     customer,
     table,
     displayCode,
-    enableTableInput,
-    requireCustomer,
     tableInputDisabled,
     paymentMethod,
     paidAmount,
@@ -185,8 +181,6 @@ export function CartSidebar({
                 displayCode={displayCode}
                 customer={customer}
                 table={table}
-                enableTableInput={enableTableInput}
-                requireCustomer={requireCustomer}
                 tableInputDisabled={tableInputDisabled}
                 validationErrors={validationErrors}
                 onUpdateDisplayCode={onUpdateDisplayCode}

@@ -1,10 +1,5 @@
 import { z } from 'zod';
-
-// Validation schemas
-export const orderSchema = z.object({
-    customer: z.string().min(2, 'Il nome del cliente deve contenere almeno 2 caratteri'),
-    table: z.string().min(1, 'Il numero del tavolo è obbligatorio'),
-});
+import { OrderFieldsConfig, validateCustomer, validateTable } from './order-fields';
 
 export const paidAmountSchema = z.string()
     .regex(/^[0-9]+([.,][0-9]{0,2})?$/, 'Importo non valido (solo numeri, max 2 decimali)')
@@ -26,8 +21,7 @@ export function getOrderValidationMessage(
     cartLength: number,
     customer: string,
     table: string,
-    enableTableInput: boolean,
-    requireCustomer: boolean = true
+    fields: OrderFieldsConfig
 ): string[] | null {
     const errors: string[] = [];
 
@@ -35,20 +29,11 @@ export function getOrderValidationMessage(
         errors.push('Il carrello è vuoto');
     }
 
-    if (requireCustomer) {
-        if (!customer.trim()) {
-            errors.push('Inserisci il nome del cliente');
-        } else {
-            const result = orderSchema.shape.customer.safeParse(customer);
-            if (!result.success) {
-                errors.push(result.error.issues[0].message);
-            }
-        }
-    }
+    const customerError = validateCustomer(customer, fields);
+    if (customerError) errors.push(customerError);
 
-    if (enableTableInput && !table.trim()) {
-        errors.push('Inserisci il numero del tavolo');
-    }
+    const tableError = validateTable(table, fields);
+    if (tableError) errors.push(tableError);
 
     if (errors.length === 0) return null;
 

@@ -12,7 +12,8 @@ import { logout as logoutAction } from '@/actions/auth';
 import { Category, Food, Ingredient, PaymentMethod, OrderDetailResponse, ExtendedCartItem } from '@/lib/api-types';
 import { DailyOrder } from '@/lib/cassa/types';
 import { calculateTotal, calculateTotalSurcharges, calculateChange } from '@/lib/cassa/calculations';
-import { getOrderValidationMessage, orderSchema, paidAmountSchema } from '@/lib/cassa/validations';
+import { getOrderValidationMessage, paidAmountSchema } from '@/lib/cassa/validations';
+import { getOrderFieldsConfig, validateCustomer, validateTable, customerToSend, tableToSend } from '@/lib/cassa/order-fields';
 import { mergeCartItems } from '@/lib/cassa/cart-utils';
 import { EditItemDialog } from '@/components/cassa/dialogs/EditItemDialog';
 import { MobileEditItemDrawer } from '@/components/cassa/mobile/MobileEditItemDrawer';
@@ -24,7 +25,6 @@ import { DesktopCassaLayout, CassaLayoutProps } from '@/components/cassa/desktop
 import { MobileCassaLayout } from '@/components/cassa/mobile/MobileCassaLayout';
 import { GuideProvider, useGuide } from '@/components/cassa/guide/GuideContext';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { z } from 'zod';
 import { ApiError } from '@/lib/api-error';
 import { useSettings } from '@/lib/contexts/SettingsContext';
 
@@ -37,19 +37,32 @@ function throwIfActionError(result: { success: boolean; error?: string; status?:
 
 const ORDER_DRAFT_KEY = 'mycassa_order_draft';
 
+/** Cliente e tavolo effettivi: se il campo è vuoto si usa il valore predefinito scelto in Impostazioni. */
+function resolveWithDefaults(customer: string, table: string) {
+    const defaultCustomerEnabled = localStorage.getItem('defaultCustomerEnabled') === 'true';
+    const defaultCustomerValue = localStorage.getItem('defaultCustomerValue') ?? '';
+    const defaultTableEnabled = localStorage.getItem('defaultTableEnabled') === 'true';
+    const defaultTableValue = localStorage.getItem('defaultTableValue') ?? '';
+    return {
+        customer: !customer.trim() && defaultCustomerEnabled && defaultCustomerValue.trim() ? defaultCustomerValue : customer,
+        table: !table.trim() && defaultTableEnabled && defaultTableValue.trim() ? defaultTableValue : table,
+    };
+}
+
 /** The cash register dialog waits for the guide, which comes first after login. */
 function ConfigurationDialogAfterGuide(props: React.ComponentProps<typeof ConfigurationDialog>) {
     const { busy } = useGuide();
     return <ConfigurationDialog {...props} open={props.open && !busy} />;
 }
 
-export default function CassaPage({ requiredTable, requireCustomer }: { requiredTable: boolean; requireCustomer: boolean }) {
+export default function CassaPage() {
     const router = useRouter();
     const { user, isLoading, isAuthenticated } = useAuth();
     const { theme, setTheme } = useTheme();
     const { t } = useTranslation();
     const isMobile = useIsMobile();
-    const { reload: reloadSettings, applySettings, ordering } = useSettings();
+    const { reload: reloadSettings, applySettings, ordering, settings } = useSettings();
+    const orderFields = getOrderFieldsConfig(settings);
     const cartScrollRef = useRef<HTMLDivElement>(null);
     const sseConnectionRef = useRef(false);
     const lastEventRef = useRef<string | null>(null);
@@ -79,7 +92,6 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
     const [foodSearchQuery, setFoodSearchQuery] = useState('');
     const [openDiscountDialog, setOpenDiscountDialog] = useState(false);
     const [appliedDiscountAmount, setAppliedDiscountAmount] = useState<number>(0);
-    const enableTableInput = requiredTable;
     const [dailyOrders, setDailyOrders] = useState<DailyOrder[]>([]);
     const [loadingDailyOrders, setLoadingDailyOrders] = useState(false);
     const [viewingOrderDetail, setViewingOrderDetail] = useState<OrderDetailResponse | null>(null);
@@ -970,34 +982,19 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
             return;
         }
 
-        // Validate customer
-        if (requireCustomer) {
-            const defaultCustomerEnabled = localStorage.getItem('defaultCustomerEnabled') === 'true';
-            const defaultCustomerValue = localStorage.getItem('defaultCustomerValue') ?? '';
-            const customerToValidate = !customer.trim() && defaultCustomerEnabled && defaultCustomerValue.trim()
-                ? defaultCustomerValue
-                : customer;
-            const customerValidation = orderSchema.shape.customer.safeParse(customerToValidate);
-            if (!customerValidation.success) {
-                toast.error(customerValidation.error.issues[0].message);
-                return;
-            }
+        // Validate customer and table according to settings.orders
+        const resolved = resolveWithDefaults(customer, table);
+        const customerError = validateCustomer(resolved.customer, orderFields);
+        if (customerError) {
+            setValidationErrors({ customer: customerError });
+            toast.error(customerError);
+            return;
         }
-
-        // Validate table only if enabled
-        if (enableTableInput) {
-            const defaultTableEnabled = localStorage.getItem('defaultTableEnabled') === 'true';
-            const defaultTableValue = localStorage.getItem('defaultTableValue') ?? '';
-            const tableToValidate = !table.trim() && defaultTableEnabled && defaultTableValue.trim()
-                ? defaultTableValue
-                : table;
-            const tableValidation = z.string().min(1, 'Il numero del tavolo è obbligatorio').safeParse(tableToValidate);
-            if (!tableValidation.success) {
-                const error = tableValidation.error.issues[0].message;
-                setValidationErrors({ table: error });
-                toast.error(error);
-                return;
-            }
+        const tableError = validateTable(resolved.table, orderFields);
+        if (tableError) {
+            setValidationErrors({ table: tableError });
+            toast.error(tableError);
+            return;
         }
 
         // Validate paidAmount if payment method is CASH and paidAmount is provided
@@ -1046,17 +1043,9 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
         setShowUnavailableDialog(false);
         setLoadingConfirmOrder(true);
         try {
-            const defaultCustomerEnabled = localStorage.getItem('defaultCustomerEnabled') === 'true';
-            const defaultCustomerValue = localStorage.getItem('defaultCustomerValue') ?? '';
-            const defaultTableEnabled = localStorage.getItem('defaultTableEnabled') === 'true';
-            const defaultTableValue = localStorage.getItem('defaultTableValue') ?? '';
-
-            const effectiveCustomer = !requireCustomer && !customer.trim()
-                ? 'NO CUSTOMER'
-                : (defaultCustomerEnabled && !customer.trim() && defaultCustomerValue.trim() ? defaultCustomerValue : customer);
-            const effectiveTable = defaultTableEnabled && !table.trim() && defaultTableValue.trim()
-                ? defaultTableValue
-                : table;
+            const resolved = resolveWithDefaults(customer, table);
+            const effectiveCustomer = customerToSend(resolved.customer, orderFields);
+            const effectiveTable = tableToSend(resolved.table, orderFields);
 
             // Merge cart items with same foodId and notes
             const mergedOrderItems = mergeCartItems(cart, allIngredients);
@@ -1102,7 +1091,7 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
             } else {
                 // Create new order with confirmation details
                 const createResult = await createOrder({
-                    table: enableTableInput && effectiveTable.trim() ? effectiveTable : "NO_TABLE_PRESET",
+                    table: effectiveTable,
                     customer: effectiveCustomer,
                     orderItems: mergedOrderItems,
                     confirm: {
@@ -1221,13 +1210,8 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
     const total = calculateTotal(cart, appliedDiscountAmount, allIngredients);
     const surcharges = calculateTotalSurcharges(cart, allIngredients);
     const change = calculateChange(total, parseFloat(paidAmount) || 0);
-    const _defCustEnabled = localStorage.getItem('defaultCustomerEnabled') === 'true';
-    const _defCustValue = localStorage.getItem('defaultCustomerValue') ?? '';
-    const _defTableEnabled = localStorage.getItem('defaultTableEnabled') === 'true';
-    const _defTableValue = localStorage.getItem('defaultTableValue') ?? '';
-    const _effectiveCustomer = _defCustEnabled && !customer.trim() && _defCustValue.trim() ? _defCustValue : customer;
-    const _effectiveTable = _defTableEnabled && !table.trim() && _defTableValue.trim() ? _defTableValue : table;
-    const baseValidation = getOrderValidationMessage(cart.length, _effectiveCustomer, _effectiveTable, enableTableInput, requireCustomer);
+    const resolvedFields = resolveWithDefaults(customer, table);
+    const baseValidation = getOrderValidationMessage(cart.length, resolvedFields.customer, resolvedFields.table, orderFields);
     const validationMessage = !paymentMethod
         ? [...(baseValidation ?? []), 'Seleziona un metodo di pagamento']
         : baseValidation;
@@ -1256,8 +1240,6 @@ export default function CassaPage({ requiredTable, requireCustomer }: { required
         customer,
         table,
         displayCode,
-        enableTableInput,
-        requireCustomer,
         tableInputDisabled: table === 'NO_TABLE_PRESET',
         paymentMethod,
         paidAmount,
